@@ -23,6 +23,18 @@ type TestCollection(parent) =
   let mutable current = None
   new () = TestCollection(None)
 
+  member self.init (f: unit -> 'a) : (unit -> 'a) =
+    let value = ref None
+    self.before <| fun() ->
+      value := None
+    let r () =
+      match !value with
+      | None -> let result = f()
+                value := Some(result)
+                result
+      | Some(x) -> x
+    r
+
   member self.describe (name: string) (f: unit -> unit) = 
     match current with 
     | None -> let innerCollection = TestCollection(Some(self))
@@ -55,7 +67,7 @@ type TestCollection(parent) =
       try
         x()
       with
-      | _ -> results.reportFailure()
+      | x -> results.reportFailure()
     )
 
     contexts |> List.iter (fun x ->

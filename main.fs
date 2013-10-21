@@ -95,6 +95,28 @@ let describe = c.describe
 let it = c.it
 let before = c.before
 
+
+describe "TestCollection" <| fun() ->
+  it "handles lazy initialization" <| fun () ->
+    let c = TestCollection()
+    let initCount = ref 0
+    c.describe "Ctx" <| fun () ->
+      let value = c.init <| fun () ->
+        initCount := !initCount + 1
+        "dummy"
+
+      c.it "uses value" <| fun () ->
+        let x = value()
+        ()
+
+      c.it "uses value twice" <| fun () ->
+        let x = value()
+        let y = value()
+        ()
+
+    c.run()
+    assertEqual !initCount 2
+
 describe "TestResult" <| fun() ->
   describe "With no failures reported" <| fun () ->
     it "Is a success" <| fun () ->
