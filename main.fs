@@ -38,17 +38,6 @@ test "Calling run should call setup" <| fun() ->
   c.run()
   assertTrue !wasSetup
 
-test "Setup should run before test" <| fun () ->
-  let wasSetupWhenTestWasRun = ref false
-  let wasSetup = ref false
-  let c = TestCollection()
-  c.before <| fun() ->
-    wasSetup := true
-  c.it "dummy" <| fun() ->
-    wasSetupWhenTestWasRun := !wasSetup
-  c.run()
-  assertTrue !wasSetupWhenTestWasRun  
-
 test "Setup is only run in the same context levet" <| fun () ->
   let outerSetupRunCount = ref 0
   let innerSetupRunCount = ref 0
@@ -101,6 +90,17 @@ describe "TestCollection" <| fun() ->
   let run () =
     col().run(res())
     res()
+
+  describe "Setup" <| fun () ->
+    it "runs before the test is run" <| fun () ->
+      let wasSetupWhenTestWasRun = ref false
+      let wasSetup = ref false
+      col().before <| fun() ->
+        wasSetup := true
+      col().it "dummy" <| fun() ->
+        wasSetupWhenTestWasRun := !wasSetup
+      run() |> ignore
+      assertTrue !wasSetupWhenTestWasRun  
 
   describe "Run" <| fun () ->
     it "reports test failures" <| fun () ->
