@@ -13,6 +13,9 @@ type TestResult() =
   member self.summary() = 
     sprintf "%d run, %d failed" noOfTestsRun noOfFails
 
+  member self.success() =
+    noOfFails = 0
+
 type TestCollection(parent) =
   let mutable tests = []
   let mutable setups = []

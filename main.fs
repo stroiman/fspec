@@ -17,6 +17,11 @@ let assertTrue value =
     ()
   ()
 
+let assertFalse value =
+  if value then
+    failwithf "Value was true"
+  ()
+
 test "Calling run should run tests" <| fun() ->
   let wasRun = ref false
   let c = TestCollection()
@@ -86,3 +91,13 @@ test "run() should report test failure" <| fun () ->
   let result = TestResult()
   c.run(result)
   assertEqual (result.summary()) "1 run, 1 failed"
+
+test "TestResult - reports success - when no failures reported" <| fun () ->
+  let r = TestResult()
+  r.reportTestRun()
+  assertTrue (r.success())
+
+test "TestResult - reports failure - when failures reported" <| fun () ->
+  let r = TestResult()
+  r.reportFailure()
+  assertFalse (r.success())
