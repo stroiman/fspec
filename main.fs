@@ -31,3 +31,24 @@ test "Calling run should run tests" <| fun() ->
     wasRun := true
   c.run()
   assertTrue !wasRun
+
+test "Calling run should call setup" <| fun() ->
+  let wasSetup = ref false
+  let c = TestCollection()
+  c.before <| fun() ->
+    wasSetup := true
+  c.it "dummy" <| fun() ->
+    ()
+  c.run()
+  assertTrue !wasSetup
+
+test "Setup should run before test" <| fun () ->
+  let wasSetupWhenTestWasRun = ref false
+  let wasSetup = ref false
+  let c = TestCollection()
+  c.before <| fun() ->
+    wasSetup := true
+  c.it "dummy" <| fun() ->
+    wasSetupWhenTestWasRun := !wasSetup
+  c.run()
+  assertTrue !wasSetupWhenTestWasRun  
