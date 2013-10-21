@@ -17,13 +17,6 @@ let assertTrue value =
     ()
   ()
 
-test "Add scenario to test collection" <| fun () ->
-  let c = TestCollection()
-  c.describe "Some context" <| fun () ->
-    c.it "Some test" <| fun () ->
-      ()
-  assertEqual (c.NoOfTests()) 1
-
 test "Calling run should run tests" <| fun() ->
   let wasRun = ref false
   let c = TestCollection()

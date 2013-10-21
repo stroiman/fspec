@@ -32,11 +32,6 @@ type TestCollection(parent) =
     | Some(x) -> x.perform_setup()
     setups |> List.iter (fun y -> y())
 
-  member self.NoOfTests() = 
-    let childTests = contexts |> List.map (fun x -> x.NoOfTests()) |> List.sum
-    let myTests = tests |> List.length
-    childTests + myTests
-
   member self.run() = 
     tests |> List.iter (fun x -> 
       self.perform_setup()
