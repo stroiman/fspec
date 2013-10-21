@@ -68,33 +68,11 @@ test "Setup is only run in the same context levet" <| fun () ->
   c.run()
   assertEqual !innerSetupRunCount 2
 
-test "Run() should report test success" <| fun () ->
-  let c = TestCollection()
-  
-  c.describe "Ctx" <| fun () ->
-    c.it "Succeeds" <| fun () ->
-      ()
-
-  let result = TestResult()
-  c.run(result)
-  assertEqual (result.summary()) "1 run, 0 failed"
-
-test "run() should report test failure" <| fun () ->
-  let c = TestCollection()
-
-  c.describe "Ctx" <| fun () ->
-    c.it "Fails" <| fun () ->
-      failwithf "Just another failure"
-
-  let result = TestResult()
-  c.run(result)
-  assertEqual (result.summary()) "1 run, 1 failed"
-
 let c = TestCollection()
 let describe = c.describe
 let it = c.it
 let before = c.before
-
+let init = c.init
 
 describe "TestCollection" <| fun() ->
   it "handles lazy initialization" <| fun () ->
@@ -116,6 +94,28 @@ describe "TestCollection" <| fun() ->
 
     c.run()
     assertEqual !initCount 2
+
+describe "TestCollection" <| fun() ->
+  let col = init (fun () -> TestCollection())
+  let res = init (fun () -> TestResult())
+  let run () =
+    col().run(res())
+    res()
+
+  describe "Run" <| fun () ->
+    it "reports test failures" <| fun () ->
+      col().it "Is a failure" <| fun () ->
+        failwithf "Just another failure"
+
+      let result = run()
+      assertEqual (result.summary()) "1 run, 1 failed"
+
+    it "reports test success" <| fun() ->
+      col().it "Is a success" <| fun() ->
+        ()
+
+      let result = run()
+      assertEqual (result.summary()) "1 run, 0 failed"
 
 describe "TestResult" <| fun() ->
   describe "With no failures reported" <| fun () ->
