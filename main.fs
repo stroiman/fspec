@@ -28,16 +28,6 @@ test "Calling run should run tests" <| fun() ->
   c.run()
   assertTrue !wasRun
 
-test "Calling run should call setup" <| fun() ->
-  let wasSetup = ref false
-  let c = TestCollection()
-  c.before <| fun() ->
-    wasSetup := true
-  c.it "dummy" <| fun() ->
-    ()
-  c.run()
-  assertTrue !wasSetup
-
 test "Setup is only run in the same context levet" <| fun () ->
   let outerSetupRunCount = ref 0
   let innerSetupRunCount = ref 0
