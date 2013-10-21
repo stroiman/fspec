@@ -52,3 +52,23 @@ test "Setup should run before test" <| fun () ->
     wasSetupWhenTestWasRun := !wasSetup
   c.run()
   assertTrue !wasSetupWhenTestWasRun  
+
+test "Setup is only run in the same context levet" <| fun () ->
+  let outerSetupRunCount = ref 0
+  let innerSetupRunCount = ref 0
+  let c = TestCollection()
+  c.describe "Ctx" <| fun () ->
+    c.before <| fun () ->
+      outerSetupRunCount := !outerSetupRunCount + 1
+    c.it "Outer test" <| fun () ->
+      ()
+    c.describe "Inner ctx" <| fun () ->
+      c.before <| fun () ->
+        innerSetupRunCount := !innerSetupRunCount + 1
+      c.it "Inner test" <| fun () ->
+        ()
+      c.it "Inner test2" <| fun () ->
+        ()
+  c.run()
+  assertEqual !outerSetupRunCount 3
+  assertEqual !innerSetupRunCount 2
