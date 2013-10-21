@@ -10,3 +10,6 @@ type TestCollection() =
     tests <- f::tests
 
   member self.NoOfTests() = tests |> List.length
+
+  member self.run() = 
+    tests |> List.iter (fun x -> x())

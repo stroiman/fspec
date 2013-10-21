@@ -11,9 +11,23 @@ let assertEqual a b =
     ()
   ()
 
+let assertTrue value =
+  if not value then
+    failwithf "Value was false"
+    ()
+  ()
+
 test "Add scenario to test collection" <| fun () ->
   let c = TestCollection()
   c.describe "Some context" <| fun () ->
     c.it "Some test" <| fun () ->
       ()
   assertEqual (c.NoOfTests()) 1
+
+test "Calling run should run tests" <| fun() ->
+  let wasRun = ref false
+  let c = TestCollection()
+  c.it "test" <| fun() ->
+    wasRun := true
+  c.run()
+  assertTrue !wasRun
