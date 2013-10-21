@@ -1,10 +1,6 @@
 module Main
 open FSpec
 
-let test (desc: string) (f: unit -> unit) =
-  printfn "Executing test: %s" desc
-  f()
-
 let assertEqual a b =
   if not (a = b) then
     failwithf "Not equal %A and %A" a b
@@ -19,14 +15,6 @@ let assertFalse value =
   if value then
     failwithf "Value was true"
   ()
-
-test "Calling run should run tests" <| fun() ->
-  let wasRun = ref false
-  let c = TestCollection()
-  c.it "test" <| fun() ->
-    wasRun := true
-  c.run()
-  assertTrue !wasRun
 
 let c = TestCollection()
 let describe = c.describe
