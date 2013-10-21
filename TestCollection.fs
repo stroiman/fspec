@@ -1,5 +1,14 @@
 module FSpec
 
+type TestResult() =
+  let mutable noOfTestsRun = 0
+
+  member self.reportTestRun () =
+    noOfTestsRun <- noOfTestsRun + 1
+
+  member self.summary() = 
+    sprintf "%d run, 0 failed" noOfTestsRun
+
 type TestCollection(parent) =
   let mutable tests = []
   let mutable setups = []
@@ -32,12 +41,16 @@ type TestCollection(parent) =
     | Some(x) -> x.perform_setup()
     setups |> List.iter (fun y -> y())
 
-  member self.run() = 
+  member self.run(results : TestResult) =
     tests |> List.iter (fun x -> 
       self.perform_setup()
+      results.reportTestRun()
       x()
     )
 
     contexts |> List.iter (fun x ->
-      x.run()
+      x.run(results)
     )
+
+  member self.run() = 
+    self.run(TestResult())

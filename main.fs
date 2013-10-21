@@ -63,5 +63,15 @@ test "Setup is only run in the same context levet" <| fun () ->
       c.it "Inner test2" <| fun () ->
         ()
   c.run()
-  assertEqual !outerSetupRunCount 3
   assertEqual !innerSetupRunCount 2
+
+test "Run() should report test success" <| fun () ->
+  let c = TestCollection()
+  
+  c.describe "Ctx" <| fun () ->
+    c.it "Succeeds" <| fun () ->
+      ()
+
+  let result = TestResult()
+  c.run(result)
+  assertEqual (result.summary()) "1 run, 0 failed"
