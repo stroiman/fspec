@@ -75,3 +75,14 @@ test "Run() should report test success" <| fun () ->
   let result = TestResult()
   c.run(result)
   assertEqual (result.summary()) "1 run, 0 failed"
+
+test "run() should report test failure" <| fun () ->
+  let c = TestCollection()
+
+  c.describe "Ctx" <| fun () ->
+    c.it "Fails" <| fun () ->
+      failwithf "Just another failure"
+
+  let result = TestResult()
+  c.run(result)
+  assertEqual (result.summary()) "1 run, 1 failed"
