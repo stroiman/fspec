@@ -28,25 +28,6 @@ test "Calling run should run tests" <| fun() ->
   c.run()
   assertTrue !wasRun
 
-test "Setup is only run in the same context levet" <| fun () ->
-  let outerSetupRunCount = ref 0
-  let innerSetupRunCount = ref 0
-  let c = TestCollection()
-  c.describe "Ctx" <| fun () ->
-    c.before <| fun () ->
-      outerSetupRunCount := !outerSetupRunCount + 1
-    c.it "Outer test" <| fun () ->
-      ()
-    c.describe "Inner ctx" <| fun () ->
-      c.before <| fun () ->
-        innerSetupRunCount := !innerSetupRunCount + 1
-      c.it "Inner test" <| fun () ->
-        ()
-      c.it "Inner test2" <| fun () ->
-        ()
-  c.run()
-  assertEqual !innerSetupRunCount 2
-
 let c = TestCollection()
 let describe = c.describe
 let it = c.it
@@ -91,6 +72,25 @@ describe "TestCollection" <| fun() ->
         wasSetupWhenTestWasRun := !wasSetup
       run() |> ignore
       assertTrue !wasSetupWhenTestWasRun  
+
+    it "is only run for in same context, or nested context" <| fun () ->
+      let outerSetupRunCount = ref 0
+      let innerSetupRunCount = ref 0
+      col().describe "Ctx" <| fun () ->
+        col().before <| fun () ->
+          outerSetupRunCount := !outerSetupRunCount + 1
+        col().it "Outer test" <| fun () ->
+          ()
+        col().describe "Inner ctx" <| fun () ->
+          col().before <| fun () ->
+            innerSetupRunCount := !innerSetupRunCount + 1
+          col().it "Inner test" <| fun () ->
+            ()
+          col().it "Inner test2" <| fun () ->
+            ()
+      run() |> ignore
+      assertEqual !innerSetupRunCount 2
+      assertEqual !outerSetupRunCount 3
 
   describe "Run" <| fun () ->
     it "reports test failures" <| fun () ->
