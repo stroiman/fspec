@@ -8,13 +8,11 @@ let test (desc: string) (f: unit -> unit) =
 let assertEqual a b =
   if not (a = b) then
     failwithf "Not equal %A and %A" a b
-    ()
   ()
 
 let assertTrue value =
   if not value then
     failwithf "Value was false"
-    ()
   ()
 
 let assertFalse value =
@@ -92,12 +90,23 @@ test "run() should report test failure" <| fun () ->
   c.run(result)
   assertEqual (result.summary()) "1 run, 1 failed"
 
-test "TestResult - reports success - when no failures reported" <| fun () ->
-  let r = TestResult()
-  r.reportTestRun()
-  assertTrue (r.success())
+let c = TestCollection()
+let describe = c.describe
+let it = c.it
+let before = c.before
 
-test "TestResult - reports failure - when failures reported" <| fun () ->
-  let r = TestResult()
-  r.reportFailure()
-  assertFalse (r.success())
+describe "TestResult" <| fun() ->
+  describe "With no failures reported" <| fun () ->
+    it "Is a success" <| fun () ->
+      let r = TestResult()
+      assertTrue (r.success())
+
+  describe "With failures reported" <| fun() ->
+    it "Is a failure" <| fun () ->
+      let r = TestResult()
+      r.reportFailure()
+      assertFalse(r.success())
+
+let result = TestResult()
+c.run(result)
+printfn "%s" (result.summary())
