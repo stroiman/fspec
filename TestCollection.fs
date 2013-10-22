@@ -1,8 +1,13 @@
 module FSpec
 
+type TestResultType =
+  | Success
+  | Failure
+
 type TestResult() =
   let mutable noOfTestsRun = 0
   let mutable noOfFails = 0
+  let mutable output = ""
 
   member self.reportTestRun () =
     noOfTestsRun <- noOfTestsRun + 1
@@ -16,12 +21,23 @@ type TestResult() =
   member self.success() =
     noOfFails = 0
 
-type TestCollection(parent) =
+  member self.reportTestName name result =
+    let name2 = match result with
+                | Success -> sprintf "%s - passed" name
+                | Failure -> sprintf "%s - failed" name
+    output <- name2
+
+  member self.testOutput() =
+    output
+
+type Test = {Name: string; test: unit -> unit}
+
+type TestCollection(parent, name) =
   let mutable tests = []
   let mutable setups = []
   let mutable contexts = []
   let mutable current = None
-  new () = TestCollection(None)
+  new () = TestCollection(None, null)
 
   member self.init (f: unit -> 'a) : (unit -> 'a) =
     let value = ref None
@@ -37,7 +53,7 @@ type TestCollection(parent) =
 
   member self.describe (name: string) (f: unit -> unit) = 
     match current with 
-    | None -> let innerCollection = TestCollection(Some(self))
+    | None -> let innerCollection = TestCollection(Some(self), name)
               current <- Some(innerCollection)
               f()
               current <- None
@@ -51,7 +67,7 @@ type TestCollection(parent) =
 
   member self.it (name: string) (f: unit -> unit) = 
     match current with
-    | None    -> tests <- f::tests
+    | None    -> tests <- {Name = name; test = f}::tests
     | Some(v) -> v.it name f
 
   member self.perform_setup() =
@@ -60,14 +76,30 @@ type TestCollection(parent) =
     | Some(x) -> x.perform_setup()
     setups |> List.iter (fun y -> y())
 
+  member self.nameStack () =
+    match parent with
+    | None    -> []
+    | Some(x) -> name::x.nameStack()
+
   member self.run(results : TestResult) =
+    let rec printNameStack(stack) : string =
+        match stack with
+        | []    -> ""
+        | head::[] -> head
+        | head::tail ->sprintf "%s %s" (printNameStack(tail)) head
+
     tests |> List.iter (fun x -> 
       self.perform_setup()
       results.reportTestRun()
+      let nameStack = x.Name :: self.nameStack()
+      let name = printNameStack(nameStack)
       try
-        x()
+          x.test()
+          results.reportTestName name Success
       with
-      | x -> results.reportFailure()
+      | ex -> 
+          results.reportFailure()
+          results.reportTestName name Failure
     )
 
     contexts |> List.iter (fun x ->

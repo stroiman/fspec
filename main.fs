@@ -95,6 +95,14 @@ describe "TestCollection" <| fun() ->
       let result = run()
       assertEqual (result.summary()) "1 run, 0 failed"
 
+  describe "Running status" <| fun () ->
+    it "Is reported while running" <| fun () ->
+      col().describe "Some context" <| fun () ->
+        col().it "has some behavior" <| fun () ->
+          ()
+      let result = run()
+      assertEqual (result.testOutput()) "Some context has some behavior - passed"
+
 describe "TestResult" <| fun() ->
   describe "With no failures reported" <| fun () ->
     it "Is a success" <| fun () ->
