@@ -16,6 +16,8 @@ let assertFalse value =
     failwithf "Value was true"
   ()
 
+let pass () = ()
+
 let c = TestCollection()
 let describe = c.describe
 let it = c.it
@@ -98,8 +100,7 @@ describe "TestCollection" <| fun() ->
   describe "Running status" <| fun () ->
     it "Is reported while running" <| fun () ->
       col().describe "Some context" <| fun () ->
-        col().it "has some behavior" <| fun () ->
-          ()
+        col().it "has some behavior" pass
       let result = run()
       assertEqual (result.testOutput()) "Some context has some behavior - passed"
 
