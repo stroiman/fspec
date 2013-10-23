@@ -3,6 +3,7 @@ open FSpec
 
 let assertEqual a b =
   if not (a = b) then
+    printfn "Not equal %A and %A" a b
     failwithf "Not equal %A and %A" a b
   ()
 
@@ -96,6 +97,43 @@ describe "TestCollection" <| fun() ->
 
       let result = run()
       assertEqual (result.summary()) "1 run, 0 failed"
+
+    it "runs the tests in the right order" <| fun() ->
+        let no = ref 0
+        let testNo () =
+            no := !no + 1
+            !no
+        let test1No = ref 0
+        let test2No = ref 0
+        col().describe("context") <| fun() ->
+            col().it("has test 1") <| fun() ->
+                test1No := testNo()
+            col().it("has test 2") <| fun() ->
+                test2No := testNo()
+                ()
+
+        run() |> ignore
+        assertEqual !test1No 1
+        assertEqual !test2No 2
+
+    it "runs the contexts in the right order" <| fun() ->
+        let no = ref 0
+        let testNo () =
+            no := !no + 1
+            !no
+        let test1No = ref 0
+        let test2No = ref 0
+        col().describe("context") <| fun() ->
+            col().it("has test 1") <| fun() ->
+                test1No := testNo()
+        col().describe("other context") <| fun() ->
+            col().it("has test 2") <| fun() ->
+                test2No := testNo()
+                ()
+
+        run() |> ignore
+        assertEqual !test1No 1
+        assertEqual !test2No 2
 
   describe "Running status" <| fun () ->
     it "Is reported while running" <| fun () ->

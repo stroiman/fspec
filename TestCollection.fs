@@ -88,7 +88,7 @@ type TestCollection(parent, name) =
         | head::[] -> head
         | head::tail ->sprintf "%s %s" (printNameStack(tail)) head
 
-    tests |> List.iter (fun x -> 
+    tests |> List.rev |> List.iter (fun x -> 
       self.perform_setup()
       results.reportTestRun()
       let nameStack = x.Name :: self.nameStack()
@@ -102,7 +102,7 @@ type TestCollection(parent, name) =
           results.reportTestName name Failure
     )
 
-    contexts |> List.iter (fun x ->
+    contexts |> List.rev |> List.iter (fun x ->
       x.run(results)
     )
 
