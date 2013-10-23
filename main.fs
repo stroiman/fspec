@@ -5,17 +5,14 @@ let assertEqual a b =
   if not (a = b) then
     printfn "Not equal %A and %A" a b
     failwithf "Not equal %A and %A" a b
-  ()
 
 let assertTrue value =
   if not value then
     failwithf "Value was false"
-  ()
 
 let assertFalse value =
   if value then
     failwithf "Value was true"
-  ()
 
 let pass () = ()
 
