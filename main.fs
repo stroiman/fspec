@@ -70,15 +70,12 @@ describe "TestCollection" <| fun() ->
       col().describe "Ctx" <| fun () ->
         col().before <| fun () ->
           outerSetupRunCount := !outerSetupRunCount + 1
-        col().it "Outer test" <| fun () ->
-          ()
+        col().it "Outer test" pass
         col().describe "Inner ctx" <| fun () ->
           col().before <| fun () ->
             innerSetupRunCount := !innerSetupRunCount + 1
-          col().it "Inner test" <| fun () ->
-            ()
-          col().it "Inner test2" <| fun () ->
-            ()
+          col().it "Inner test" pass
+          col().it "Inner test2" pass
       run() |> ignore
       assertEqual !innerSetupRunCount 2
       assertEqual !outerSetupRunCount 3
@@ -92,8 +89,7 @@ describe "TestCollection" <| fun() ->
       assertEqual (result.summary()) "1 run, 1 failed"
 
     it "reports test success" <| fun() ->
-      col().it "Is a success" <| fun() ->
-        ()
+      col().it "Is a success" pass
 
       let result = run()
       assertEqual (result.summary()) "1 run, 0 failed"
@@ -110,7 +106,6 @@ describe "TestCollection" <| fun() ->
                 test1No := testNo()
             col().it("has test 2") <| fun() ->
                 test2No := testNo()
-                ()
 
         run() |> ignore
         assertEqual !test1No 1
@@ -129,7 +124,6 @@ describe "TestCollection" <| fun() ->
         col().describe("other context") <| fun() ->
             col().it("has test 2") <| fun() ->
                 test2No := testNo()
-                ()
 
         run() |> ignore
         assertEqual !test1No 1
