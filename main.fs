@@ -15,6 +15,7 @@ let assertFalse value =
     failwithf "Value was true"
 
 let pass () = ()
+let fail () = failwithf "Test failure"
 
 let c = TestCollection()
 let describe = c.describe
@@ -44,117 +45,116 @@ describe "TestCollection" <| fun() ->
     assertEqual !initCount 2
 
 describe "TestCollection" <| fun() ->
-  let col = init (fun () -> TestCollection())
-  let res = init (fun () -> TestReport())
-  let run () =
-    col().run(res())
-    res()
+    let col = init (fun () -> TestCollection())
+    let res = init (fun () -> TestReport())
+    let run () =
+        col().run(res())
+        res()
 
-  describe "Setup" <| fun () ->
-    it "runs before the test is run" <| fun () ->
-      let wasSetupWhenTestWasRun = ref false
-      let wasSetup = ref false
-      col().before <| fun() ->
-        wasSetup := true
-      col().it "dummy" <| fun() ->
-        wasSetupWhenTestWasRun := !wasSetup
-      run() |> ignore
-      assertTrue !wasSetupWhenTestWasRun  
+    describe "Setup" <| fun () ->
+        it "runs before the test is run" <| fun () ->
+            let wasSetupWhenTestWasRun = ref false
+            let wasSetup = ref false
+            col().before <| fun() ->
+                wasSetup := true
+            col().it "dummy" <| fun() ->
+                wasSetupWhenTestWasRun := !wasSetup
+            run() |> ignore
+            assertTrue !wasSetupWhenTestWasRun  
 
-    it "is only run for in same context, or nested context" <| fun () ->
-      let outerSetupRunCount = ref 0
-      let innerSetupRunCount = ref 0
-      col().describe "Ctx" <| fun () ->
-        col().before <| fun () ->
-          outerSetupRunCount := !outerSetupRunCount + 1
-        col().it "Outer test" pass
-        col().describe "Inner ctx" <| fun () ->
-          col().before <| fun () ->
-            innerSetupRunCount := !innerSetupRunCount + 1
-          col().it "Inner test" pass
-          col().it "Inner test2" pass
-      run() |> ignore
-      assertEqual !innerSetupRunCount 2
-      assertEqual !outerSetupRunCount 3
+        it "is only run for in same context, or nested context" <| fun () ->
+            let outerSetupRunCount = ref 0
+            let innerSetupRunCount = ref 0
+            col().describe "Ctx" <| fun () ->
+                col().before <| fun () ->
+                    outerSetupRunCount := !outerSetupRunCount + 1
+                col().it "Outer test" pass
+                col().describe "Inner ctx" <| fun () ->
+                    col().before <| fun () ->
+                        innerSetupRunCount := !innerSetupRunCount + 1
+                    col().it "Inner test" pass
+                    col().it "Inner test2" pass
+            run() |> ignore
+            assertEqual !innerSetupRunCount 2
+            assertEqual !outerSetupRunCount 3
 
-  describe "Run" <| fun () ->
-    it "reports test failures" <| fun () ->
-      col().it "Is a failure" <| fun () ->
-        failwithf "Just another failure"
+    describe "Run" <| fun () ->
+        it "reports test failures" <| fun () ->
+            col().it "Is a failure" fail
 
-      let report = run()
-      assertEqual (report.summary()) "1 run, 1 failed"
+            let report = run()
+            assertEqual (report.summary()) "1 run, 1 failed"
 
-    it "reports test success" <| fun() ->
-      col().it "Is a success" pass
+        it "reports test success" <| fun() ->
+            col().it "Is a success" pass
 
-      let report = run()
-      assertEqual (report.summary()) "1 run, 0 failed"
+            let report = run()
+            assertEqual (report.summary()) "1 run, 0 failed"
 
-    it "runs the tests in the right order" <| fun() ->
-        let no = ref 0
-        let testNo () =
-            no := !no + 1
-            !no
-        let test1No = ref 0
-        let test2No = ref 0
-        col().describe("context") <| fun() ->
-            col().it("has test 1") <| fun() ->
-                test1No := testNo()
-            col().it("has test 2") <| fun() ->
-                test2No := testNo()
+        it "runs the tests in the right order" <| fun() ->
+            let no = ref 0
+            let testNo () =
+                no := !no + 1
+                !no
+            let test1No = ref 0
+            let test2No = ref 0
+            col().describe("context") <| fun() ->
+                col().it("has test 1") <| fun() ->
+                    test1No := testNo()
+                col().it("has test 2") <| fun() ->
+                    test2No := testNo()
 
-        run() |> ignore
-        assertEqual !test1No 1
-        assertEqual !test2No 2
+            run() |> ignore
+            assertEqual !test1No 1
+            assertEqual !test2No 2
 
-    it "runs the contexts in the right order" <| fun() ->
-        let no = ref 0
-        let testNo () =
-            no := !no + 1
-            !no
-        let test1No = ref 0
-        let test2No = ref 0
-        col().describe("context") <| fun() ->
-            col().it("has test 1") <| fun() ->
-                test1No := testNo()
-        col().describe("other context") <| fun() ->
-            col().it("has test 2") <| fun() ->
-                test2No := testNo()
+        it "runs the contexts in the right order" <| fun() ->
+            let no = ref 0
+            let testNo () =
+                no := !no + 1
+                !no
+            let test1No = ref 0
+            let test2No = ref 0
+            col().describe("context") <| fun() ->
+                col().it("has test 1") <| fun() ->
+                    test1No := testNo()
+            col().describe("other context") <| fun() ->
+                col().it("has test 2") <| fun() ->
+                    test2No := testNo()
 
-        run() |> ignore
-        assertEqual !test1No 1
-        assertEqual !test2No 2
+            run() |> ignore
+            assertEqual !test1No 1
+            assertEqual !test2No 2
 
-  describe "Running status" <| fun () ->
-    it "Is reported while running" <| fun () ->
-      col().describe "Some context" <| fun () ->
-        col().it "has some behavior" pass
-      let report = run()
-      assertEqual (report.testOutput()) ["Some context has some behavior - passed"]
+    describe "Running status" <| fun () ->
+        it "Is reported while running" <| fun () ->
+            col().describe "Some context" <| fun () ->
+                col().it "has some behavior" pass
+            let report = run()
+            assertEqual (report.testOutput()) ["Some context has some behavior - passed"]
 
-    it "Reports multiple test results" <| fun () ->
-      col().describe "Some context" <| fun() ->
-        col().it "has some behavior" pass
-        col().it "has some other behavior" pass
+        it "Reports multiple test results" <| fun () ->
+            col().describe "Some context" <| fun() ->
+                col().it "has some behavior" pass
+                col().it "has some other behavior" pass
 
-      let report = run()
-      let actual = report.testOutput()
-      let expected = ["Some context has some behavior - passed";
-                      "Some context has some other behavior - passed"]
-      assertEqual actual expected
+            let report = run()
+            let actual = report.testOutput()
+            let expected = ["Some context has some behavior - passed";
+                            "Some context has some other behavior - passed"]
+            assertEqual actual expected
 
 describe "TestReport" <| fun() ->
-  describe "With no failures reported" <| fun () ->
-    it "Is a success" <| fun () ->
-      let r = TestReport()
-      assertTrue (r.success())
+    describe "With no failures reported" <| fun () ->
+        it "Is a success" <| fun () ->
+            let r = TestReport()
+            assertTrue (r.success())
 
-  describe "With failures reported" <| fun() ->
-    it "Is a failure" <| fun () ->
-      let r = TestReport()
-      r.reportFailure()
-      assertFalse(r.success())
+    describe "With failures reported" <| fun() ->
+        it "Is a failure" <| fun () ->
+            let r = TestReport()
+            r.reportFailure()
+            assertFalse(r.success())
 
 let report = TestReport()
 c.run(report)
