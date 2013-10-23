@@ -4,7 +4,7 @@ type TestResultType =
   | Success
   | Failure
 
-type TestResult() =
+type TestReport() =
   let mutable noOfTestsRun = 0
   let mutable noOfFails = 0
   let mutable output = []
@@ -81,7 +81,7 @@ type TestCollection(parent, name) =
     | None    -> []
     | Some(x) -> name::x.nameStack()
 
-  member self.run(results : TestResult) =
+  member self.run(results : TestReport) =
     let rec printNameStack(stack) : string =
         match stack with
         | []    -> ""
@@ -107,4 +107,4 @@ type TestCollection(parent, name) =
     )
 
   member self.run() = 
-    self.run(TestResult())
+    self.run(TestReport())

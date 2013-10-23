@@ -45,7 +45,7 @@ describe "TestCollection" <| fun() ->
 
 describe "TestCollection" <| fun() ->
   let col = init (fun () -> TestCollection())
-  let res = init (fun () -> TestResult())
+  let res = init (fun () -> TestReport())
   let run () =
     col().run(res())
     res()
@@ -82,14 +82,14 @@ describe "TestCollection" <| fun() ->
       col().it "Is a failure" <| fun () ->
         failwithf "Just another failure"
 
-      let result = run()
-      assertEqual (result.summary()) "1 run, 1 failed"
+      let report = run()
+      assertEqual (report.summary()) "1 run, 1 failed"
 
     it "reports test success" <| fun() ->
       col().it "Is a success" pass
 
-      let result = run()
-      assertEqual (result.summary()) "1 run, 0 failed"
+      let report = run()
+      assertEqual (report.summary()) "1 run, 0 failed"
 
     it "runs the tests in the right order" <| fun() ->
         let no = ref 0
@@ -130,32 +130,32 @@ describe "TestCollection" <| fun() ->
     it "Is reported while running" <| fun () ->
       col().describe "Some context" <| fun () ->
         col().it "has some behavior" pass
-      let result = run()
-      assertEqual (result.testOutput()) ["Some context has some behavior - passed"]
+      let report = run()
+      assertEqual (report.testOutput()) ["Some context has some behavior - passed"]
 
     it "Reports multiple test results" <| fun () ->
       col().describe "Some context" <| fun() ->
         col().it "has some behavior" pass
         col().it "has some other behavior" pass
 
-      let result = run()
-      let actual = result.testOutput()
+      let report = run()
+      let actual = report.testOutput()
       let expected = ["Some context has some behavior - passed";
                       "Some context has some other behavior - passed"]
       assertEqual actual expected
 
-describe "TestResult" <| fun() ->
+describe "TestReport" <| fun() ->
   describe "With no failures reported" <| fun () ->
     it "Is a success" <| fun () ->
-      let r = TestResult()
+      let r = TestReport()
       assertTrue (r.success())
 
   describe "With failures reported" <| fun() ->
     it "Is a failure" <| fun () ->
-      let r = TestResult()
+      let r = TestReport()
       r.reportFailure()
       assertFalse(r.success())
 
-let result = TestResult()
-c.run(result)
-printfn "%s" (result.summary())
+let report = TestReport()
+c.run(report)
+printfn "%s" (report.summary())
