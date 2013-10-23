@@ -140,7 +140,18 @@ describe "TestCollection" <| fun() ->
       col().describe "Some context" <| fun () ->
         col().it "has some behavior" pass
       let result = run()
-      assertEqual (result.testOutput()) "Some context has some behavior - passed"
+      assertEqual (result.testOutput()) ["Some context has some behavior - passed"]
+
+    it "Reports multiple test results" <| fun () ->
+      col().describe "Some context" <| fun() ->
+        col().it "has some behavior" pass
+        col().it "has some other behavior" pass
+
+      let result = run()
+      let actual = result.testOutput()
+      let expected = ["Some context has some behavior - passed";
+                      "Some context has some other behavior - passed"]
+      assertEqual actual expected
 
 describe "TestResult" <| fun() ->
   describe "With no failures reported" <| fun () ->

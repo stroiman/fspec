@@ -7,7 +7,7 @@ type TestResultType =
 type TestResult() =
   let mutable noOfTestsRun = 0
   let mutable noOfFails = 0
-  let mutable output = ""
+  let mutable output = []
 
   member self.reportTestRun () =
     noOfTestsRun <- noOfTestsRun + 1
@@ -25,10 +25,10 @@ type TestResult() =
     let name2 = match result with
                 | Success -> sprintf "%s - passed" name
                 | Failure -> sprintf "%s - failed" name
-    output <- name2
+    output <- name2::output
 
   member self.testOutput() =
-    output
+    output |> List.rev
 
 type Test = {Name: string; test: unit -> unit}
 
