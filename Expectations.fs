@@ -8,8 +8,8 @@ type AssertionErrorInfo = {
 
 exception AssertionError of AssertionErrorInfo
 
-type Matcher = {
-    matcherFunc : Object -> Object -> bool
+type Matcher<'a,'b> = {
+    matcherFunc : 'a -> 'b -> bool
     }
 
 let equal = {
@@ -17,8 +17,19 @@ let equal = {
         actual.Equals(expected)
     }
 
+let greaterThan = {
+    matcherFunc = fun actual expected ->
+        actual > expected
+    }
+
+let should (matcher : Matcher<'a,'b>) expected actual =
+    let success = matcher.matcherFunc actual expected
+    if not success then
+        let info = { Expected = expected.ToString(); Actual = actual.ToString() }
+        raise (AssertionError(info))
+
 type System.Object with
-    member self.should (matcher : Matcher) expected =
+    member self.should (matcher : Matcher<Object,'b>) expected =
         let success = matcher.matcherFunc self expected
         if not success then
             let info = { Expected = expected.ToString(); Actual = self.ToString() }

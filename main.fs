@@ -188,6 +188,8 @@ describe "Assertion helpers" <| fun() ->
                 failwithf "No exception throws"
             with
                 | AssertionError(_) -> ()
+    describe "greaterThan" <| fun() ->
+        5 |> should greaterThan 4
 
 let report = TestReport()
 c.run(report)
