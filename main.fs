@@ -188,4 +188,5 @@ describe "Assertion helpers" <| fun() ->
 
 let report = TestReport()
 c.run(report)
+report.failedTests() |> List.iter (fun x -> printfn "%s" x)
 printfn "%s" (report.summary())
