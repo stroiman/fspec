@@ -27,7 +27,8 @@ type TestReport() =
         let name2 = match result with
                     | Success -> sprintf "%s - passed" name
                     | Error -> sprintf "%s - failed" name
-                    | Failure(_) -> sprintf "%s - failed - expected value: 6" name
+                    | Failure(errorInfo) -> 
+                        sprintf "%s - failed - expected value: %s" name errorInfo.Expected
         output <- name2::output
 
     member self.testOutput() =
