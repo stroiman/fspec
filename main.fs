@@ -196,26 +196,19 @@ describe "Assertion helpers" <| fun() ->
                 |> should throw ()
             
     describe "throw matcher" <| fun() ->
+        let thrown = ref false
+        let test (x : unit -> unit) =
+            try
+                x |> should throw ()
+            with
+                | _ -> thrown := true
+
         it "passed when an exception is thrown" <| fun () ->
-            let mutable thrown = false
-            let f = fun () ->
-                failwith "error"
-                ()
-            try
-                f |> should throw ()
-            with
-                | _ -> 
-                    thrown <- true
-            thrown.should equal false
+            (fun () -> failwith "error") |> test
+            !thrown |> should equal false
         it "fails when no exception is thrown" <| fun() ->
-            let mutable thrown = false
-            let f = fun () -> ()
-            try
-                f |> should throw ()
-            with
-                | _ ->
-                    thrown <- true
-            thrown |> should equal true
+            (fun () -> ()) |> test
+            !thrown |> should equal true
 
 let report = TestReport()
 c.run(report)
