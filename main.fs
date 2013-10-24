@@ -1,5 +1,6 @@
 module Main
 open FSpec
+open Expectations
 
 let assertEqual a b =
   if not (a = b) then
@@ -155,6 +156,17 @@ describe "TestReport" <| fun() ->
             let r = TestReport()
             r.reportFailure()
             assertFalse(r.success())
+
+describe "Assertion helpers" <| fun() ->
+    describe "equals" <| fun() ->
+        it "passes when objects equal" <| fun() ->
+            (5).should equal 5
+        it "fails when the objects are not equal" <| fun() ->
+            try
+                (5).should equal 6
+                failwithf "No exception throws"
+            with
+                | AssertionError -> ()
 
 let report = TestReport()
 c.run(report)
