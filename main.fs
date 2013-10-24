@@ -27,25 +27,25 @@ let before = c.before
 let init = c.init
 
 describe "TestCollection" <| fun() ->
-  it "handles lazy initialization" <| fun () ->
-    let c = TestCollection()
-    let initCount = ref 0
-    c.describe "Ctx" <| fun () ->
-      let value = c.init <| fun () ->
-        initCount := !initCount + 1
-        "dummy"
+    it "handles lazy initialization" <| fun () ->
+        let c = TestCollection()
+        let initCount = ref 0
+        c.describe "Ctx" <| fun () ->
+            let value = c.init <| fun () ->
+                initCount := !initCount + 1
+                "dummy"
 
-      c.it "uses value" <| fun () ->
-        let x = value()
-        ()
+            c.it "uses value" <| fun () ->
+                let x = value()
+                ()
 
-      c.it "uses value twice" <| fun () ->
-        let x = value()
-        let y = value()
-        ()
+            c.it "uses value twice" <| fun () ->
+                let x = value()
+                let y = value()
+                ()
 
-    c.run()
-    !initCount |> should equal 2
+        c.run()
+        !initCount |> should equal 2
 
 describe "TestCollection" <| fun() ->
     let col = init (fun () -> TestCollection())
