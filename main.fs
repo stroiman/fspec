@@ -185,26 +185,20 @@ describe "Assertion helpers" <| fun() ->
         it "passes when objects equal" <| fun() ->
             (5).should equal 5
         it "fails when the objects are not equal" <| fun() ->
-            try
-                (5).should equal 6
-                failwithf "No exception throws"
-            with
-                | AssertionError(_) -> ()
+            (fun () -> (5).should equal 6)
+                |> should throw ()
+
     describe "greaterThan" <| fun() ->
         it "passes when actual is greater than expected" <| fun() ->
             5 |> should be.greaterThan 4
         it "fails when actual is less than expected" <| fun() ->
-            try
-                5 |> should be.greaterThan 6
-                failwithf "No exception thrown"
-            with
-                | AssertionError(_) -> ()
+            (fun () -> 5 |> should be.greaterThan 6)
+                |> should throw ()
+        
         it "fails when actual is equal to expected" <| fun() ->
-            try
-                5 |> should be.greaterThan 5
-                failwithf "No exception thrown"
-            with
-                | AssertionError(_) -> ()
+            (fun () -> 5 |> should be.greaterThan 5)
+                |> should throw ()
+
     describe "throw matcher" <| fun() ->
         it "passed when an exception is thrown" <| fun () ->
             let mutable thrown = false
