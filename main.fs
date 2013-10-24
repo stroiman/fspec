@@ -2,10 +2,6 @@ module Main
 open FSpec
 open Expectations
 
-let assertFalse value =
-  if value then
-    failwithf "Value was true"
-
 let assertMatches actual pattern =
     let regex = System.Text.RegularExpressions.Regex pattern
     if not (regex.IsMatch actual) then
@@ -178,7 +174,7 @@ describe "TestReport" <| fun() ->
         it "Is a failure" <| fun () ->
             let r = TestReport()
             r.reportFailure()
-            assertFalse(r.success())
+            r.success() |> should equal false
 
 describe "Assertion helpers" <| fun() ->
     describe "equals" <| fun() ->
@@ -210,7 +206,7 @@ describe "Assertion helpers" <| fun() ->
             with
                 | _ -> 
                     thrown <- true
-            assertFalse thrown
+            thrown.should equal false
         it "fails when no exception is thrown" <| fun() ->
             let mutable thrown = false
             let f = fun () -> ()
