@@ -54,13 +54,17 @@ describe "TestCollection" <| fun() ->
         col().run(res())
         res()
 
+    let _describe x = col().describe x
+    let _it x = col().it x
+    let _before x = col().before x
+
     describe "Setup" <| fun () ->
         it "runs before the test is run" <| fun () ->
             let wasSetupWhenTestWasRun = ref false
             let wasSetup = ref false
-            col().before <| fun() ->
+            _before <| fun() ->
                 wasSetup := true
-            col().it "dummy" <| fun() ->
+            _it "dummy" <| fun() ->
                 wasSetupWhenTestWasRun := !wasSetup
             run() |> ignore
             assertTrue !wasSetupWhenTestWasRun  
@@ -68,28 +72,28 @@ describe "TestCollection" <| fun() ->
         it "is only run for in same context, or nested context" <| fun () ->
             let outerSetupRunCount = ref 0
             let innerSetupRunCount = ref 0
-            col().describe "Ctx" <| fun () ->
-                col().before <| fun () ->
+            _describe "Ctx" <| fun () ->
+                _before <| fun () ->
                     outerSetupRunCount := !outerSetupRunCount + 1
-                col().it "Outer test" pass
-                col().describe "Inner ctx" <| fun () ->
-                    col().before <| fun () ->
+                _it "Outer test" pass
+                _describe "Inner ctx" <| fun () ->
+                    _before <| fun () ->
                         innerSetupRunCount := !innerSetupRunCount + 1
-                    col().it "Inner test" pass
-                    col().it "Inner test2" pass
+                    _it "Inner test" pass
+                    _it "Inner test2" pass
             run() |> ignore
             !innerSetupRunCount |> should equal 2
             !outerSetupRunCount |> should equal 3
 
     describe "Run" <| fun () ->
         it "reports test failures" <| fun () ->
-            col().it "Is a failure" fail
+            _it "Is a failure" fail
 
             let report = run()
             report.summary() |> should equal "1 run, 1 failed"
 
         it "reports test success" <| fun() ->
-            col().it "Is a success" pass
+            _it "Is a success" pass
 
             let report = run()
             report.summary() |> should equal  "1 run, 0 failed"
@@ -101,10 +105,10 @@ describe "TestCollection" <| fun() ->
                 !no
             let test1No = ref 0
             let test2No = ref 0
-            col().describe("context") <| fun() ->
-                col().it("has test 1") <| fun() ->
+            _describe("context") <| fun() ->
+                _it("has test 1") <| fun() ->
                     test1No := testNo()
-                col().it("has test 2") <| fun() ->
+                _it("has test 2") <| fun() ->
                     test2No := testNo()
 
             run() |> ignore
@@ -118,11 +122,11 @@ describe "TestCollection" <| fun() ->
                 !no
             let test1No = ref 0
             let test2No = ref 0
-            col().describe("context") <| fun() ->
-                col().it("has test 1") <| fun() ->
+            _describe("context") <| fun() ->
+                _it("has test 1") <| fun() ->
                     test1No := testNo()
-            col().describe("other context") <| fun() ->
-                col().it("has test 2") <| fun() ->
+            _describe("other context") <| fun() ->
+                _it("has test 2") <| fun() ->
                     test2No := testNo()
 
             run() |> ignore
@@ -131,15 +135,15 @@ describe "TestCollection" <| fun() ->
 
     describe "Running status" <| fun () ->
         it "Is reported while running" <| fun () ->
-            col().describe "Some context" <| fun () ->
-                col().it "has some behavior" pass
+            _describe "Some context" <| fun () ->
+                _it "has some behavior" pass
             let report = run()
             report.testOutput() |> should equal ["Some context has some behavior - passed"]
 
         it "Reports multiple test results" <| fun () ->
-            col().describe "Some context" <| fun() ->
-                col().it "has some behavior" pass
-                col().it "has some other behavior" pass
+            _describe "Some context" <| fun() ->
+                _it "has some behavior" pass
+                _it "has some other behavior" pass
 
             let report = run()
             let actual = report.testOutput()
@@ -149,21 +153,21 @@ describe "TestCollection" <| fun() ->
 
     describe "Failed tests" <| fun() ->
         it "Writes the output to the test report" <| fun() ->
-            col().it "Is a failing test" <| fun() ->
+            _it "Is a failing test" <| fun() ->
                 (5).should equal 6
             let result = run()
             let actual = result.failedTests() |> List.reduce (+)
             assertMatches actual "expected 5 to equal 6"
 
         it "write the right output for comparison tests" <| fun() ->
-            col().it "Is a failing test" <| fun() ->
+            _it "Is a failing test" <| fun() ->
                 5 |> should be.greaterThan 6
             let result = run()
             let actual = result.failedTests() |> List.reduce (+)
             assertMatches actual "expected 5 to be greater than 6"
 
         it "Is empty when no tests fail" <| fun() ->
-            col().it "Is a passing test" pass
+            _it "Is a passing test" pass
             let result = run()
             let actual = result.failedTests() |> List.length
             actual.should equal 0

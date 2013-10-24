@@ -59,3 +59,5 @@ module be =
         writeException = fun a b -> 
             sprintf "expected %s to be greater than %s" (a.ToString()) (b.ToString())
         }
+
+    let equalTo = equal
