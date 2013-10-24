@@ -2,13 +2,6 @@ module Main
 open FSpec
 open Expectations
 
-let assertMatches actual pattern =
-    let regex = System.Text.RegularExpressions.Regex pattern
-    if not (regex.IsMatch actual) then
-        let msg = sprintf "String was not a match. Pattern %s - actual %s" pattern actual
-        printfn "%s" msg
-        failwithf "%s" msg
-
 let pass () = ()
 let fail () = failwithf "Test failure"
 
@@ -149,14 +142,14 @@ describe "TestCollection" <| fun() ->
                 (5).should equal 6
             let result = run()
             let actual = result.failedTests() |> List.reduce (+)
-            assertMatches actual "expected 5 to equal 6"
+            actual |> should matchRegex "expected 5 to equal 6"
 
         it "write the right output for comparison tests" <| fun() ->
             _it "Is a failing test" <| fun() ->
                 5 |> should be.greaterThan 6
             let result = run()
             let actual = result.failedTests() |> List.reduce (+)
-            assertMatches actual "expected 5 to be greater than 6"
+            actual |> should matchRegex "expected 5 to be greater than 6"
 
         it "Is empty when no tests fail" <| fun() ->
             _it "Is a passing test" pass
@@ -195,6 +188,13 @@ describe "Assertion helpers" <| fun() ->
             (fun () -> 5 |> should be.greaterThan 5)
                 |> should throw ()
 
+    describe "matches" <| fun() ->
+        it "passes when the input matches the pattern" <| fun() ->
+            "Some strange expression" |> should matchRegex "strange"
+        it "fails when the input does not match the pattern" <| fun() ->
+            (fun () -> "some value" |> should matchRegex "invalidPattern")
+                |> should throw ()
+            
     describe "throw matcher" <| fun() ->
         it "passed when an exception is thrown" <| fun () ->
             let mutable thrown = false

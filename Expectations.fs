@@ -21,6 +21,18 @@ let equal = {
         sprintf "expected %s to equal %s" (a.ToString()) (b.ToString())
     }
 
+let matchRegex = {
+    matcherFunc = fun actual expected ->
+        let regex = System.Text.RegularExpressions.Regex expected
+        if regex.IsMatch actual then
+            true
+        else
+            false
+        
+    writeException = fun a b ->
+        sprintf "expected %s to match expression %s" a b
+}
+
 let should (matcher : Matcher<'a,'b>) expected actual =
     let success = matcher.matcherFunc actual expected
     if not success then
