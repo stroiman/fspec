@@ -1,7 +1,10 @@
 ﻿module Expectations
 open System
 
-type AssertionErrorInfo = { Expected: string }
+type AssertionErrorInfo = { 
+    Expected: string 
+    Actual: string
+}
 
 exception AssertionError of AssertionErrorInfo
 
@@ -18,5 +21,5 @@ type System.Object with
     member self.should (matcher : Matcher) expected =
         let success = matcher.matcherFunc self expected
         if not success then
-            let info = { Expected = expected.ToString() }
+            let info = { Expected = expected.ToString(); Actual = self.ToString() }
             raise (AssertionError(info))

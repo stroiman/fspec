@@ -29,7 +29,7 @@ type TestReport() =
                     | Success -> sprintf "%s - passed" name
                     | Error -> sprintf "%s - failed" name
                     | Failure(errorInfo) -> 
-                        sprintf "%s - failed - expected value: %s" name errorInfo.Expected
+                        sprintf "%s - failed - expected %s to equal %s" name errorInfo.Actual errorInfo.Expected
         match result with
             | Success -> ()
             | _ -> failed <- name2::failed
