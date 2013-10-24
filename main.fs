@@ -2,10 +2,6 @@ module Main
 open FSpec
 open Expectations
 
-let assertTrue value =
-  if not value then
-    failwithf "Value was false"
-
 let assertFalse value =
   if value then
     failwithf "Value was true"
@@ -67,7 +63,7 @@ describe "TestCollection" <| fun() ->
             _it "dummy" <| fun() ->
                 wasSetupWhenTestWasRun := !wasSetup
             run() |> ignore
-            assertTrue !wasSetupWhenTestWasRun  
+            !wasSetupWhenTestWasRun |> should equal true
 
         it "is only run for in same context, or nested context" <| fun () ->
             let outerSetupRunCount = ref 0
@@ -176,7 +172,7 @@ describe "TestReport" <| fun() ->
     describe "With no failures reported" <| fun () ->
         it "Is a success" <| fun () ->
             let r = TestReport()
-            assertTrue (r.success())
+            r.success() |> should equal true
 
     describe "With failures reported" <| fun() ->
         it "Is a failure" <| fun () ->
@@ -223,7 +219,7 @@ describe "Assertion helpers" <| fun() ->
             with
                 | _ ->
                     thrown <- true
-            assertTrue thrown
+            thrown |> should equal true
 
 let report = TestReport()
 c.run(report)
