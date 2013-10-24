@@ -10,6 +10,7 @@ type TestReport() =
     let mutable noOfTestsRun = 0
     let mutable noOfFails = 0
     let mutable output = []
+    let mutable failed = []
 
     member self.reportTestRun () =
         noOfTestsRun <- noOfTestsRun + 1
@@ -29,10 +30,16 @@ type TestReport() =
                     | Error -> sprintf "%s - failed" name
                     | Failure(errorInfo) -> 
                         sprintf "%s - failed - expected value: %s" name errorInfo.Expected
+        match result with
+            | Success -> ()
+            | _ -> failed <- name2::failed
         output <- name2::output
 
     member self.testOutput() =
         output |> List.rev
+
+    member self.failedTests() = 
+        failed |> List.rev
 
 type Test = {Name: string; test: unit -> unit}
 

@@ -155,8 +155,13 @@ describe "TestCollection" <| fun() ->
             col().it "Is a failing test" <| fun() ->
                 (5).should equal 6
             let result = run()
-            let actual = result.testOutput() |> List.reduce (+)
+            let actual = result.failedTests() |> List.reduce (+)
             assertMatches actual "expected value: 6"
+        it "Is empty when no tests fail" <| fun() ->
+            col().it "Is a passing test" pass
+            let result = run()
+            let actual = result.failedTests() |> List.length
+            actual.should equal 0
 
 describe "TestReport" <| fun() ->
     describe "With no failures reported" <| fun () ->
