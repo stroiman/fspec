@@ -184,7 +184,20 @@ describe "Assertion helpers" <| fun() ->
             with
                 | AssertionError(_) -> ()
     describe "greaterThan" <| fun() ->
-        5 |> should be.greaterThan 4
+        it "passes when actual is greater than expected" <| fun() ->
+            5 |> should be.greaterThan 4
+        it "fails when actual is less than expected" <| fun() ->
+            try
+                5 |> should be.greaterThan 6
+                failwithf "No exception thrown"
+            with
+                | AssertionError(_) -> ()
+        it "fails when actual is equal to expected" <| fun() ->
+            try
+                5 |> should be.greaterThan 5
+                failwithf "No exception thrown"
+            with
+                | AssertionError(_) -> ()
 
 let report = TestReport()
 c.run(report)
