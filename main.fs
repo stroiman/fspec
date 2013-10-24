@@ -70,6 +70,23 @@ describe "TestCollection" <| fun() ->
             !innerSetupRunCount |> should equal 2
             !outerSetupRunCount |> should equal 3
 
+        it "runs the inner setup before the outer setup" <| fun () ->
+            let stepNo = ref 0
+            let outerSetupStep = ref 0
+            let innerSetupStep = ref 0
+            let nextStep () =
+                stepNo := !stepNo + 1
+                !stepNo
+            _describe "outer ctx" <| fun () ->
+                _before <| fun () -> 
+                    outerSetupStep := nextStep()
+                _describe "inner ctx" <| fun() ->
+                    _before <| fun () -> innerSetupStep := nextStep()
+                    _it "has a test" pass
+            run() |> ignore
+            !outerSetupStep |> should equal 1        
+            !innerSetupStep |> should equal 2
+
     describe "Run" <| fun () ->
         it "reports test failures" <| fun () ->
             _it "Is a failure" fail
@@ -191,6 +208,7 @@ describe "Assertion helpers" <| fun() ->
     describe "matches" <| fun() ->
         it "passes when the input matches the pattern" <| fun() ->
             "Some strange expression" |> should matchRegex "strange"
+
         it "fails when the input does not match the pattern" <| fun() ->
             (fun () -> "some value" |> should matchRegex "invalidPattern")
                 |> should throw ()
