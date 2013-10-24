@@ -2,11 +2,6 @@ module Main
 open FSpec
 open Expectations
 
-let assertEqual a b =
-  if not (a = b) then
-    printfn "Not equal %A and %A" a b
-    failwithf "Not equal %A and %A" a b
-
 let assertTrue value =
   if not value then
     failwithf "Value was false"
@@ -50,7 +45,7 @@ describe "TestCollection" <| fun() ->
         ()
 
     c.run()
-    assertEqual !initCount 2
+    !initCount |> should equal 2
 
 describe "TestCollection" <| fun() ->
     let col = init (fun () -> TestCollection())
@@ -83,21 +78,21 @@ describe "TestCollection" <| fun() ->
                     col().it "Inner test" pass
                     col().it "Inner test2" pass
             run() |> ignore
-            assertEqual !innerSetupRunCount 2
-            assertEqual !outerSetupRunCount 3
+            !innerSetupRunCount |> should equal 2
+            !outerSetupRunCount |> should equal 3
 
     describe "Run" <| fun () ->
         it "reports test failures" <| fun () ->
             col().it "Is a failure" fail
 
             let report = run()
-            assertEqual (report.summary()) "1 run, 1 failed"
+            report.summary() |> should equal "1 run, 1 failed"
 
         it "reports test success" <| fun() ->
             col().it "Is a success" pass
 
             let report = run()
-            assertEqual (report.summary()) "1 run, 0 failed"
+            report.summary() |> should equal  "1 run, 0 failed"
 
         it "runs the tests in the right order" <| fun() ->
             let no = ref 0
@@ -113,8 +108,8 @@ describe "TestCollection" <| fun() ->
                     test2No := testNo()
 
             run() |> ignore
-            assertEqual !test1No 1
-            assertEqual !test2No 2
+            !test1No |> should equal 1
+            !test2No |> should equal 2
 
         it "runs the contexts in the right order" <| fun() ->
             let no = ref 0
@@ -131,15 +126,15 @@ describe "TestCollection" <| fun() ->
                     test2No := testNo()
 
             run() |> ignore
-            assertEqual !test1No 1
-            assertEqual !test2No 2
+            !test1No |> should equal 1
+            !test2No |> should equal 2
 
     describe "Running status" <| fun () ->
         it "Is reported while running" <| fun () ->
             col().describe "Some context" <| fun () ->
                 col().it "has some behavior" pass
             let report = run()
-            assertEqual (report.testOutput()) ["Some context has some behavior - passed"]
+            report.testOutput() |> should equal ["Some context has some behavior - passed"]
 
         it "Reports multiple test results" <| fun () ->
             col().describe "Some context" <| fun() ->
@@ -150,7 +145,7 @@ describe "TestCollection" <| fun() ->
             let actual = report.testOutput()
             let expected = ["Some context has some behavior - passed";
                             "Some context has some other behavior - passed"]
-            assertEqual actual expected
+            actual.should equal expected
 
     describe "Failed tests" <| fun() ->
         it "Writes the output to the test report" <| fun() ->
