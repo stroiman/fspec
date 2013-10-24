@@ -189,7 +189,7 @@ describe "Assertion helpers" <| fun() ->
             with
                 | AssertionError(_) -> ()
     describe "greaterThan" <| fun() ->
-        5 |> should greaterThan 4
+        5 |> should be.greaterThan 4
 
 let report = TestReport()
 c.run(report)

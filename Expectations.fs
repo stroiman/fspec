@@ -17,11 +17,6 @@ let equal = {
         actual.Equals(expected)
     }
 
-let greaterThan = {
-    matcherFunc = fun actual expected ->
-        actual > expected
-    }
-
 let should (matcher : Matcher<'a,'b>) expected actual =
     let success = matcher.matcherFunc actual expected
     if not success then
@@ -34,3 +29,9 @@ type System.Object with
         if not success then
             let info = { Expected = expected.ToString(); Actual = self.ToString() }
             raise (AssertionError(info))
+module be =
+    let greaterThan = {
+        matcherFunc = fun actual expected ->
+            actual > expected
+        }
+
