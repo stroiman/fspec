@@ -32,14 +32,7 @@ let should (matcher : Matcher<'a,'b>) expected actual =
 
 type System.Object with
     member self.should (matcher : Matcher<Object,'b>) expected =
-        let actual = self
-        let success = matcher.matcherFunc actual expected
-        if not success then
-            let info = { 
-                Expected = expected.ToString(); 
-                Actual = actual.ToString();
-                Message = matcher.writeException actual expected}
-            raise (AssertionError(info))
+        self |> should matcher expected
 
 let throw = {
     matcherFunc = fun a b ->
