@@ -1,8 +1,10 @@
 module FSpec
+open Expectations
 
 type TestResultType =
   | Success
-  | Failure
+  | Error
+  | Failure of AssertionErrorInfo
 
 type TestReport() =
   let mutable noOfTestsRun = 0
@@ -24,7 +26,8 @@ type TestReport() =
   member self.reportTestName name result =
     let name2 = match result with
                 | Success -> sprintf "%s - passed" name
-                | Failure -> sprintf "%s - failed" name
+                | Error -> sprintf "%s - failed" name
+                | Failure(_) -> sprintf "%s - failed - expected value: 6" name
     output <- name2::output
 
   member self.testOutput() =
@@ -97,9 +100,12 @@ type TestCollection(parent, name) =
           x.test()
           results.reportTestName name Success
       with
+      | AssertionError(e) ->
+          results.reportFailure()
+          results.reportTestName name (Failure(e))
       | ex -> 
           results.reportFailure()
-          results.reportTestName name Failure
+          results.reportTestName name Error
     )
 
     contexts |> List.rev |> List.iter (fun x ->

@@ -1,11 +1,14 @@
 ﻿module Expectations
 open System
 
-exception AssertionError
+type AssertionErrorInfo = { Expected: string }
+
+exception AssertionError of AssertionErrorInfo
 
 let equal (actual : Object) (expected: Object) =
     if (actual.Equals(expected)) |> not then
-        raise AssertionError
+        let info = { Expected = expected.ToString() }
+        raise (AssertionError(info))
     ()
 
 type Matcher = (Object -> Object -> unit)

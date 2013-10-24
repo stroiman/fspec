@@ -15,6 +15,11 @@ let assertFalse value =
   if value then
     failwithf "Value was true"
 
+let assertMatches actual pattern =
+    let regex = System.Text.RegularExpressions.Regex pattern
+    if not (regex.IsMatch actual) then
+        failwithf "String was not a match. Pattern %s - actual %s" pattern actual
+
 let pass () = ()
 let fail () = failwithf "Test failure"
 
@@ -145,6 +150,14 @@ describe "TestCollection" <| fun() ->
                             "Some context has some other behavior - passed"]
             assertEqual actual expected
 
+    describe "Failed tests" <| fun() ->
+        it "Writes the output to the test report" <| fun() ->
+            col().it "Is a failing test" <| fun() ->
+                (5).should equal 6
+            let result = run()
+            let actual = result.testOutput() |> List.reduce (+)
+            assertMatches actual "expected value: 6"
+
 describe "TestReport" <| fun() ->
     describe "With no failures reported" <| fun () ->
         it "Is a success" <| fun () ->
@@ -166,7 +179,7 @@ describe "Assertion helpers" <| fun() ->
                 (5).should equal 6
                 failwithf "No exception throws"
             with
-                | AssertionError -> ()
+                | AssertionError(_) -> ()
 
 let report = TestReport()
 c.run(report)
