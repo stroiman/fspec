@@ -205,6 +205,27 @@ describe "Assertion helpers" <| fun() ->
                 failwithf "No exception thrown"
             with
                 | AssertionError(_) -> ()
+    describe "throw matcher" <| fun() ->
+        it "passed when an exception is thrown" <| fun () ->
+            let mutable thrown = false
+            let f = fun () ->
+                failwith "error"
+                ()
+            try
+                f |> should throw ()
+            with
+                | _ -> 
+                    thrown <- true
+            assertFalse thrown
+        it "fails when no exception is thrown" <| fun() ->
+            let mutable thrown = false
+            let f = fun () -> ()
+            try
+                f |> should throw ()
+            with
+                | _ ->
+                    thrown <- true
+            assertTrue thrown
 
 let report = TestReport()
 c.run(report)

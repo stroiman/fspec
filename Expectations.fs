@@ -41,6 +41,17 @@ type System.Object with
                 Message = matcher.writeException actual expected}
             raise (AssertionError(info))
 
+let throw = {
+    matcherFunc = fun a b ->
+        let mutable exceptionThrown = false
+        try
+            a()
+        with
+            | _ -> exceptionThrown <- true
+        exceptionThrown
+    writeException = (fun a b -> "Expected exception was not thrown")
+}
+
 module be =
     let greaterThan = {
         matcherFunc = fun actual expected ->
