@@ -5,14 +5,18 @@ type AssertionErrorInfo = { Expected: string }
 
 exception AssertionError of AssertionErrorInfo
 
-let equal (actual : Object) (expected: Object) =
-    if (actual.Equals(expected)) |> not then
-        let info = { Expected = expected.ToString() }
-        raise (AssertionError(info))
-    ()
+type Matcher = {
+    matcherFunc : Object -> Object -> bool
+    }
 
-type Matcher = (Object -> Object -> unit)
+let equal = {
+    matcherFunc = fun actual expected ->
+        actual.Equals(expected)
+    }
 
 type System.Object with
-    member self.should (matcher : Matcher) matchparameter =
-        matcher self matchparameter
+    member self.should (matcher : Matcher) expected =
+        let success = matcher.matcherFunc self expected
+        if not success then
+            let info = { Expected = expected.ToString() }
+            raise (AssertionError(info))
