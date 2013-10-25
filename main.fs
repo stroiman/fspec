@@ -43,49 +43,48 @@ describe "TestCollection" <| fun() ->
     let _it x = col().it x
     let _before x = col().before x
 
-    describe "Setup" <| fun () ->
-        it "runs before the test is run" <| fun () ->
-            let wasSetupWhenTestWasRun = ref false
-            let wasSetup = ref false
-            _before <| fun() ->
-                wasSetup := true
-            _it "dummy" <| fun() ->
-                wasSetupWhenTestWasRun := !wasSetup
-            run() |> ignore
-            !wasSetupWhenTestWasRun |> should equal true
+    describe "Execution order" <| fun() ->
+        let order = ref []
+        let functionCalled x = order := x::!order
+        let actualOrder () = !order |> List.rev
 
-        it "is only run for in same context, or nested context" <| fun () ->
-            let outerSetupRunCount = ref 0
-            let innerSetupRunCount = ref 0
-            _describe "Ctx" <| fun () ->
-                _before <| fun () ->
-                    outerSetupRunCount := !outerSetupRunCount + 1
-                _it "Outer test" pass
-                _describe "Inner ctx" <| fun () ->
+        before <| fun () -> order := []
+
+        describe "before" <| fun () ->
+            it "runs before the test is run" <| fun () ->
+                _before <| fun() ->
+                    functionCalled "before"
+                _it "dummy" <| fun() ->
+                    functionCalled "test"
+                run() |> ignore
+                actualOrder() |> should equal ["before"; "test"]
+
+            it "runs the inner setup before the outer setup" <| fun () ->
+                _describe "outer ctx" <| fun () ->
+                    _before <| fun () -> 
+                        functionCalled "outer setup"
+                    _describe "inner ctx" <| fun() ->
+                        _before <| fun () -> 
+                            functionCalled "inner setup"
+                        _it "has a test" pass
+                run() |> ignore
+                actualOrder() |> should equal ["outer setup";"inner setup"]
+
+            it "is only run for in same context, or nested context" <| fun () ->
+                let outerSetupRunCount = ref 0
+                let innerSetupRunCount = ref 0
+                _describe "Ctx" <| fun () ->
                     _before <| fun () ->
-                        innerSetupRunCount := !innerSetupRunCount + 1
-                    _it "Inner test" pass
-                    _it "Inner test2" pass
-            run() |> ignore
-            !innerSetupRunCount |> should equal 2
-            !outerSetupRunCount |> should equal 3
-
-        it "runs the inner setup before the outer setup" <| fun () ->
-            let stepNo = ref 0
-            let outerSetupStep = ref 0
-            let innerSetupStep = ref 0
-            let nextStep () =
-                stepNo := !stepNo + 1
-                !stepNo
-            _describe "outer ctx" <| fun () ->
-                _before <| fun () -> 
-                    outerSetupStep := nextStep()
-                _describe "inner ctx" <| fun() ->
-                    _before <| fun () -> innerSetupStep := nextStep()
-                    _it "has a test" pass
-            run() |> ignore
-            !outerSetupStep |> should equal 1        
-            !innerSetupStep |> should equal 2
+                        outerSetupRunCount := !outerSetupRunCount + 1
+                    _it "Outer test" pass
+                    _describe "Inner ctx" <| fun () ->
+                        _before <| fun () ->
+                            innerSetupRunCount := !innerSetupRunCount + 1
+                        _it "Inner test" pass
+                        _it "Inner test2" pass
+                run() |> ignore
+                !innerSetupRunCount |> should equal 2
+                !outerSetupRunCount |> should equal 3
 
     describe "Run" <| fun () ->
         it "reports test failures" <| fun () ->
