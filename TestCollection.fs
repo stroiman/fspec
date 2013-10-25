@@ -135,3 +135,9 @@ type TestCollection(parent, name) =
 
     member self.run() = 
         self.run(TestReport())
+
+let c = TestCollection()
+let describe = c.describe
+let it = c.it
+let before = c.before
+let init = c.init

@@ -5,12 +5,6 @@ open Expectations
 let pass () = ()
 let fail () = failwithf "Test failure"
 
-let c = TestCollection()
-let describe = c.describe
-let it = c.it
-let before = c.before
-let init = c.init
-
 describe "TestCollection" <| fun() ->
     it "handles lazy initialization" <| fun () ->
         let c = TestCollection()
