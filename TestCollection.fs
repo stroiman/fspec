@@ -46,6 +46,7 @@ type Test = {Name: string; test: unit -> unit}
 type TestCollection(parent, name) =
     let mutable tests = []
     let mutable setups = []
+    let mutable tearDowns = []
     let mutable contexts = []
     let mutable current = None
     new () = TestCollection(None, null)
@@ -76,6 +77,11 @@ type TestCollection(parent, name) =
         | None    -> setups <- f::setups
         | Some(v) -> v.before f
 
+    member self.after (f: unit -> unit) =
+        match current with
+        | None    -> tearDowns <- f::tearDowns
+        | Some(v) -> v.after f
+
     member self.it (name: string) (f: unit -> unit) = 
         match current with
         | None    -> tests <- {Name = name; test = f}::tests
@@ -86,6 +92,12 @@ type TestCollection(parent, name) =
         | None    -> ()
         | Some(x) -> x.perform_setup()
         setups |> List.iter (fun y -> y())
+
+    member self.performTearDown() =
+        tearDowns |> List.iter (fun y -> y())
+        match parent with
+        | None    -> ()
+        | Some(x) -> x.performTearDown()
 
     member self.nameStack () =
         match parent with
@@ -114,6 +126,7 @@ type TestCollection(parent, name) =
             | ex -> 
                 results.reportFailure()
                 results.reportTestName name Error
+            self.performTearDown()
         )
 
         contexts |> List.rev |> List.iter (fun x ->

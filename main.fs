@@ -42,6 +42,7 @@ describe "TestCollection" <| fun() ->
     let _describe x = col().describe x
     let _it x = col().it x
     let _before x = col().before x
+    let _after x = col().after x
 
     describe "Execution order" <| fun() ->
         let order = ref []
@@ -49,6 +50,45 @@ describe "TestCollection" <| fun() ->
         let actualOrder () = !order |> List.rev
 
         before <| fun () -> order := []
+
+        describe "after" <| fun() ->
+            it "runs after the test is run" <| fun() ->
+                _after <| fun() ->
+                    functionCalled "tearDown"
+                _it "dummy" <| fun() ->
+                    functionCalled "test"
+                run() |> ignore
+                actualOrder() |> should equal ["test"; "tearDown"]
+
+            it "runs if test fail" <| fun() ->
+                _after <| fun() ->
+                    functionCalled "tearDown"
+                _it "fails" <| fun() ->
+                    failwith "some failure"
+                run() |> ignore
+                actualOrder() |> should equal ["tearDown"]
+
+            it "runs inner teardowns before outer teardowns" <| fun() ->
+                _describe "outer ctx" <| fun() ->
+                    _after <| (fun() -> functionCalled "outer tearDown")
+                    _describe "inner ctx" <| fun() ->
+                        _after <| (fun() -> functionCalled "inner tearDown")
+                        _it "dummy" <| (fun() -> functionCalled "test")
+                run() |> ignore
+                let expected = ["test"; "inner tearDown"; "outer tearDown"]
+                actualOrder() |> should equal expected
+
+            it "runs teardown in the right context" <| fun() ->
+                _describe "outer ctx" <| fun() ->
+                    _after <| (fun() -> functionCalled "outer tearDown")
+                    _it "outer test" <| (fun() -> functionCalled "outer test")
+                    _describe "inner ctx" <| fun() ->
+                        _after <| (fun() -> functionCalled "inner tearDown")
+                        _it "inner text" <| (fun() -> functionCalled "inner test")
+                run() |> ignore
+                let expected = ["outer test"; "outer tearDown"; "inner test"; "inner tearDown"; "outer tearDown"]
+                actualOrder() |> should equal expected
+
 
         describe "before" <| fun () ->
             it "runs before the test is run" <| fun () ->
