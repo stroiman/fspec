@@ -1,4 +1,4 @@
-guard 'rake', :task => 'default', :run_on_start => false do
-  watch(%r{^Rakefile$})
-  watch(%r{^.*\.fs$})
+guard 'shell' do
+  watch(%r{^Rakefile$}) { system "rake" }
+  watch(%r{^.*\.fs$})   { system "rake" }
 end
