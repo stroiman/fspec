@@ -11,3 +11,39 @@ tests may change.
 
 The framework is currently self testing, i.e. the framework is used to test
 itself.
+
+## Usage (subject to change) ##
+
+Create an assembly containing your specs. Place your specs in a module, and
+assign the spec code to the variable _spec_. Pass the name of the assembly to
+the fspec runner command line.
+
+```fsharp
+module MySpecModule
+
+let specs =
+    describe "Some feature" <| fun() ->
+        describe "In some context" <| fun() ->
+            it "has some specific behaviour" <| fun() ->
+                ()
+            it "has some other specific behavior" <| fun() ->
+                ()
+        describe "In some other context" <| fun() ->
+            it "has some completely different behavior" <| fun() ->
+                ()
+```
+
+### General setup/teardown code ###
+
+The functions _before_/_after_ can be used to hold general setup/teardown code.
+
+```fsharp
+let specs =
+    describe "Some feature" <| fun() ->
+        before fun() ->
+            ()
+        after fun() ->
+            ()
+        it "Has some behavior" <| fun() ->
+            ()
+```
