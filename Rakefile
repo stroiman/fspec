@@ -15,7 +15,7 @@ file 'output/FSpec.Core.dll' => ['core/Expectations.fs', 'core/TestCollection.fs
   compile(t.name, t.prerequisites, :library)
 end
 
-file 'output/FSpec.SelfTests.dll' => ['selftests/Selftests.fs', 'output/FSpec.Core.dll'] do |t|
+file 'output/FSpec.SelfTests.dll' => ['selftests/Selftests.fs', 'selftests/MatcherSpecs.fs', 'output/FSpec.Core.dll'] do |t|
   compile(t.name, t.prerequisites, :library)
 end
 
