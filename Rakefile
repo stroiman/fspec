@@ -1,5 +1,7 @@
 require 'rake/clean'
 
+CLEAN.include("**/*.dll", "**/*.exe")
+
 def compile(options)
   options = { references: [] }.merge(options)
   input_files = options[:input_files]
@@ -12,7 +14,7 @@ def compile(options)
     end
   end
   output_file = options[:output_file]
-  references = options[:references]
+  references = options[:references].map! { |file| "output/#{file}" }
   target = options[:target]
   dependencies = input_files + references
 
@@ -25,7 +27,7 @@ def compile(options)
     end
   end
   reference_args = references.map {|x| "--reference:#{x}" }
-  sh "fsharpc #{input_files.join(" ")} --out:#{output_file} #{reference_args.join(" ")} --target:#{target} --resident"
+  sh "fsharpc #{input_files.join(" ")} --out:output/#{output_file} #{reference_args.join(" ")} --target:#{target} --resident"
 end
 
 task :build do
@@ -48,9 +50,8 @@ task :build do
     target: :exe)
 end
 
-CLEAN.include("*.dll", "*.exe")
 task :test do
-  sh("mono fspec.exe fspec.selftests")
+  sh("mono output/fspec.exe fspec.selftests")
 end
 
 task :default => [:build, :test]
