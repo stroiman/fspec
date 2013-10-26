@@ -1,5 +1,5 @@
 module Main
-open FSpec
+open FSpec.Core
 open Expectations
 open Microsoft.FSharp.Reflection
 open System

@@ -1,4 +1,5 @@
-module FSpec
+[<AutoOpen>]
+module FSpec.Core.SuiteBuilders
 open Expectations
 
 type TestResultType =

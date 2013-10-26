@@ -1,6 +1,5 @@
-module SelfTests
-open FSpec
-open Expectations
+module FSpec.SelfTests
+open FSpec.Core
 
 let pass () = ()
 let fail () = failwithf "Test failure"
