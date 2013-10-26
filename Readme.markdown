@@ -12,6 +12,10 @@ tests may change.
 The framework is currently self testing, i.e. the framework is used to test
 itself.
 
+I am currently developing the framework using mono and a simple text editor.
+Therefore no F# project files or msbuild compatible scripts. But I would not
+object if a contributer would wrap the code into Visual Studio project files.
+
 ## Usage (subject to change) ##
 
 Create an assembly containing your specs. Place your specs in a module, and
