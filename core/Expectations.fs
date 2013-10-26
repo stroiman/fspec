@@ -29,7 +29,7 @@ let matchRegex = {
             true
         else
             false
-        
+
     writeException = fun a b ->
         sprintf "expected %s to match expression %s" a b
 }

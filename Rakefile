@@ -1,6 +1,14 @@
 def compile(options)
   options = { references: [] }.merge(options)
   input_files = options[:input_files]
+  input_folder = options[:input_folder]
+  input_files.map! do |file|
+    if input_folder then
+      "#{input_folder}/#{file}"
+    else
+      file
+    end
+  end
   output_file = options[:output_file]
   references = options[:references]
   target = options[:target]
@@ -20,16 +28,19 @@ end
 
 task :build do
   compile(
+    input_folder: "core",
     input_files: ["Expectations.fs", "TestCollection.fs"],
     output_file: "FSpec.Core.dll",
     target: :library)
   compile(
+    input_folder: "selftests",
     input_files: ["selftests.fs"],
     output_file: "FSpec.SelfTests.dll",
     references: ["FSpec.Core.dll"],
     target: :library)
   compile(
-    input_files: ["main.fs"],
+    input_folder: "cli",
+    input_files: ["Main.fs"],
     output_file: "fspec.exe",
     references: ["FSpec.Core.dll"],
     target: :exe)
