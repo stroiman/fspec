@@ -1,5 +1,11 @@
-def compile(input_files, output_file, references, target)
+def compile(options)
+  options = { references: [] }.merge(options)
+  input_files = options[:input_files]
+  output_file = options[:output_file]
+  references = options[:references]
+  target = options[:target]
   dependencies = input_files + references
+
   if (File.exists?(output_file))
     dependency_mtimes = dependencies.map { |x| File.open(x).mtime }
     output_mtime = File.open(output_file).mtime 
@@ -12,13 +18,25 @@ def compile(input_files, output_file, references, target)
   sh "fsharpc #{input_files.join(" ")} --out:#{output_file} #{reference_args.join(" ")} --target:#{target} --resident"
 end
 
-task :default do
-  files = Dir.glob("*.fs")
-  files = ["Expectations.fs", "TestCollection.fs", "selftests.fs", "main.fs"].join(" ")
+task :build do
+  compile(
+    input_files: ["Expectations.fs", "TestCollection.fs"],
+    output_file: "FSpec.Core.dll",
+    target: :library)
+  compile(
+    input_files: ["selftests.fs"],
+    output_file: "FSpec.SelfTests.dll",
+    references: ["FSpec.Core.dll"],
+    target: :library)
+  compile(
+    input_files: ["main.fs"],
+    output_file: "fspec.exe",
+    references: ["FSpec.Core.dll"],
+    target: :exe)
+end
 
-  compile(["Expectations.fs", "TestCollection.fs"], "fspec.core.dll", [], :library)
-  compile(["selftests.fs"], "fspec.selftests.dll", ["fspec.core.dll"], :library)
-  compile(["main.fs"], "fspec.exe", ["fspec.core.dll"], :exe)
-
+task :test do
   sh("mono fspec.exe fspec.selftests")
 end
+
+task :default => [:build, :test]
