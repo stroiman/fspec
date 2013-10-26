@@ -5,10 +5,17 @@ open Microsoft.FSharp.Reflection
 open System
 open System.Reflection
 
+module Seq =
+    let mapMany x y =
+        seq { for item in y do
+                yield! x item
+        }
+
 [<EntryPoint>]
 let main args =
-    let assembly = Assembly.Load("fspec.selftests")
-    let specs = assembly.ExportedTypes
+    let specs = args
+                |> Seq.map (fun x -> Assembly.Load(x))
+                |> Seq.mapMany (fun x -> x.ExportedTypes)
                 |> Seq.where (fun x -> FSharpType.IsModule x)
                 |> Seq.map (fun x -> x.GetProperty("specs"))
                 |> Seq.where (fun x -> x <> null)

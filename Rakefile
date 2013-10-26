@@ -4,5 +4,5 @@ task :default do
   sh "fsharpc Expectations.fs TestCollection.fs --out:fspec.core.dll --target:library --resident"
   sh "fsharpc Selftests.fs --out:fspec.selftests.dll --reference:fspec.core.dll --target:library --resident"
   sh "fsharpc main.fs --out:fspec.exe --reference:fspec.core.dll --resident"
-  sh "mono fspec.exe" if $? == 0
+  sh "mono fspec.exe fspec.selftests" if $? == 0
 end
