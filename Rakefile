@@ -1,3 +1,5 @@
+require 'rake/clean'
+
 def compile(options)
   options = { references: [] }.merge(options)
   input_files = options[:input_files]
@@ -46,6 +48,7 @@ task :build do
     target: :exe)
 end
 
+CLEAN.include("*.dll", "*.exe")
 task :test do
   sh("mono fspec.exe fspec.selftests")
 end
