@@ -2,13 +2,22 @@ require 'rake/clean'
 
 CLEAN.include("**/*.dll", "**/*.exe")
 
+def windows?
+  RUBY_PLATFORM =~ /mingw/i 
+end
+
 def compile(output_file, prerequisites, target)
   dir = File.dirname(output_file)
   Dir.mkdir(dir) unless Dir.exists?(dir)
   fs_files = prerequisites.select {|x| File.extname(x) == '.fs'}
   dll_files = prerequisites.select {|x| File.extname(x) == '.dll'}
   reference_args = dll_files.map {|x| "--reference:#{x}" }
-  sh "fsharpc #{fs_files.join(" ")} --out:#{output_file} #{reference_args.join(" ")} --target:#{target} --resident"
+  if windows?
+    fsc = 'fsc'
+  else
+    fsc = 'fsharpc --resident'
+  end
+  sh "#{fsc} #{fs_files.join(" ")} --out:#{output_file} #{reference_args.join(" ")} --target:#{target}"
 end
 
 file 'output/FSpec.Core.dll' => ['core/Expectations.fs', 'core/TestCollection.fs'] do |t|
@@ -27,7 +36,9 @@ task :build => ['output/fspec.exe'] do
 end
 
 task :test => ['output/fspec.exe', 'output/FSpec.SelfTests.dll'] do
-  sh("mono output/fspec.exe FSpec.SelfTests")
+  executer = ""
+  executer = "mono " unless windows?
+  sh("#{executer}output/fspec.exe FSpec.SelfTests")
 end
 
 task :default => [:build, :test]
