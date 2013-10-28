@@ -3,8 +3,6 @@ module FSpec.Core.Expectations
 open System
 
 type AssertionErrorInfo = { 
-    Expected: string 
-    Actual: string
     Message: string
 }
 
@@ -38,8 +36,6 @@ let should (matcher : Matcher<'a,'b>) expected actual =
     let success = matcher.matcherFunc actual expected
     if not success then
         let info = { 
-            Expected = expected.ToString(); 
-            Actual = actual.ToString();
             Message = matcher.writeException actual expected}
         raise (AssertionError(info))
 
