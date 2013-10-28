@@ -1,3 +1,4 @@
 *.swp
 *.exe
 *.dll
+.DS_Store
