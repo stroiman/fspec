@@ -1,5 +1,7 @@
 module FSpec.SelfTests.SuiteBuilderSpecs
 open FSpec.Core
+open Dsl
+open Matchers
 
 let pass () = ()
 let fail () = failwithf "Test failure"

@@ -1,5 +1,7 @@
 module FSpec.SelfTests.MatcherSpecs
 open FSpec.Core
+open Dsl
+open Matchers
 
 let specs =
     describe "equals matcher" <| fun() ->

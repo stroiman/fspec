@@ -1,6 +1,6 @@
 module Main
 open FSpec.Core
-open Expectations
+open Dsl
 open Microsoft.FSharp.Reflection
 open System
 open System.Reflection

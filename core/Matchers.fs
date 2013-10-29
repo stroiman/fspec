@@ -1,5 +1,4 @@
-﻿[<AutoOpen>]
-module FSpec.Core.Expectations
+﻿module FSpec.Core.Matchers
 open System
 
 type AssertionErrorInfo = { 

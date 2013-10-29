@@ -1,6 +1,5 @@
-[<AutoOpen>]
-module FSpec.Core.SuiteBuilders
-open Expectations
+module FSpec.Core.Dsl
+open Matchers
 
 type TestResultType =
     | Success
