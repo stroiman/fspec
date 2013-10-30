@@ -45,16 +45,19 @@ module TestContext =
     type testFunc = unit -> unit
     type Test = {Name: string; Test: unit -> unit}
     type T = {
-        Tests: Test list
+        Tests: Test list;
+        Setups: testFunc list;
         }
 
+    let create () = { 
+        Tests = [];
+        Setups = [];
+    }
     let addTest ctx test = { ctx with Tests = test::ctx.Tests }
-
-    let create () = { Tests = [] }
+    let addSetup ctx setup = { ctx with Setups = setup::ctx.Setups }
     
 type TestCollection(parent, name) =
     let mutable context = TestContext.create ()
-    let mutable setups = []
     let mutable tearDowns = []
     let mutable contexts = []
     let mutable current = None
@@ -83,7 +86,7 @@ type TestCollection(parent, name) =
 
     member self.before (f: unit -> unit) =
         match current with
-        | None    -> setups <- f::setups
+        | None    -> context <- TestContext.addSetup context f
         | Some(v) -> v.before f
 
     member self.after (f: unit -> unit) =
@@ -100,7 +103,7 @@ type TestCollection(parent, name) =
         match parent with
         | None    -> ()
         | Some(x) -> x.perform_setup()
-        setups |> List.iter (fun y -> y())
+        context.Setups |> List.iter (fun y -> y())
 
     member self.performTearDown() =
         tearDowns |> List.iter (fun y -> y())
