@@ -112,15 +112,10 @@ module TestContext =
             run x results
         )
 
-type TestCollection(_parent : TestCollection option, _name) =
-    let parentContext = match _parent with
-                        | None -> None
-                        | Some(x) -> Some(x.getContext())
-    let mutable context = TestContext.create _name parentContext
+type TestCollection() =
+    let mutable context = TestContext.create null None
 
     member self.getContext() = context
-
-    new () = TestCollection(None, null)
 
     member self.init (f: unit -> 'a) : (unit -> 'a) =
         let value = ref None
