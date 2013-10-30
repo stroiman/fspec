@@ -14,7 +14,7 @@ module Seq =
 [<EntryPoint>]
 let main args =
     let specs = args
-                |> Seq.map (fun x -> Assembly.Load(x))
+                |> Seq.map (fun x -> Assembly.LoadFrom(x))
                 |> Seq.mapMany (fun x -> x.ExportedTypes)
                 |> Seq.where (fun x -> FSharpType.IsModule x)
                 |> Seq.map (fun x -> x.GetProperty("specs"))

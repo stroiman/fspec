@@ -38,7 +38,7 @@ end
 task :test => ['output/fspec.exe', 'output/FSpec.SelfTests.dll'] do
   executer = ""
   executer = "mono " unless windows?
-  sh("#{executer}output/fspec.exe FSpec.SelfTests")
+  sh("#{executer}output/fspec.exe output/FSpec.SelfTests.dll")
 end
 
 task :default => [:build, :test]
