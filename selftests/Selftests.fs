@@ -211,6 +211,15 @@ let specs =
                 let actual = result.failedTests() |> List.length
                 actual.should equal 0
 
+        describe "Tests with errors" <| fun() ->
+            it "writes the exception name" <| fun() ->
+                _it "Is a failing test" <| fun() ->
+                    raise (new System.NotImplementedException())
+                    ()
+                let result = run()
+                let actual = result.failedTests() |> List.reduce (+)
+                actual |> should matchRegex "NotImplementedException"
+
     describe "TestReport" <| fun() ->
         describe "With no failures reported" <| fun () ->
             it "Is a success" <| fun () ->

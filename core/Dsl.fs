@@ -3,7 +3,7 @@ open Matchers
 
 type TestResultType =
     | Success
-    | Error
+    | Error of System.Exception
     | Failure of AssertionErrorInfo
 
 type TestReport() =
@@ -27,7 +27,7 @@ type TestReport() =
     member self.reportTestName name result =
         let name2 = match result with
                     | Success -> sprintf "%s - passed" name
-                    | Error -> sprintf "%s - failed" name
+                    | Error(ex) -> sprintf "%s - failed - %s" name (ex.ToString())
                     | Failure(errorInfo) -> 
                         sprintf "%s - failed - %s" name errorInfo.Message
         match result with
@@ -104,7 +104,7 @@ module TestContext =
                 results.reportTestName name (Failure(e))
             | ex -> 
                 results.reportFailure()
-                results.reportTestName name Error
+                results.reportTestName name (Error(ex))
             perform_teardown context
         )
 
