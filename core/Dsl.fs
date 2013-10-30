@@ -45,12 +45,16 @@ module TestContext =
     type testFunc = unit -> unit
     type Test = {Name: string; Test: unit -> unit}
     type T = {
+        Name: string
         Tests: Test list;
         Setups: testFunc list;
         TearDowns: testFunc list;
+        ParentContext : T option;
         }
 
-    let create () = { 
+    let create name parent = { 
+        Name = name;
+        ParentContext = parent;
         Tests = [];
         Setups = [];
         TearDowns = [];
@@ -58,11 +62,34 @@ module TestContext =
     let addTest ctx test = { ctx with Tests = test::ctx.Tests }
     let addSetup ctx setup = { ctx with Setups = setup::ctx.Setups }
     let addTearDown ctx tearDown = { ctx with TearDowns = tearDown::ctx.TearDowns }
+
+    let rec perform_setup context =
+        match context.ParentContext with
+            | None    -> ()
+            | Some(x) -> perform_setup x
+        context.Setups |> List.iter (fun y -> y())
     
-type TestCollection(parent, name) =
-    let mutable context = TestContext.create ()
+    let rec perform_teardown context =
+        context.TearDowns |> List.iter (fun y -> y())
+        match context.ParentContext with
+        | None    -> ()
+        | Some(x) -> perform_teardown x
+    
+    let rec name_stack context =
+        match context.ParentContext with
+        | None    -> []
+        | Some(x) -> (context.Name)::(name_stack x)
+
+type TestCollection(_parent : TestCollection option, _name) =
+    let parentContext = match _parent with
+                        | None -> None
+                        | Some(x) -> Some(x.getContext())
+    let mutable context = TestContext.create _name parentContext
     let mutable contexts = []
     let mutable current = None
+
+    member self.getContext() = context
+
     new () = TestCollection(None, null)
 
     member self.init (f: unit -> 'a) : (unit -> 'a) =
@@ -101,23 +128,6 @@ type TestCollection(parent, name) =
         | None    -> context <- TestContext.addTest context { Name = name; Test = f}
         | Some(v) -> v.it name f
 
-    member self.perform_setup() =
-        match parent with
-        | None    -> ()
-        | Some(x) -> x.perform_setup()
-        context.Setups |> List.iter (fun y -> y())
-
-    member self.performTearDown() =
-        context.TearDowns |> List.iter (fun y -> y())
-        match parent with
-        | None    -> ()
-        | Some(x) -> x.performTearDown()
-
-    member self.nameStack () =
-        match parent with
-        | None    -> []
-        | Some(x) -> name::x.nameStack()
-
     member self.run(results : TestReport) =
         let rec printNameStack(stack) : string =
             match stack with
@@ -126,9 +136,9 @@ type TestCollection(parent, name) =
             | head::tail ->sprintf "%s %s" (printNameStack(tail)) head
 
         context.Tests |> List.rev |> List.iter (fun x -> 
-            self.perform_setup()
+            TestContext.perform_setup context
             results.reportTestRun()
-            let nameStack = x.Name :: self.nameStack()
+            let nameStack = x.Name :: (TestContext.name_stack context)
             let name = printNameStack(nameStack)
             try
                 x.Test()
@@ -140,7 +150,7 @@ type TestCollection(parent, name) =
             | ex -> 
                 results.reportFailure()
                 results.reportTestName name Error
-            self.performTearDown()
+            TestContext.perform_teardown context
         )
 
         contexts |> List.rev |> List.iter (fun x ->
