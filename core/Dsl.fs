@@ -47,18 +47,20 @@ module TestContext =
     type T = {
         Tests: Test list;
         Setups: testFunc list;
+        TearDowns: testFunc list;
         }
 
     let create () = { 
         Tests = [];
         Setups = [];
+        TearDowns = [];
     }
     let addTest ctx test = { ctx with Tests = test::ctx.Tests }
     let addSetup ctx setup = { ctx with Setups = setup::ctx.Setups }
+    let addTearDown ctx tearDown = { ctx with TearDowns = tearDown::ctx.TearDowns }
     
 type TestCollection(parent, name) =
     let mutable context = TestContext.create ()
-    let mutable tearDowns = []
     let mutable contexts = []
     let mutable current = None
     new () = TestCollection(None, null)
@@ -91,7 +93,7 @@ type TestCollection(parent, name) =
 
     member self.after (f: unit -> unit) =
         match current with
-        | None    -> tearDowns <- f::tearDowns
+        | None    -> context <- TestContext.addTearDown context f
         | Some(v) -> v.after f
 
     member self.it (name: string) (f: unit -> unit) = 
@@ -106,7 +108,7 @@ type TestCollection(parent, name) =
         context.Setups |> List.iter (fun y -> y())
 
     member self.performTearDown() =
-        tearDowns |> List.iter (fun y -> y())
+        context.TearDowns |> List.iter (fun y -> y())
         match parent with
         | None    -> ()
         | Some(x) -> x.performTearDown()
