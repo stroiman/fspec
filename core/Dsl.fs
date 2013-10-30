@@ -117,7 +117,6 @@ type TestCollection(_parent : TestCollection option, _name) =
                         | None -> None
                         | Some(x) -> Some(x.getContext())
     let mutable context = TestContext.create _name parentContext
-    let mutable current = None
 
     member self.getContext() = context
 
@@ -136,28 +135,21 @@ type TestCollection(_parent : TestCollection option, _name) =
         r
 
     member self.describe (name: string) (f: unit -> unit) = 
-        match current with 
-        | None -> let innerCollection = TestCollection(Some(self), name)
-                  current <- Some(innerCollection)
-                  f()
-                  current <- None
-                  context <- TestContext.addChildContext context (innerCollection.getContext())
-        | Some(v) -> v.describe name f
+        let oldContext = context
+        context <- TestContext.create name (Some(context))
+        f()
+        let newContext = context
+        context <- oldContext
+        context <- TestContext.addChildContext context newContext
 
     member self.before (f: unit -> unit) =
-        match current with
-        | None    -> context <- TestContext.addSetup context f
-        | Some(v) -> v.before f
+        context <- TestContext.addSetup context f
 
     member self.after (f: unit -> unit) =
-        match current with
-        | None    -> context <- TestContext.addTearDown context f
-        | Some(v) -> v.after f
+        context <- TestContext.addTearDown context f
 
     member self.it (name: string) (f: unit -> unit) = 
-        match current with
-        | None    -> context <- TestContext.addTest context { Name = name; Test = f}
-        | Some(v) -> v.it name f
+        context <- TestContext.addTest context { Name = name; Test = f}
 
     member self.run(results: TestReport) =
         TestContext.run context results
