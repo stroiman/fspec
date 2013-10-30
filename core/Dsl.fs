@@ -41,10 +41,19 @@ type TestReport() =
     member self.failedTests() = 
         failed |> List.rev
 
-type Test = {Name: string; test: unit -> unit}
+module TestContext =
+    type testFunc = unit -> unit
+    type Test = {Name: string; Test: unit -> unit}
+    type T = {
+        Tests: Test list
+        }
 
+    let addTest ctx test = { ctx with Tests = test::ctx.Tests }
+
+    let create () = { Tests = [] }
+    
 type TestCollection(parent, name) =
-    let mutable tests = []
+    let mutable context = TestContext.create ()
     let mutable setups = []
     let mutable tearDowns = []
     let mutable contexts = []
@@ -84,7 +93,7 @@ type TestCollection(parent, name) =
 
     member self.it (name: string) (f: unit -> unit) = 
         match current with
-        | None    -> tests <- {Name = name; test = f}::tests
+        | None    -> context <- TestContext.addTest context { Name = name; Test = f}
         | Some(v) -> v.it name f
 
     member self.perform_setup() =
@@ -111,13 +120,13 @@ type TestCollection(parent, name) =
             | head::[] -> head
             | head::tail ->sprintf "%s %s" (printNameStack(tail)) head
 
-        tests |> List.rev |> List.iter (fun x -> 
+        context.Tests |> List.rev |> List.iter (fun x -> 
             self.perform_setup()
             results.reportTestRun()
             let nameStack = x.Name :: self.nameStack()
             let name = printNameStack(nameStack)
             try
-                x.test()
+                x.Test()
                 results.reportTestName name Success
             with
             | AssertionError(e) ->
