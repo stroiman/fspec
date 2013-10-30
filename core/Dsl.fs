@@ -115,8 +115,6 @@ module TestContext =
 type TestCollection() =
     let mutable context = TestContext.create null None
 
-    member self.getContext() = context
-
     member self.init (f: unit -> 'a) : (unit -> 'a) =
         let value = ref None
         self.before <| fun() ->
