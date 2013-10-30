@@ -50,6 +50,7 @@ module TestContext =
         Setups: testFunc list;
         TearDowns: testFunc list;
         ParentContext : T option;
+        ChildContexts : T list;
         }
 
     let create name parent = { 
@@ -58,10 +59,12 @@ module TestContext =
         Tests = [];
         Setups = [];
         TearDowns = [];
+        ChildContexts = [];
     }
     let addTest ctx test = { ctx with Tests = test::ctx.Tests }
     let addSetup ctx setup = { ctx with Setups = setup::ctx.Setups }
     let addTearDown ctx tearDown = { ctx with TearDowns = tearDown::ctx.TearDowns }
+    let addChildContext ctx child = { ctx with ChildContexts = child::ctx.ChildContexts }
 
     let rec perform_setup context =
         match context.ParentContext with
@@ -80,12 +83,40 @@ module TestContext =
         | None    -> []
         | Some(x) -> (context.Name)::(name_stack x)
 
+    let rec run context (results : TestReport) =
+        let rec printNameStack(stack) : string =
+            match stack with
+            | []    -> ""
+            | head::[] -> head
+            | head::tail ->sprintf "%s %s" (printNameStack(tail)) head
+
+        context.Tests |> List.rev |> List.iter (fun x -> 
+            perform_setup context
+            results.reportTestRun()
+            let nameStack = x.Name :: (name_stack context)
+            let name = printNameStack(nameStack)
+            try
+                x.Test()
+                results.reportTestName name Success
+            with
+            | AssertionError(e) ->
+                results.reportFailure()
+                results.reportTestName name (Failure(e))
+            | ex -> 
+                results.reportFailure()
+                results.reportTestName name Error
+            perform_teardown context
+        )
+
+        context.ChildContexts |> List.rev |> List.iter (fun x ->
+            run x results
+        )
+
 type TestCollection(_parent : TestCollection option, _name) =
     let parentContext = match _parent with
                         | None -> None
                         | Some(x) -> Some(x.getContext())
     let mutable context = TestContext.create _name parentContext
-    let mutable contexts = []
     let mutable current = None
 
     member self.getContext() = context
@@ -110,7 +141,7 @@ type TestCollection(_parent : TestCollection option, _name) =
                   current <- Some(innerCollection)
                   f()
                   current <- None
-                  contexts <- innerCollection::contexts
+                  context <- TestContext.addChildContext context (innerCollection.getContext())
         | Some(v) -> v.describe name f
 
     member self.before (f: unit -> unit) =
@@ -128,34 +159,8 @@ type TestCollection(_parent : TestCollection option, _name) =
         | None    -> context <- TestContext.addTest context { Name = name; Test = f}
         | Some(v) -> v.it name f
 
-    member self.run(results : TestReport) =
-        let rec printNameStack(stack) : string =
-            match stack with
-            | []    -> ""
-            | head::[] -> head
-            | head::tail ->sprintf "%s %s" (printNameStack(tail)) head
-
-        context.Tests |> List.rev |> List.iter (fun x -> 
-            TestContext.perform_setup context
-            results.reportTestRun()
-            let nameStack = x.Name :: (TestContext.name_stack context)
-            let name = printNameStack(nameStack)
-            try
-                x.Test()
-                results.reportTestName name Success
-            with
-            | AssertionError(e) ->
-                results.reportFailure()
-                results.reportTestName name (Failure(e))
-            | ex -> 
-                results.reportFailure()
-                results.reportTestName name Error
-            TestContext.perform_teardown context
-        )
-
-        contexts |> List.rev |> List.iter (fun x ->
-            x.run(results)
-        )
+    member self.run(results: TestReport) =
+        TestContext.run context results
 
     member self.run() = 
         self.run(TestReport())
