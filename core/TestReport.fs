@@ -28,6 +28,16 @@ module Report =
     let reportFail report = { report with noOfFails = report.noOfFails + 1 }
     let addOutput report output = { report with output = output::report.output }
     let addFail report fail = { report with failed = fail::report.failed }
+    let reportTestName report name result =
+        let name' = match result with
+                    | Success -> sprintf "%s - passed" name
+                    | Error(ex) -> sprintf "%s - failed - %s" name (ex.ToString())
+                    | Failure(errorInfo) -> 
+                        sprintf "%s - failed - %s" name errorInfo.Message
+        let report' = match result with
+                        | Success -> report
+                        | _ -> addFail report name'
+        addOutput report' name'
 
 type TestReport() =
     let mutable report = Report.create()
@@ -45,15 +55,7 @@ type TestReport() =
         report.noOfFails = 0
 
     member self.reportTestName name result =
-        let name2 = match result with
-                    | Success -> sprintf "%s - passed" name
-                    | Error(ex) -> sprintf "%s - failed - %s" name (ex.ToString())
-                    | Failure(errorInfo) -> 
-                        sprintf "%s - failed - %s" name errorInfo.Message
-        match result with
-            | Success -> ()
-            | _ -> report <- Report.addFail report name2
-        report <- Report.addOutput report name2
+        report <- Report.reportTestName report name result
 
     member self.testOutput() =
         report.output |> List.rev
