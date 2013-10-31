@@ -60,10 +60,8 @@ module TestContext =
                 results.reportTestName name Success
             with
             | AssertionError(e) ->
-                results.reportFailure()
                 results.reportTestName name (Failure(e))
             | ex -> 
-                results.reportFailure()
                 results.reportTestName name (Error(ex))
             perform_teardown context
         )

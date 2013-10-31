@@ -2,7 +2,9 @@ namespace FSpec.Core
 
 type AssertionErrorInfo = { 
     Message: string
-}
+} with
+    static member create = { Message = "" }
+
 
 type TestResultType =
     | Success
@@ -12,22 +14,20 @@ type TestResultType =
 module Report =
     type T = {
         noOfTestRuns: int;
-        noOfFails: int;
         output: string list;
         failed: string list;
     }
 
     let create () = {
         noOfTestRuns = 0;
-        noOfFails = 0;
         output = [];
         failed = [];
     }
 
     let reportRun report = { report with noOfTestRuns = report.noOfTestRuns + 1 }
-    let reportFail report = { report with noOfFails = report.noOfFails + 1 }
     let addOutput report output = { report with output = output::report.output }
     let addFail report fail = { report with failed = fail::report.failed }
+    let success report = report.failed = []
     let reportTestName report name result =
         let name' = match result with
                     | Success -> sprintf "%s - passed" name
@@ -45,14 +45,12 @@ type TestReport() =
     member self.reportTestRun () =
         report <- Report.reportRun report
 
-    member self.reportFailure () =
-        report <- Report.reportFail report
-
     member self.summary() = 
-        sprintf "%d run, %d failed" report.noOfTestRuns report.noOfFails
+        let noOfFails = report.failed |> List.length
+        sprintf "%d run, %d failed" report.noOfTestRuns noOfFails
 
     member self.success() =
-        report.noOfFails = 0
+        Report.success report
 
     member self.reportTestName name result =
         report <- Report.reportTestName report name result
