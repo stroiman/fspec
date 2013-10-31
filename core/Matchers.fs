@@ -1,10 +1,6 @@
 ﻿module FSpec.Core.Matchers
 open System
 
-type AssertionErrorInfo = { 
-    Message: string
-}
-
 exception AssertionError of AssertionErrorInfo
 
 type Matcher<'a,'b> = {

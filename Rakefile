@@ -20,7 +20,7 @@ def compile(output_file, prerequisites, target)
   sh "#{fsc} #{fs_files.join(" ")} --out:#{output_file} #{reference_args.join(" ")} --target:#{target}"
 end
 
-file 'output/FSpec.Core.dll' => ['core/Matchers.fs', 'core/Dsl.fs'] do |t|
+file 'output/FSpec.Core.dll' => ['core/TestReport.fs', 'core/Matchers.fs', 'core/Dsl.fs'] do |t|
   compile(t.name, t.prerequisites, :library)
 end
 
