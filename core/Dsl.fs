@@ -52,7 +52,6 @@ module TestContext =
 
         context.Tests |> List.rev |> List.iter (fun x -> 
             perform_setup context
-            results.reportTestRun()
             let nameStack = x.Name :: (name_stack context)
             let name = printNameStack(nameStack)
             try
