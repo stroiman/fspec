@@ -12,21 +12,25 @@ type TestResultType =
 module Report =
     type T = {
         noOfTestRuns: int;
-        noOfFails: int
+        noOfFails: int;
+        output: string list;
+        failed: string list;
     }
 
     let create () = {
         noOfTestRuns = 0;
-        noOfFails = 0
+        noOfFails = 0;
+        output = [];
+        failed = [];
     }
 
     let reportRun report = { report with noOfTestRuns = report.noOfTestRuns + 1 }
     let reportFail report = { report with noOfFails = report.noOfFails + 1 }
+    let addOutput report output = { report with output = output::report.output }
+    let addFail report fail = { report with failed = fail::report.failed }
 
 type TestReport() =
     let mutable report = Report.create()
-    let mutable output = []
-    let mutable failed = []
 
     member self.reportTestRun () =
         report <- Report.reportRun report
@@ -48,11 +52,11 @@ type TestReport() =
                         sprintf "%s - failed - %s" name errorInfo.Message
         match result with
             | Success -> ()
-            | _ -> failed <- name2::failed
-        output <- name2::output
+            | _ -> report <- Report.addFail report name2
+        report <- Report.addOutput report name2
 
     member self.testOutput() =
-        output |> List.rev
+        report.output |> List.rev
 
     member self.failedTests() = 
-        failed |> List.rev
+        report.failed |> List.rev
