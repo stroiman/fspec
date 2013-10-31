@@ -9,23 +9,36 @@ type TestResultType =
     | Error of System.Exception
     | Failure of AssertionErrorInfo
 
+module Report =
+    type T = {
+        noOfTestRuns: int;
+        noOfFails: int
+    }
+
+    let create () = {
+        noOfTestRuns = 0;
+        noOfFails = 0
+    }
+
+    let reportRun report = { report with noOfTestRuns = report.noOfTestRuns + 1 }
+    let reportFail report = { report with noOfFails = report.noOfFails + 1 }
+
 type TestReport() =
-    let mutable noOfTestsRun = 0
-    let mutable noOfFails = 0
+    let mutable report = Report.create()
     let mutable output = []
     let mutable failed = []
 
     member self.reportTestRun () =
-        noOfTestsRun <- noOfTestsRun + 1
+        report <- Report.reportRun report
 
     member self.reportFailure () =
-        noOfFails <- noOfFails + 1
+        report <- Report.reportFail report
 
     member self.summary() = 
-        sprintf "%d run, %d failed" noOfTestsRun noOfFails
+        sprintf "%d run, %d failed" report.noOfTestRuns report.noOfFails
 
     member self.success() =
-        noOfFails = 0
+        report.noOfFails = 0
 
     member self.reportTestName name result =
         let name2 = match result with
