@@ -190,6 +190,15 @@ let specs =
                                 "Some context has some other behavior - passed"]
                 actual.should equal expected
 
+            it "Reports nested contexts correctly" <| fun () ->
+                _describe "Some context" <| fun() ->
+                    _describe "in some special state" <| fun() ->
+                        _it "has some special behavior" pass
+
+                let report = run()
+                let actual = report.testOutput() |> List.head
+                actual |> should matchRegex "Some context in some special state has some special behavior"
+
         describe "Failed tests" <| fun() ->
             it "Writes the output to the test report" <| fun() ->
                 _it "Is a failing test" <| fun() ->

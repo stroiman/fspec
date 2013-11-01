@@ -43,7 +43,8 @@ module TestContext =
         | None    -> []
         | Some(x) -> (context.Name)::(name_stack x)
 
-    let rec run context (results : TestReport) =
+    let rec run (contexts : T list) (results : TestReport) =
+        let context = contexts |> List.head
         let rec printNameStack(stack) : string =
             match stack with
             | []    -> ""
@@ -52,7 +53,7 @@ module TestContext =
 
         context.Tests |> List.rev |> List.iter (fun x -> 
             perform_setup context
-            let nameStack = x.Name :: (name_stack context)
+            let nameStack = x.Name :: (contexts |> List.map (fun x -> x.Name) |> List.filter (fun x -> x <> null))
             let name = printNameStack(nameStack)
             try
                 x.Test()
@@ -66,7 +67,7 @@ module TestContext =
         )
 
         context.ChildContexts |> List.rev |> List.iter (fun x ->
-            run x results
+            run (x::contexts) results
         )
 
 type TestCollection() =
@@ -102,7 +103,7 @@ type TestCollection() =
         context <- TestContext.addTest context { Name = name; Test = f}
 
     member self.run(results: TestReport) =
-        TestContext.run context results
+        TestContext.run [context] results
 
     member self.run() = 
         self.run(TestReport())
