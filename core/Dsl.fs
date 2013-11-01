@@ -38,7 +38,7 @@ module TestContext =
                 head.TearDowns |> List.iter (fun y -> y())
                 perform_teardown tail
     
-    let rec run (contexts : T list) (results : TestReport) =
+    let rec run contexts (results : TestReport) =
         let context = contexts |> List.head
         let rec printNameStack(stack) : string =
             match stack with
@@ -84,9 +84,7 @@ type TestCollection() =
         let oldContext = context
         context <- TestContext.create name (Some(context))
         f()
-        let newContext = context
-        context <- oldContext
-        context <- TestContext.addChildContext context newContext
+        context <- TestContext.addChildContext oldContext context
 
     member self.before (f: unit -> unit) =
         context <- TestContext.addSetup context f
