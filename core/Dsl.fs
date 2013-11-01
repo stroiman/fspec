@@ -9,13 +9,11 @@ module TestContext =
         Tests: Test list;
         Setups: testFunc list;
         TearDowns: testFunc list;
-        ParentContext : T option;
         ChildContexts : T list;
         }
 
     let create name parent = { 
         Name = name;
-        ParentContext = parent;
         Tests = [];
         Setups = [];
         TearDowns = [];
@@ -40,11 +38,6 @@ module TestContext =
                 head.TearDowns |> List.iter (fun y -> y())
                 perform_teardown tail
     
-    let rec name_stack context =
-        match context.ParentContext with
-        | None    -> []
-        | Some(x) -> (context.Name)::(name_stack x)
-
     let rec run (contexts : T list) (results : TestReport) =
         let context = contexts |> List.head
         let rec printNameStack(stack) : string =
