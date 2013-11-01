@@ -26,17 +26,19 @@ module TestContext =
     let addTearDown ctx tearDown = { ctx with TearDowns = tearDown::ctx.TearDowns }
     let addChildContext ctx child = { ctx with ChildContexts = child::ctx.ChildContexts }
 
-    let rec perform_setup context =
-        match context.ParentContext with
-            | None    -> ()
-            | Some(x) -> perform_setup x
-        context.Setups |> List.iter (fun y -> y())
+    let rec perform_setup contexts =
+        match contexts with
+            | [] -> ()
+            | head::tail ->
+                perform_setup tail
+                head.Setups |> List.iter (fun y -> y())
     
-    let rec perform_teardown context =
-        context.TearDowns |> List.iter (fun y -> y())
-        match context.ParentContext with
-        | None    -> ()
-        | Some(x) -> perform_teardown x
+    let rec perform_teardown contexts =
+        match contexts with
+            | [] -> ()
+            | head::tail ->
+                head.TearDowns |> List.iter (fun y -> y())
+                perform_teardown tail
     
     let rec name_stack context =
         match context.ParentContext with
@@ -52,7 +54,7 @@ module TestContext =
             | head::tail ->sprintf "%s %s" (printNameStack(tail)) head
 
         context.Tests |> List.rev |> List.iter (fun x -> 
-            perform_setup context
+            perform_setup contexts
             let nameStack = x.Name :: (contexts |> List.map (fun x -> x.Name) |> List.filter (fun x -> x <> null))
             let name = printNameStack(nameStack)
             try
@@ -63,7 +65,7 @@ module TestContext =
                 results.reportTestName name (Failure(e))
             | ex -> 
                 results.reportTestName name (Error(ex))
-            perform_teardown context
+            perform_teardown contexts
         )
 
         context.ChildContexts |> List.rev |> List.iter (fun x ->
