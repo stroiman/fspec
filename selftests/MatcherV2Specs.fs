@@ -3,8 +3,13 @@ open FSpec.Core
 open Dsl
 open MatchersV2
 
-type A = { X: string }
-type B = { Y: string }
+type A() =
+    let mutable dummy = 0
+type A'() =
+    inherit A()
+
+type B() =
+    let mutable dummy = 0
 
 let tryExecute test =
     try
@@ -26,12 +31,20 @@ let shouldFail test =
 let specs =
     describe "TypeOf matcher" <| fun() ->
         it "succeeds when object is of expected type" <| fun () -> 
-            let actual = { X = "dummy" }
+            let actual = A()
             (fun () -> actual |> shouldBeTypeOf<A>)
                 |> shouldPass
+        
+        it "succeeds when actual is subclass of expected type" <| fun () ->
+            (fun () -> A'() |> shouldBeTypeOf<A>)
+                |> shouldPass
+
+        it "fails when actual is superclass of expected type" <| fun () ->
+            (fun () -> A() |> shouldBeTypeOf<A'>)
+                |> shouldFail
 
         it "fails when object is of wrong type" <| fun () ->
-            let actual = { X = "dummy" }
+            let actual = A()
             (fun () -> actual |> shouldBeTypeOf<B>)
                 |> shouldFail
 
