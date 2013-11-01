@@ -36,3 +36,8 @@ let specs =
             (fun () -> actual |> shouldBeTypeOf<B>)
                 |> tryExecute
                 |> shouldFail
+
+        it "fails when object is null" <| fun () ->
+            (fun () -> null |> shouldBeTypeOf<B>)
+                |> tryExecute
+                |> shouldFail
