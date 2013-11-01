@@ -1,8 +1,6 @@
 ﻿module FSpec.Core.Matchers
 open System
 
-exception AssertionError of AssertionErrorInfo
-
 type Matcher<'a,'b> = {
     matcherFunc : 'a -> 'b -> bool
     writeException : 'a -> 'b -> string

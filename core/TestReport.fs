@@ -5,6 +5,7 @@ type AssertionErrorInfo = {
 } with
     static member create = { Message = "" }
 
+exception AssertionError of AssertionErrorInfo
 
 type TestResultType =
     | Success
