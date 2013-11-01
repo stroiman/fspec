@@ -14,12 +14,12 @@ let tryExecute test =
         | AssertionError(info) -> Some(info)
 
 let shouldPass test =
-    match test with
+    match tryExecute test with
     | None -> ()
     | Some(x) -> failwithf "Test failed with %A" x
     
 let shouldFail test =
-    match test with
+    match tryExecute test with
     | None -> failwith "Expected test failure"
     | Some(x) -> ()
 
@@ -28,16 +28,13 @@ let specs =
         it "succeeds when object is of expected type" <| fun () -> 
             let actual = { X = "dummy" }
             (fun () -> actual |> shouldBeTypeOf<A>)
-                |> tryExecute
                 |> shouldPass
 
         it "fails when object is of wrong type" <| fun () ->
             let actual = { X = "dummy" }
             (fun () -> actual |> shouldBeTypeOf<B>)
-                |> tryExecute
                 |> shouldFail
 
         it "fails when object is null" <| fun () ->
             (fun () -> null |> shouldBeTypeOf<B>)
-                |> tryExecute
                 |> shouldFail
