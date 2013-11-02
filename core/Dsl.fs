@@ -1,6 +1,8 @@
 module FSpec.Core.Dsl
 open Matchers
 
+let pending () = raise PendingError
+
 module TestContext =
     type testFunc = unit -> unit
     type Test = {Name: string; Test: unit -> unit}
@@ -54,6 +56,7 @@ module TestContext =
                 x.Test()
                 results.reportTestName name Success
             with
+            | PendingError -> results.reportTestName name Pending
             | AssertionError(e) ->
                 results.reportTestName name (Failure(e))
             | ex -> 

@@ -137,6 +137,11 @@ let specs =
                 let report = run()
                 report.summary() |> should equal  "1 run, 0 failed"
 
+            it "reports pending tests" <| fun() ->
+                _it "Is pending" pending
+                let report = run()
+                report.summary() |> should equal "1 run, 0 failed, 1 pending"
+
             it "runs the tests in the right order" <| fun() ->
                 let order = ref []
                 _describe("context") <| fun() ->
