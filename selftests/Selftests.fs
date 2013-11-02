@@ -138,39 +138,26 @@ let specs =
                 report.summary() |> should equal  "1 run, 0 failed"
 
             it "runs the tests in the right order" <| fun() ->
-                let no = ref 0
-                let testNo () =
-                    no := !no + 1
-                    !no
-                let test1No = ref 0
-                let test2No = ref 0
+                let order = ref []
                 _describe("context") <| fun() ->
                     _it("has test 1") <| fun() ->
-                        test1No := testNo()
+                        order := 1::!order
                     _it("has test 2") <| fun() ->
-                        test2No := testNo()
+                        order := 2::!order
 
                 run() |> ignore
-                !test1No |> should equal 1
-                !test2No |> should equal 2
+                !order |> should equal [2;1]
 
             it "runs the contexts in the right order" <| fun() ->
-                let no = ref 0
-                let testNo () =
-                    no := !no + 1
-                    !no
-                let test1No = ref 0
-                let test2No = ref 0
+                let order = ref []
                 _describe("context") <| fun() ->
                     _it("has test 1") <| fun() ->
-                        test1No := testNo()
+                        order := 1::!order
                 _describe("other context") <| fun() ->
                     _it("has test 2") <| fun() ->
-                        test2No := testNo()
-
+                        order := 2::!order
                 run() |> ignore
-                !test1No |> should equal 1
-                !test2No |> should equal 2
+                !order |> should equal [2;1]
 
         describe "Running status" <| fun () ->
             it "Is reported while running" <| fun () ->
