@@ -2,13 +2,16 @@ module FSpec.SelfTests.SuiteBuilderSpecs
 open FSpec.Core
 open Dsl
 open Matchers
-
-let pass () = ()
-let fail () = failwithf "Test failure"
-
-type DummyType = {Name: string}
+open DslHelper
 
 let specs =
+    let helper = DslHelper()
+    let run () = helper.run()
+    let _describe = helper.describe
+    let _it = helper.it
+    let _before = helper.before 
+    let _after = helper.after
+
     describe "TestCollection" <| fun() ->
         it "handles lazy initialization" <| fun () ->
             let c = TestCollection()
@@ -31,17 +34,6 @@ let specs =
             !initCount |> should equal 2
 
     describe "TestCollection" <| fun() ->
-        let col = init (fun () -> TestCollection())
-        let res = init (fun () -> TestReport())
-        let run () =
-            col().run(res())
-            res()
-
-        let _describe x = col().describe x
-        let _it x = col().it x
-        let _before x = col().before x
-        let _after x = col().after x
-
         describe "Execution order" <| fun() ->
             let order = ref []
             let functionCalled x = order := x::!order
