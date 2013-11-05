@@ -14,6 +14,23 @@ let specs =
         let sut = DslHelper()
         before <| clearCallList
 
+        describe "test execution order" <| fun () ->
+            it "tests execute in the order they appear" <| fun() ->
+                sut.describe("context") <| fun() ->
+                    sut.it("has test 1") <| fun() -> addToCallList "test 1"
+                    sut.it("has test 2") <| fun() -> addToCallList "test 2"
+
+                sut.run() |> ignore
+                actualCallList() |> should equal ["test 1"; "test 2"]
+
+            it "child contexts execute in the order they appear" <| fun() ->
+                sut.describe("context") <| fun() ->
+                    sut.it("has test 1") <| fun() -> addToCallList "test 1"
+                sut.describe("other context") <| fun() ->
+                    sut.it("has test 2") <| fun() -> addToCallList "test 2"
+                sut.run() |> ignore
+                actualCallList() |> should equal ["test 1"; "test 2"]
+
         describe "Lazy object initialization" <| fun () ->
             it "can be used to create objects to test" <| fun () ->
                 sut.describe "Ctx" <| fun () ->
@@ -41,23 +58,6 @@ let specs =
                 
                 let expected = ["init"; "test 1"; "init"; "test 2"]
                 actualCallList() |> should equal expected
-
-        describe "test execution order" <| fun () ->
-            it "tests execute in the order they appear" <| fun() ->
-                sut.describe("context") <| fun() ->
-                    sut.it("has test 1") <| fun() -> addToCallList "test 1"
-                    sut.it("has test 2") <| fun() -> addToCallList "test 2"
-
-                sut.run() |> ignore
-                actualCallList() |> should equal ["test 1"; "test 2"]
-
-            it "child contexts execute in the order they appear" <| fun() ->
-                sut.describe("context") <| fun() ->
-                    sut.it("has test 1") <| fun() -> addToCallList "test 1"
-                sut.describe("other context") <| fun() ->
-                    sut.it("has test 2") <| fun() -> addToCallList "test 2"
-                sut.run() |> ignore
-                actualCallList() |> should equal ["test 1"; "test 2"]
 
         describe "General setup/test/teardown handling" <| fun () ->
             it "runs the sequence before, spec, teardown" <| fun () ->

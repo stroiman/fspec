@@ -108,4 +108,5 @@ let c = TestCollection()
 let describe = c.describe
 let it = c.it
 let before = c.before
+let context = describe
 let init = c.init
