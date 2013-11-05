@@ -5,28 +5,6 @@ open Matchers
 open DslHelper
 
 let specs =
-    describe "TestCollection" <| fun() ->
-        let sut = DslHelper()
-
-        it "handles lazy initialization" <| fun () ->
-            let initCount = ref 0
-            sut.describe "Ctx" <| fun () ->
-                let value = sut.init <| fun () ->
-                    initCount := !initCount + 1
-                    "dummy"
-
-                sut.it "uses value" <| fun () ->
-                    let x = value()
-                    ()
-
-                sut.it "uses value twice" <| fun () ->
-                    let x = value()
-                    let y = value()
-                    ()
-
-            sut.run() |> ignore
-            !initCount |> should equal 2
-
     describe "Reporting" <| fun() ->
         let sut = DslHelper()
 

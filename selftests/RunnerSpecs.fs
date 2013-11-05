@@ -14,6 +14,34 @@ let specs =
         let sut = DslHelper()
         before <| clearCallList
 
+        describe "Lazy object initialization" <| fun () ->
+            it "can be used to create objects to test" <| fun () ->
+                sut.describe "Ctx" <| fun () ->
+                    let initializer = sut.init <| fun () ->
+                        "Value from initializer"
+                    sut.it "uses the value" <| fun () ->
+                        addToCallList (initializer())
+                sut.run() |> ignore
+                actualCallList() |> should equal ["Value from initializer"]
+
+            it "only initializes object once" <| fun () ->
+                sut.describe "Ctx" <| fun () ->
+                    let initializer = sut.init <| fun () ->
+                        addToCallList "init"
+
+                    sut.it "uses value" <| fun () ->
+                        let x = initializer()
+                        addToCallList "test 1"
+
+                    sut.it "uses value twice" <| fun () ->
+                        let x = initializer()
+                        let y = initializer()
+                        addToCallList "test 2"
+                sut.run() |> ignore
+                
+                let expected = ["init"; "test 1"; "init"; "test 2"]
+                actualCallList() |> should equal expected
+
         describe "test execution order" <| fun () ->
             it "tests execute in the order they appear" <| fun() ->
                 sut.describe("context") <| fun() ->
