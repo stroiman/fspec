@@ -54,6 +54,20 @@ let specs =
                 actual |> should matchRegex "Some context in some special state has some special behavior"
 
         describe "Failed tests" <| fun() ->
+            it "handles test failures in setup code" (fun () ->
+                sut.before (fun () -> failwith "error")
+                sut.it "works" pass
+                let result = sut.run()
+                result.success() |> should equal false
+            )
+            
+            it "handles test failures in teardown code" (fun () ->
+                sut.after (fun () -> failwith "error")
+                sut.it "works" pass
+                let result = sut.run()
+                result.success() |> should equal false
+            )
+
             it "Writes the output to the test report" <| fun() ->
                 sut.it "Is a failing test" <| fun() ->
                     (5).should equal 6

@@ -49,11 +49,14 @@ module TestContext =
             | head::tail ->sprintf "%s %s" (printNameStack(tail)) head
 
         context.Tests |> List.rev |> List.iter (fun x -> 
-            perform_setup contexts
             let nameStack = x.Name :: (contexts |> List.map (fun x -> x.Name) |> List.filter (fun x -> x <> null))
             let name = printNameStack(nameStack)
             try
-                x.Test()
+                try
+                    perform_setup contexts
+                    x.Test()
+                finally
+                    perform_teardown contexts
                 results.reportTestName name Success
             with
             | PendingError -> results.reportTestName name Pending
@@ -61,7 +64,6 @@ module TestContext =
                 results.reportTestName name (Failure(e))
             | ex -> 
                 results.reportTestName name (Error(ex))
-            perform_teardown contexts
         )
 
         context.ChildContexts |> List.rev |> List.iter (fun x ->
