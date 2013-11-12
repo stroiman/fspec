@@ -20,15 +20,16 @@ let specs =
         before <| clearCallList
 
         describe "test execution order" <| fun () ->
-            it "tests execute in the order they appear" <| fun() ->
+            it "tests execute in the order they appear" (fun() ->
                 runSpecs (fun sut ->
                     sut.describe("context") <| fun() ->
                         sut.it("has test 1") <| fun() -> addToCallList "test 1"
                         sut.it("has test 2") <| fun() -> addToCallList "test 2"
                 )
                 actualCallList() |> should equal ["test 1"; "test 2"]
+            )
 
-            it "child contexts execute in the order they appear" <| fun() ->
+            it "child contexts execute in the order they appear" (fun() ->
                 runSpecs (fun sut ->
                     sut.describe("context") <| fun() ->
                         sut.it("has test 1") <| fun() -> addToCallList "test 1"
@@ -36,9 +37,10 @@ let specs =
                         sut.it("has test 2") <| fun() -> addToCallList "test 2"
                 )
                 actualCallList() |> should equal ["test 1"; "test 2"]
+            )
 
         describe "Lazy object initialization" <| fun () ->
-            it "can be used to create objects to test" <| fun () ->
+            it "can be used to create objects to test" (fun () ->
                 sut.describe "Ctx" <| fun () ->
                     let initializer = sut.init <| fun () ->
                         "Value from initializer"
@@ -46,24 +48,26 @@ let specs =
                         addToCallList (initializer())
                 sut.run() |> ignore
                 actualCallList() |> should equal ["Value from initializer"]
+            )
 
-            it "only initializes object once" <| fun () ->
-                sut.describe "Ctx" <| fun () ->
-                    let initializer = sut.init <| fun () ->
-                        addToCallList "init"
+            it "only initializes object once" (fun () ->
+                runSpecs (fun sut ->
+                    sut.describe "Ctx" <| fun () ->
+                        let initializer = sut.init <| fun () ->
+                            addToCallList "init"
 
-                    sut.it "uses value" <| fun () ->
-                        let x = initializer()
-                        addToCallList "test 1"
+                        sut.it "uses value" <| fun () ->
+                            let x = initializer()
+                            addToCallList "test 1"
 
-                    sut.it "uses value twice" <| fun () ->
-                        let x = initializer()
-                        let y = initializer()
-                        addToCallList "test 2"
-                sut.run() |> ignore
-                
+                        sut.it "uses value twice" <| fun () ->
+                            let x = initializer()
+                            let y = initializer()
+                            addToCallList "test 2"
+                )
                 let expected = ["init"; "test 1"; "init"; "test 2"]
                 actualCallList() |> should equal expected
+            )
 
         describe "General setup/test/teardown handling" <| fun () ->
             it "runs the sequence before, spec, teardown" <| fun () ->
