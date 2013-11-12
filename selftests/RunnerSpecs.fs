@@ -9,6 +9,11 @@ let addToCallList x = callList := x::!callList
 let actualCallList () = !callList |> List.rev
 let clearCallList () = callList := []
 
+let runSpecs (specs : DslHelper -> unit) =
+    let sut = DslHelper()
+    specs sut
+    sut.run() |> ignore
+
 let specs =
     describe "Test runner" <| fun () ->
         let sut = DslHelper()
@@ -16,19 +21,20 @@ let specs =
 
         describe "test execution order" <| fun () ->
             it "tests execute in the order they appear" <| fun() ->
-                sut.describe("context") <| fun() ->
-                    sut.it("has test 1") <| fun() -> addToCallList "test 1"
-                    sut.it("has test 2") <| fun() -> addToCallList "test 2"
-
-                sut.run() |> ignore
+                runSpecs (fun sut ->
+                    sut.describe("context") <| fun() ->
+                        sut.it("has test 1") <| fun() -> addToCallList "test 1"
+                        sut.it("has test 2") <| fun() -> addToCallList "test 2"
+                )
                 actualCallList() |> should equal ["test 1"; "test 2"]
 
             it "child contexts execute in the order they appear" <| fun() ->
-                sut.describe("context") <| fun() ->
-                    sut.it("has test 1") <| fun() -> addToCallList "test 1"
-                sut.describe("other context") <| fun() ->
-                    sut.it("has test 2") <| fun() -> addToCallList "test 2"
-                sut.run() |> ignore
+                runSpecs (fun sut ->
+                    sut.describe("context") <| fun() ->
+                        sut.it("has test 1") <| fun() -> addToCallList "test 1"
+                    sut.describe("other context") <| fun() ->
+                        sut.it("has test 2") <| fun() -> addToCallList "test 2"
+                )
                 actualCallList() |> should equal ["test 1"; "test 2"]
 
         describe "Lazy object initialization" <| fun () ->
