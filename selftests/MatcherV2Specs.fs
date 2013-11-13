@@ -3,13 +3,9 @@ open FSpec.Core
 open Dsl
 open MatchersV2
 
-type A() =
-    let mutable dummy = 0
-type A'() =
-    inherit A()
-
-type B() =
-    let mutable dummy = 0
+type A() = let mutable dummy = 0
+type A'() = inherit A()
+type B() = let mutable dummy = 0
 
 let tryExecute test =
     try
