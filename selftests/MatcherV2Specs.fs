@@ -29,6 +29,15 @@ let shouldFail test =
     | Some(x) -> ()
 
 let specs =
+    describe "Equal matcher" <| fun () ->
+        it "succeeds when objects are equal" <| fun () ->
+            let test () = 5 |> should equal 5
+            test |> shouldPass
+
+        it "fails when objects are not equal" <| fun () ->
+            let test () = 5 |> should equal 6
+            test |> shouldFail
+        
     describe "TypeOf matcher" <| fun() ->
         it "succeeds when object is of expected type" <| fun () -> 
             let test () = A() |> should beOfType<A>

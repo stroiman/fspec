@@ -20,6 +20,9 @@ let not (report : bool -> unit) builder =
         report (not value)
     builder invertedReport
 
+let equal (report : bool -> unit) expected actual =
+    report (expected = actual)
+
 let beOfType<'T> (report : bool -> unit) (actual : obj) =
     let expectedType = typeof<'T>
     report (expectedType.IsInstanceOfType(actual))
