@@ -24,10 +24,7 @@ let getErrorMsg test =
     | None -> failwith "Expected test failure"
     | Some(x) -> x.Message
     
-let shouldFail test =
-    match tryExecute test with
-    | None -> failwith "Expected test failure"
-    | Some(x) -> ()
+let shouldFail test = getErrorMsg test |> ignore
 
 let specs =
     describe "Equal matcher" <| fun () ->
