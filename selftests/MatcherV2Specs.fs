@@ -68,7 +68,11 @@ let specs =
             let test () = null |> should beOfType<B>
             test |> shouldFail
 
+        it "fails with the right error message" pending
+
     describe "Not typeof" <| fun () ->
         it "succeeds when object is of different type" <| fun () ->
             let test () = A() |> shouldNot beOfType<B>
             test |> shouldPass
+
+        it "fails with the right error message" pending

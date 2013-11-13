@@ -6,7 +6,7 @@ module MatchResult =
             Message: string
         }
 
-    let create success = { Success = success; Message =  "expected 5 to equal 6" }
+    let create success = { Success = success; Message =  "assertion failed" }
     let setMessage message (result : T) = { result with Message = message }
     
 let isOfType (t: System.Type) actual =
