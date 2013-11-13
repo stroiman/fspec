@@ -3,42 +3,44 @@ module FSpec.Core.MatchersV2
 module MatchResult =
     type T = {
             Success: bool;
-            Message: string;
-            NotMessage: string;
+            FailureMessageForShould: string;
+            FailureMessageForShouldNot: string;
         }
 
     let create success = { 
         Success = success; 
-        Message =  "assertion failed";
-        NotMessage = "assertion failed" 
+        FailureMessageForShould =  "assertion failed";
+        FailureMessageForShouldNot = "assertion failed" 
     }
         
-    let setMessage message (result : T) = { result with Message = message }
-    let setNotMessage message result = { result with NotMessage = message }
+    let setFailureMessageForShould message (result : T) = { result with FailureMessageForShould = message }
+    let setFailureMessageForShouldNot message result = { result with FailureMessageForShouldNot = message }
     
+let reportBack (report: MatchResult.T -> unit) result = report result
+
 let isOfType (t: System.Type) actual =
     t.IsInstanceOfType(actual)
 
 let should matcher =
     let reportMatch (value : MatchResult.T) =
         if not (value.Success) then
-            raise (AssertionError({Message = value.Message}))
+            raise (AssertionError({Message = value.FailureMessageForShould}))
     matcher reportMatch
 
 let shouldNot matcher =
     let reportMatch (value : MatchResult.T) =
         if (value.Success) then
-            raise (AssertionError({Message = value.NotMessage}))
+            raise (AssertionError({Message = value.FailureMessageForShouldNot}))
     matcher reportMatch
 
-let equal (report : MatchResult.T -> unit) expected actual =
+let equal report expected actual =
     MatchResult.create (expected = actual)
-    |> MatchResult.setMessage (sprintf "expected %A to equal %A" actual expected)
-    |> MatchResult.setNotMessage (sprintf "expected %A to not equal %A" actual expected)
-    |> report
+    |> MatchResult.setFailureMessageForShould (sprintf "expected %A to equal %A" actual expected)
+    |> MatchResult.setFailureMessageForShouldNot (sprintf "expected %A to not equal %A" actual expected)
+    |> reportBack report
 
-let beOfType<'T> (report : MatchResult.T -> unit) (actual : obj) =
+let beOfType<'T> report (actual : obj) =
     let expectedType = typeof<'T>
     expectedType.IsInstanceOfType(actual)
     |> MatchResult.create
-    |> report
+    |> reportBack report
