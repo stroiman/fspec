@@ -60,7 +60,34 @@ let specs =
             it "fails with the right error message" <| fun () ->
                 let test () = 5 |> shouldNot equal 5
                 test |> getErrorMsg |> should equal "expected 5 to not equal 5"
+
+    describe "Regex matcher" <| fun () ->
+        context "when used with 'should'" <| fun () ->
+            it "succeeds when the value match the pattern" <| fun () ->
+                let test () = "blah blah" |> should matchRegex "^blah blah$"
+                test |> shouldPass
+
+            it "fails when the value does not match the pattern" <| fun () ->
+                let test () = "blah blah" |> should matchRegex "^blah$"
+                test |> shouldFail
+
+            it "fails with the right error message" <| fun () ->
+                let test () = "blah blah" |> should matchRegex "^blah$"
+                test |> getErrorMsg |> should equal "expected \"blah blah\" to match regex pattern \"^blah$\""
         
+        context "when used with 'should not'" <| fun () ->
+            it "succeeds when the value does not match the pattern" <| fun () ->
+                let test () = "blah blah" |> shouldNot matchRegex "^blah$"
+                test |> shouldPass
+
+            it "fails when the value does match the pattern" <| fun () ->
+                let test () = "blah blah" |> shouldNot matchRegex "^blah blah$"
+                test |> shouldFail
+
+            it "fails with the right error message" <| fun () ->
+                let test () = "blah blah" |> shouldNot matchRegex "^blah blah$"
+                test |> getErrorMsg |> should equal "expected \"blah blah\" to not match regex pattern \"^blah blah$\""
+
     describe "TypeOf matcher" <| fun() ->
         it "succeeds when object is of expected type" <| fun () -> 
             let test () = A() |> should beOfType<A>

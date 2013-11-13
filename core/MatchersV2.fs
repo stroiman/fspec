@@ -46,3 +46,13 @@ let beOfType<'T> report (actual : obj) =
     expectedType.IsInstanceOfType(actual)
     |> MatchResult.create
     |> reportBack report
+
+let matchRegex report pattern actual =
+    let regex = System.Text.RegularExpressions.Regex pattern
+    regex.IsMatch actual
+    |> MatchResult.create
+    |> MatchResult.setFailureMessageForShould 
+        (sprintf "expected %A to match regex pattern %A" actual pattern)
+    |> MatchResult.setFailureMessageForShouldNot 
+        (sprintf "expected %A to not match regex pattern %A" actual pattern)
+    |> reportBack report
