@@ -1,28 +1,36 @@
 module FSpec.Core.MatchersV2
 
+module MatchResult =
+    type T = {
+            Success: bool;
+            Message: string
+        }
+
+    let create success = { Success = success; Message =  "expected 5 to equal 6" }
+    let setMessage message (result : T) = { result with Message = message }
+    
 let isOfType (t: System.Type) actual =
     t.IsInstanceOfType(actual)
 
 let should matcher =
-    let reportMatch value =
-        if not value then
-            raise (AssertionError({Message = "Expected true"}))
+    let reportMatch (value : MatchResult.T) =
+        if not (value.Success) then
+            raise (AssertionError({Message = value.Message}))
     matcher reportMatch
 
 let shouldNot matcher =
-    let reportMatch value =
-        if value then
+    let reportMatch (value : MatchResult.T) =
+        if (value.Success) then
             raise (AssertionError({Message = "Expected false"}))
     matcher reportMatch
 
-let not (report : bool -> unit) builder =
-    let invertedReport value =
-        report (not value)
-    builder invertedReport
+let equal (report : MatchResult.T -> unit) expected actual =
+    MatchResult.create (expected = actual)
+    |> MatchResult.setMessage (sprintf "expected %A to equal %A" actual expected)
+    |> report
 
-let equal (report : bool -> unit) expected actual =
-    report (expected = actual)
-
-let beOfType<'T> (report : bool -> unit) (actual : obj) =
+let beOfType<'T> (report : MatchResult.T -> unit) (actual : obj) =
     let expectedType = typeof<'T>
-    report (expectedType.IsInstanceOfType(actual))
+    let success = expectedType.IsInstanceOfType(actual)
+    let result = MatchResult.create success
+    report result

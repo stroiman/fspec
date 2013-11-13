@@ -22,6 +22,11 @@ let shouldPass test =
     match tryExecute test with
     | None -> ()
     | Some(x) -> failwithf "Test failed with %A" x
+
+let getErrorMsg test =
+    match tryExecute test with
+    | None -> failwith "Expected test failure"
+    | Some(x) -> x.Message
     
 let shouldFail test =
     match tryExecute test with
@@ -37,6 +42,10 @@ let specs =
         it "fails when objects are not equal" <| fun () ->
             let test () = 5 |> should equal 6
             test |> shouldFail
+
+        it "fails with the right error message" <| fun () ->
+            let test () = 5 |> should equal 6
+            test |> getErrorMsg |> should equal "expected 5 to equal 6"
         
     describe "TypeOf matcher" <| fun() ->
         it "succeeds when object is of expected type" <| fun () -> 
