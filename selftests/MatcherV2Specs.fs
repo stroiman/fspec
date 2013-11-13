@@ -31,28 +31,26 @@ let shouldFail test =
 let specs =
     describe "TypeOf matcher" <| fun() ->
         it "succeeds when object is of expected type" <| fun () -> 
-            let actual = A()
-            (fun () -> actual |> should beOfType<A>)
-                |> shouldPass
+            let test () = A() |> should beOfType<A>
+            test |> shouldPass
         
         it "succeeds when actual is subclass of expected type" <| fun () ->
-            (fun () -> A'() |> should beOfType<A>)
-                |> shouldPass
+            let test () = A'() |> should beOfType<A>
+            test |> shouldPass
 
         it "fails when actual is superclass of expected type" <| fun () ->
-            (fun () -> A() |> should beOfType<A'>)
-                |> shouldFail
+            let test () = A() |> should beOfType<A'>
+            test |> shouldFail
 
         it "fails when object is of wrong type" <| fun () ->
-            let actual = A()
-            (fun () -> actual |> should beOfType<B>)
-                |> shouldFail
+            let test () = A() |> should beOfType<B>
+            test |> shouldFail
 
         it "fails when object is null" <| fun () ->
-            (fun () -> null |> should beOfType<B>)
-                |> shouldFail
+            let test () = null |> should beOfType<B>
+            test |> shouldFail
 
     describe "Not typeof" <| fun () ->
         it "succeeds when object is of different type" <| fun () ->
-            (fun () -> A() |> shouldNot beOfType<B>)
-                |> shouldPass
+            let test () = A() |> shouldNot beOfType<B>
+            test |> shouldPass
