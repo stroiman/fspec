@@ -28,7 +28,7 @@ let shouldFail test = getErrorMsg test |> ignore
 
 let specs =
     describe "Equal matcher" <| fun () ->
-        describe "when used normally" <| fun () ->
+        context "when used with 'should'" <| fun () ->
             it "succeeds when objects are equal" <| fun () ->
                 let test () = 5 |> should equal 5
                 test |> shouldPass
@@ -41,7 +41,7 @@ let specs =
                 let test () = 5 |> should equal 6
                 test |> getErrorMsg |> should equal "expected 5 to equal 6"
 
-        describe "when used negated" <| fun () ->
+        context "when used with 'should not'" <| fun () ->
             it "succeeds when objects are not equal" <| fun () ->
                 let test () = 5 |> shouldNot equal 6
                 test |> shouldPass
