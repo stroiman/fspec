@@ -35,17 +35,31 @@ let shouldFail test =
 
 let specs =
     describe "Equal matcher" <| fun () ->
-        it "succeeds when objects are equal" <| fun () ->
-            let test () = 5 |> should equal 5
-            test |> shouldPass
+        describe "when used normally" <| fun () ->
+            it "succeeds when objects are equal" <| fun () ->
+                let test () = 5 |> should equal 5
+                test |> shouldPass
 
-        it "fails when objects are not equal" <| fun () ->
-            let test () = 5 |> should equal 6
-            test |> shouldFail
+            it "fails when objects are not equal" <| fun () ->
+                let test () = 5 |> should equal 6
+                test |> shouldFail
 
-        it "fails with the right error message" <| fun () ->
-            let test () = 5 |> should equal 6
-            test |> getErrorMsg |> should equal "expected 5 to equal 6"
+            it "fails with the right error message" <| fun () ->
+                let test () = 5 |> should equal 6
+                test |> getErrorMsg |> should equal "expected 5 to equal 6"
+
+        describe "when used negated" <| fun () ->
+            it "succeeds when objects are not equal" <| fun () ->
+                let test () = 5 |> shouldNot equal 6
+                test |> shouldPass
+
+            it "fails when objects are equal" <| fun () ->
+                let test () = 5 |> shouldNot equal 5
+                test |> shouldFail
+
+            it "fails with the right error message" <| fun () ->
+                let test () = 5 |> shouldNot equal 5
+                test |> getErrorMsg |> should equal "expected 5 to not equal 5"
         
     describe "TypeOf matcher" <| fun() ->
         it "succeeds when object is of expected type" <| fun () -> 
