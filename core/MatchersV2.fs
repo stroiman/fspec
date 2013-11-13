@@ -15,11 +15,6 @@ module MatchResult =
         
     let setFailureMessageForShould message (result : T) = { result with FailureMessageForShould = message }
     let setFailureMessageForShouldNot message result = { result with FailureMessageForShouldNot = message }
-    
-let reportBack (report: MatchResult.T -> unit) result = report result
-
-let isOfType (t: System.Type) actual =
-    t.IsInstanceOfType(actual)
 
 let should matcher =
     let reportMatch (value : MatchResult.T) =
@@ -32,6 +27,13 @@ let shouldNot matcher =
         if (value.Success) then
             raise (AssertionError({Message = value.FailureMessageForShouldNot}))
     matcher reportMatch
+    
+(* This function with explicit type arguments help make it possible to use
+ * type inference in the actual matcher functions *)
+let reportBack (report: MatchResult.T -> unit) result = report result
+
+let isOfType (t: System.Type) actual =
+    t.IsInstanceOfType(actual)
 
 let equal report expected actual =
     MatchResult.create (expected = actual)
