@@ -82,31 +82,32 @@ let specs =
                 test |> getErrorMsg |> should equal "expected \"blah blah\" to not match regex pattern \"^blah blah$\""
 
     describe "TypeOf matcher" <| fun() ->
-        it "succeeds when object is of expected type" <| fun () -> 
-            let test () = A() |> should beOfType<A>
-            test |> shouldPass
-        
-        it "succeeds when actual is subclass of expected type" <| fun () ->
-            let test () = A'() |> should beOfType<A>
-            test |> shouldPass
+        context "when used with 'should'" <| fun () ->
+            it "succeeds when object is of expected type" <| fun () -> 
+                let test () = A() |> should beOfType<A>
+                test |> shouldPass
+            
+            it "succeeds when actual is subclass of expected type" <| fun () ->
+                let test () = A'() |> should beOfType<A>
+                test |> shouldPass
 
-        it "fails when actual is superclass of expected type" <| fun () ->
-            let test () = A() |> should beOfType<A'>
-            test |> shouldFail
+            it "fails when actual is superclass of expected type" <| fun () ->
+                let test () = A() |> should beOfType<A'>
+                test |> shouldFail
 
-        it "fails when object is of wrong type" <| fun () ->
-            let test () = A() |> should beOfType<B>
-            test |> shouldFail
+            it "fails when object is of wrong type" <| fun () ->
+                let test () = A() |> should beOfType<B>
+                test |> shouldFail
 
-        it "fails when object is null" <| fun () ->
-            let test () = null |> should beOfType<B>
-            test |> shouldFail
+            it "fails when object is null" <| fun () ->
+                let test () = null |> should beOfType<B>
+                test |> shouldFail
 
-        it "fails with the right error message" pending
+            it "fails with the right error message" pending
 
-    describe "Not typeof" <| fun () ->
-        it "succeeds when object is of different type" <| fun () ->
-            let test () = A() |> shouldNot beOfType<B>
-            test |> shouldPass
+        context "when used with 'should not'" <| fun () ->
+            it "succeeds when object is of different type" <| fun () ->
+                let test () = A() |> shouldNot beOfType<B>
+                test |> shouldPass
 
-        it "fails with the right error message" pending
+            it "fails with the right error message" pending
