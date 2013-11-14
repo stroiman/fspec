@@ -60,3 +60,18 @@ let matchRegex report pattern actual =
     |> MatchResult.setFailureMessageForShouldNot 
         (sprintf "expected %A to not match regex pattern %A" actual pattern)
     |> reportBack report
+
+let fail report actual =
+    let isMatch =
+        try
+            actual ()
+            false
+        with
+            | _ -> true
+    isMatch 
+    |> MatchResult.create 
+    |> MatchResult.setFailureMessageForShould  
+        "expected exception to be thrown, but none was thrown"
+    |> MatchResult.setFailureMessageForShouldNot
+        "exception was thrown when none was expected"
+    |> reportBack report    

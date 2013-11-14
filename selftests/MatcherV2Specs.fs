@@ -115,3 +115,25 @@ let specs =
             it "fails with the right error message" <| fun () ->
                 let test () = A() |> shouldNot beOfType<A>
                 test |> getErrorMsg |> should matchRegex "^expected .*A to not be of type .*A$"
+
+    describe "Fail matcher" <| fun () ->
+        context "when used with 'should'" <| fun () ->
+            it "succeeds when function fails" <| fun () ->
+                let test () = failwith "dummy"
+                test |> should fail
+
+            it "fails when the function doesn't fail" <| fun () ->
+                let nonFailingFunction () = ()
+                let test () = nonFailingFunction |> should fail
+                test |> shouldFail
+
+            it "fails with the right error message" <| fun () ->
+                let nonFailingFunction () = ()
+                let test () = nonFailingFunction |> should fail
+                test |> getErrorMsg |> should equal "expected exception to be thrown, but none was thrown"
+
+        context "when used with 'should not'" <| fun () ->
+            it "fails with the right error message" <| fun () ->
+                let failingFunction () = failwith "dummy"
+                let test () = failingFunction |> shouldNot fail
+                test |> getErrorMsg |> should equal "exception was thrown when none was expected"
