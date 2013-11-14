@@ -45,6 +45,10 @@ let beOfType<'T> report (actual : obj) =
     let expectedType = typeof<'T>
     expectedType.IsInstanceOfType(actual)
     |> MatchResult.create
+    |> MatchResult.setFailureMessageForShould
+        (sprintf "expected %A to be of type %A" actual expectedType)
+    |> MatchResult.setFailureMessageForShouldNot
+        (sprintf "expected %A to not be of type %A" actual expectedType)
     |> reportBack report
 
 let matchRegex report pattern actual =

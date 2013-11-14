@@ -103,11 +103,15 @@ let specs =
                 let test () = null |> should beOfType<B>
                 test |> shouldFail
 
-            it "fails with the right error message" pending
+            it "fails with the right error message" <| fun () ->
+                let test () = A() |> should beOfType<B>
+                test |> getErrorMsg |> should matchRegex "^expected .*A to be of type .*B$"
 
         context "when used with 'should not'" <| fun () ->
             it "succeeds when object is of different type" <| fun () ->
                 let test () = A() |> shouldNot beOfType<B>
                 test |> shouldPass
 
-            it "fails with the right error message" pending
+            it "fails with the right error message" <| fun () ->
+                let test () = A() |> shouldNot beOfType<A>
+                test |> getErrorMsg |> should matchRegex "^expected .*A to not be of type .*A$"
