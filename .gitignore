@@ -2,3 +2,7 @@
 *.exe
 *.dll
 .DS_Store
+bin
+obj
+*.user
+*.suo
