@@ -24,7 +24,8 @@ file 'output/FSpec.Core.dll' => [
     'core/TestReport.fs', 
     'core/Matchers.fs', 
     'core/MatchersV2.fs', 
-    'core/Dsl.fs'
+    'core/Dsl.fs',
+    'core/DslV2.fs'
     ] do |t|
   compile(t.name, t.prerequisites, :library)
 end
@@ -37,6 +38,7 @@ file 'output/FSpec.SelfTests.dll' => [
     'selftests/MatcherSpecs.fs', 
     'selftests/TestReportSpecs.fs',
     'selftests/MetaDataSpecs.fs',
+    'selftests/DslV2Specs.fs',
     'output/FSpec.Core.dll'
     ] do |t|
   compile(t.name, t.prerequisites, :library)
