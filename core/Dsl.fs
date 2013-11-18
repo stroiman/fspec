@@ -14,7 +14,7 @@ module TestContext =
         ChildContexts : T list;
         }
 
-    let create name parent = { 
+    let create name = { 
         Name = name;
         Tests = [];
         Setups = [];
@@ -71,7 +71,7 @@ module TestContext =
         )
 
 type TestCollection() =
-    let mutable context = TestContext.create null None
+    let mutable context = TestContext.create null
 
     member self.init (f: unit -> 'a) : (unit -> 'a) =
         let value = ref None
@@ -87,7 +87,7 @@ type TestCollection() =
 
     member self.describe (name: string) (f: unit -> unit) = 
         let oldContext = context
-        context <- TestContext.create name (Some(context))
+        context <- TestContext.create name
         f()
         context <- TestContext.addChildContext oldContext context
 
