@@ -5,20 +5,20 @@ open Matchers
 open DslHelper
 
 let specs =
-    describe "TestReport" <| fun() ->
-        describe "With success reported" <| fun () ->
+    describe "TestReport" <| fun _ ->
+        describe "With success reported" <| fun _ ->
             it "Is a success" <| fun _ ->
                 let r = TestReport()
                 r.reportTestName "dummy" (Success)
                 r.success() |> should equal true
 
-        describe "With errors reported" <| fun() ->
+        describe "With errors reported" <| fun _ ->
             it "Is a failure" <| fun _ ->
                 let r = TestReport()
                 r.reportTestName "dummy" (Error(System.Exception()))
                 r.success() |> should equal false
 
-        describe "With failures reported" <| fun() ->
+        describe "With failures reported" <| fun _ ->
             it "Is a failure" <| fun _ ->
                 let r = TestReport()
                 r.reportTestName "dummy" (Failure(AssertionErrorInfo.create))

@@ -4,14 +4,14 @@ open Dsl
 open Matchers
 
 let specs =
-    describe "equals matcher" <| fun() ->
+    describe "equals matcher" <| fun _ ->
         it "passes when objects equal" <| fun _ ->
             (5).should equal 5
         it "fails when the objects are not equal" <| fun _ ->
             (fun () -> (5).should equal 6)
                 |> should throw ()
 
-    describe "greaterThan matcher" <| fun() ->
+    describe "greaterThan matcher" <| fun _ ->
         it "passes when actual is greater than expected" <| fun _ ->
             5 |> should be.greaterThan 4
         it "fails when actual is less than expected" <| fun _ ->
@@ -22,7 +22,7 @@ let specs =
             (fun () -> 5 |> should be.greaterThan 5)
                 |> should throw ()
 
-    describe "matchRegex matcher" <| fun() ->
+    describe "matchRegex matcher" <| fun _ ->
         it "passes when the input matches the pattern" <| fun _ ->
             "Some strange expression" |> should matchRegex "strange"
 
@@ -30,7 +30,7 @@ let specs =
             (fun () -> "some value" |> should matchRegex "invalidPattern")
                 |> should throw ()
             
-    describe "throw matcher" <| fun() ->
+    describe "throw matcher" <| fun _ ->
         let thrown = ref false
         let test (x : unit -> unit) =
             try

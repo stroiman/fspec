@@ -15,14 +15,14 @@ let runSpecs (specs : DslHelper -> unit) =
     sut.run() |> ignore
 
 let specs =
-    describe "Test runner" <| fun () ->
+    describe "Test runner" <| fun _ ->
         let sut = DslHelper()
         before <| clearCallList
 
-        describe "test execution order" <| fun () ->
+        describe "test execution order" <| fun _ ->
             it "tests execute in the order they appear" (fun _ ->
                 runSpecs (fun sut ->
-                    sut.describe("context") <| fun() ->
+                    sut.describe("context") <| fun _ ->
                         sut.it("has test 1") <| fun _ -> addToCallList "test 1"
                         sut.it("has test 2") <| fun _ -> addToCallList "test 2"
                 )
@@ -31,18 +31,18 @@ let specs =
 
             it "child contexts execute in the order they appear" (fun _ ->
                 runSpecs (fun sut ->
-                    sut.describe("context") <| fun() ->
+                    sut.describe("context") <| fun _ ->
                         sut.it("has test 1") <| fun _ -> addToCallList "test 1"
-                    sut.describe("other context") <| fun() ->
+                    sut.describe("other context") <| fun _ ->
                         sut.it("has test 2") <| fun _ -> addToCallList "test 2"
                 )
                 actualCallList() |> should equal ["test 1"; "test 2"]
             )
 
-        describe "Lazy object initialization" <| fun () ->
+        describe "Lazy object initialization" <| fun _ ->
             it "can be used to create objects to test" (fun _ ->
-                sut.describe "Ctx" <| fun () ->
-                    let initializer = sut.init <| fun () ->
+                sut.describe "Ctx" <| fun _ ->
+                    let initializer = sut.init <| fun _ ->
                         "Value from initializer"
                     sut.it "uses the value" <| fun _ ->
                         addToCallList (initializer())
@@ -52,8 +52,8 @@ let specs =
 
             it "only initializes object once" (fun _ ->
                 runSpecs (fun sut ->
-                    sut.describe "Ctx" <| fun () ->
-                        let initializer = sut.init <| fun () ->
+                    sut.describe "Ctx" <| fun _ ->
+                        let initializer = sut.init <| fun _ ->
                             addToCallList "init"
 
                         sut.it "uses value" <| fun _ ->
@@ -69,38 +69,38 @@ let specs =
                 actualCallList() |> should equal expected
             )
 
-        describe "General setup/test/teardown handling" <| fun () ->
+        describe "General setup/test/teardown handling" <| fun _ ->
             it "runs the sequence before, spec, teardown" <| fun _ ->
-                sut.before <| fun () -> addToCallList "setup"
-                sut.after <| fun () -> addToCallList "tearDown"
+                sut.before <| fun _ -> addToCallList "setup"
+                sut.after <| fun _ -> addToCallList "tearDown"
                 sut.it "works" <| fun _ -> addToCallList "test"
                 sut.run() |> ignore
 
                 actualCallList() |> should equal ["setup"; "test"; "tearDown"]
 
             it "runs outer setup before inner setup" <| fun _ ->
-                sut.describe "A feature" <| fun ()  ->
-                    sut.before <| fun () -> addToCallList "outer setup"
-                    sut.describe "in a specific context" <| fun () ->
-                        sut.before <| fun () -> addToCallList "inner setup"
+                sut.describe "A feature" <| fun _  ->
+                    sut.before <| fun _ -> addToCallList "outer setup"
+                    sut.describe "in a specific context" <| fun _ ->
+                        sut.before <| fun _ -> addToCallList "inner setup"
                         sut.it "works in a specific way" <| fun _ -> addToCallList "test"
                 sut.run() |> ignore
                 let expected = [ "outer setup"; "inner setup"; "test" ]
                 actualCallList() |> should equal expected
 
             it "runs inner tear down before outer tear down" <| fun _ ->
-                sut.describe "A feature" <| fun () ->
-                    sut.after <| fun () -> addToCallList "outer tear down"
-                    sut.describe "in a specific context" <| fun () ->
-                        sut.after <| fun () -> addToCallList "inner tear down"
+                sut.describe "A feature" <| fun _ ->
+                    sut.after <| fun _ -> addToCallList "outer tear down"
+                    sut.describe "in a specific context" <| fun _ ->
+                        sut.after <| fun _ -> addToCallList "inner tear down"
                         sut.it "works in a specific way" <| fun _ -> addToCallList "test"
                 sut.run() |> ignore
                 let expected = ["test"; "inner tear down"; "outer tear down"]
                 actualCallList() |> should equal expected
 
             it "runs setup/teardown once for each test" <| fun _ ->
-                sut.before <| fun () -> addToCallList "setup"
-                sut.after <| fun () -> addToCallList "tear down"
+                sut.before <| fun _ -> addToCallList "setup"
+                sut.after <| fun _ -> addToCallList "tear down"
                 sut.it "test 1" <| fun _ -> addToCallList "test 1"
                 sut.it "test 2" <| fun _ -> addToCallList "test 2"
                 sut.run() |> ignore
@@ -110,13 +110,13 @@ let specs =
                     "setup"; "test 2"; "tear down"]
                 actualCallList() |> should equal expected
             
-        describe "setup" <| fun () ->
+        describe "setup" <| fun _ ->
             it "is only run in same context, or nested context" <| fun _ ->
-                sut.describe "Ctx" <| fun () ->
-                    sut.before <| fun () -> addToCallList "outer setup"
+                sut.describe "Ctx" <| fun _ ->
+                    sut.before <| fun _ -> addToCallList "outer setup"
                     sut.it "Outer test" <| fun _ -> addToCallList "outer test"
-                    sut.describe "Inner ctx" <| fun () ->
-                        sut.before <| fun () -> addToCallList "inner setup"
+                    sut.describe "Inner ctx" <| fun _ ->
+                        sut.before <| fun _ -> addToCallList "inner setup"
                         sut.it "inner test 1" <| fun _ -> addToCallList "inner test 1"
                         sut.it "inner test 2" <| fun _ -> addToCallList "inner test 2"
                 sut.run() |> ignore
@@ -127,20 +127,20 @@ let specs =
                     "outer setup"; "inner setup"; "inner test 2"]
                 actualCallList() |> should equal expected
 
-        describe "tear down" <| fun() ->
+        describe "tear down" <| fun _ ->
             it "runs if test fail" <| fun _ ->
-                sut.after <| fun() -> addToCallList "tearDown"
+                sut.after <| fun _ -> addToCallList "tearDown"
                 sut.it "fails" <| fun _ -> failwith "some failure"
                 sut.run() |> ignore
 
                 actualCallList() |> should equal ["tearDown"]
 
             it "runs teardown in the right context" <| fun _ ->
-                sut.describe "outer ctx" <| fun() ->
-                    sut.after <| (fun() -> addToCallList "outer tearDown")
+                sut.describe "outer ctx" <| fun _ ->
+                    sut.after <| (fun _ -> addToCallList "outer tearDown")
                     sut.it "outer test" <| (fun _ -> addToCallList "outer test")
-                    sut.describe "inner ctx" <| fun() ->
-                        sut.after <| (fun() -> addToCallList "inner tearDown")
+                    sut.describe "inner ctx" <| fun _ ->
+                        sut.after <| (fun _ -> addToCallList "inner tearDown")
                         sut.it "inner text" <| (fun _ -> addToCallList "inner test")
                 sut.run() |> ignore
 

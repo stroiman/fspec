@@ -5,10 +5,10 @@ open Matchers
 open DslHelper
 
 let specs =
-    describe "Reporting" <| fun() ->
+    describe "Reporting" <| fun _ ->
         let sut = DslHelper()
 
-        describe "summary" <| fun () ->
+        describe "summary" <| fun _ ->
             it "reports test success" <| fun _ ->
                 sut.it "Is a success" pass
 
@@ -26,15 +26,15 @@ let specs =
                 let report = sut.run()
                 report.summary() |> should equal "1 run, 0 failed, 1 pending"
 
-        describe "Running status" <| fun () ->
+        describe "Running status" <| fun _ ->
             it "Is reported while running" <| fun _ ->
-                sut.describe "Some context" <| fun () ->
+                sut.describe "Some context" <| fun _ ->
                     sut.it "has some behavior" pass
                 let report = sut.run()
                 report.testOutput() |> should equal ["Some context has some behavior - passed"]
 
             it "Reports multiple test results" <| fun _ ->
-                sut.describe "Some context" <| fun() ->
+                sut.describe "Some context" <| fun _ ->
                     sut.it "has some behavior" pass
                     sut.it "has some other behavior" pass
 
@@ -45,24 +45,24 @@ let specs =
                 actual.should equal expected
 
             it "Reports nested contexts correctly" <| fun _ ->
-                sut.describe "Some context" <| fun() ->
-                    sut.describe "in some special state" <| fun() ->
+                sut.describe "Some context" <| fun _ ->
+                    sut.describe "in some special state" <| fun _ ->
                         sut.it "has some special behavior" pass
 
                 let report = sut.run()
                 let actual = report.testOutput() |> List.head
                 actual |> should matchRegex "Some context in some special state has some special behavior"
 
-        describe "Failed tests" <| fun() ->
+        describe "Failed tests" <| fun _ ->
             it "handles test failures in setup code" (fun _ ->
-                sut.before (fun () -> failwith "error")
+                sut.before (fun _ -> failwith "error")
                 sut.it "works" pass
                 let result = sut.run()
                 result.success() |> should equal false
             )
             
             it "handles test failures in teardown code" (fun _ ->
-                sut.after (fun () -> failwith "error")
+                sut.after (fun _ -> failwith "error")
                 sut.it "works" pass
                 let result = sut.run()
                 result.success() |> should equal false
@@ -88,7 +88,7 @@ let specs =
                 let actual = result.failedTests() |> List.length
                 actual.should equal 0
 
-        describe "Tests with errors" <| fun() ->
+        describe "Tests with errors" <| fun _ ->
             it "writes the exception name" <| fun _ ->
                 sut.it "Is a failing test" <| fun _ ->
                     raise (new System.NotImplementedException())
