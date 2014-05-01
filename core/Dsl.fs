@@ -4,13 +4,13 @@ open Matchers
 let pending () = raise PendingError
 
 module TestContext =
-    type testFunc = unit -> unit
+    type TestFunc = unit -> unit
     type Test = {Name: string; Test: unit -> unit}
     type T = {
         Name: string
         Tests: Test list;
-        Setups: testFunc list;
-        TearDowns: testFunc list;
+        Setups: TestFunc list;
+        TearDowns: TestFunc list;
         ChildContexts : T list;
         }
 
