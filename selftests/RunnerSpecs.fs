@@ -1,4 +1,4 @@
-module FSpec.SelfTests.TestRunnerSpecs
+module FSpec.SelfTests.RunnerSpecs
 open FSpec.Core
 open Dsl
 open Matchers
@@ -15,44 +15,8 @@ let runSpecs (specs : DslHelper -> unit) =
     specs sut
     sut.run() |> ignore
 
-let anExampleGroup = ExampleGroup.create "dummy"
-let withExamples examples exampleGroup =
-    let folder grp ex = ExampleGroup.addExample ex grp
-    examples |> List.fold folder exampleGroup
-
-let createAnExampleWithMetaData metaData f =
-    let metaData' = MetaData.create [metaData]
-    Example.create "dummy" f |> Example.addMetaData metaData'
-
-let runSingleExample example =
-    let group = anExampleGroup |> withExamples [example]
-    ExampleGroup.run group (TestReport()) 
-
-let withSetupCode f = ExampleGroup.addSetup f
-let withAnExampleWithMetaData metaData =
-    createAnExampleWithMetaData metaData (fun _ -> ())
-    |> ExampleGroup.addExample
-let shouldPass group =
-    let report = TestReport()
-    ExampleGroup.run group report
-    report.failedTests () |> List.length |> should equal 0
-
 let specs =
     describe "Test runner" <| fun _ ->
-        describe "metadata handling" <| fun _ ->
-            context "test contains metadata" <| fun _ ->
-                it "passes the metadata to the test" <| fun _ ->
-                    createAnExampleWithMetaData ("answer", 42) <| fun ctx ->
-                        ctx.metadata "answer" |> should equal 42
-                    |> runSingleExample 
-
-                it "passes the metadata to the setup" <| fun _ ->
-                    anExampleGroup
-                    |> withSetupCode (fun ctx -> 
-                        ctx.metadata "answer" |> should equal 42)
-                    |> withAnExampleWithMetaData ("answer", 42)
-                    |> shouldPass
-
         let sut = DslHelper()
         before <| clearCallList
 
