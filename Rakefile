@@ -24,6 +24,7 @@ file 'output/FSpec.Core.dll' => [
     'core/TestReport.fs', 
     'core/Matchers.fs', 
     'core/MatchersV2.fs', 
+    'core/DomainTypes.fs',
     'core/Dsl.fs',
     'core/DslV2.fs'
     ] do |t|

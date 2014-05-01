@@ -44,6 +44,7 @@
     <Compile Include="TestReport.fs" />
     <Compile Include="Matchers.fs" />
     <Compile Include="MatchersV2.fs" />
+    <Compile Include="DomainTypes.fs" />
     <Compile Include="Dsl.fs" />
     <Compile Include="DslV2.fs" />
   </ItemGroup>
