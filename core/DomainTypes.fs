@@ -14,13 +14,16 @@ module MetaData =
 module TestContext =
     type T = { 
         MetaData: MetaData.T;
+        mutable Subect: obj;
         mutable Data: MetaData.T }
         with
             member self.metadata<'T> name = self.MetaData.get<'T> name
             member ctx.add name value = ctx.Data <- ctx.Data.add name value
             member ctx.get<'T> name = ctx.Data.get<'T> name
+            member ctx.setSubject s = ctx.Subect <- s :> obj
+            member ctx.subject<'T> () = ctx.Subect :?> 'T
 
-    let create metaData = { MetaData = metaData; Data = MetaData.Zero }
+    let create metaData = { MetaData = metaData; Data = MetaData.Zero; Subect = null }
 
 module Example =
     type T = {
@@ -52,6 +55,8 @@ module ExampleGroup =
     let addSetup setup ctx = { ctx with Setups = setup::ctx.Setups }
     let addTearDown tearDown ctx = { ctx with TearDowns = tearDown::ctx.TearDowns }
     let addChildContext child ctx = { ctx with ChildGroups = child::ctx.ChildGroups }
+    let childGroups grp = grp.ChildGroups
+    let examples grp = grp.Examples
 
     let rec performSetup exampleGroups ctx =
         match exampleGroups with

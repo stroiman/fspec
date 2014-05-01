@@ -7,15 +7,22 @@ let pass = fun _ -> ()
 
 let specs =
     describe "Example building DSL" [
-        it "builds example groups" <| fun _ ->
-            let group = 
+        context "an example group initialized with one example" [
+            before <| fun ctx ->
                 describe "Group" [
                     it "Test" pass
-                ]
-            group.Name |> should equal "Group"
-            group.Examples.Length |> should equal 1
-            let [example] = group.Examples
-            example.Name |> should equal "Test"
+                ] |> ctx.setSubject
+
+            it "should have no child groups" <| fun ctx ->
+                ctx.subject ()
+                |> ExampleGroup.childGroups
+                |> List.length |> should equal 0
+
+            it "should have one example named 'Test'" <| fun ctx ->
+                match ctx.subject () |> ExampleGroup.examples with
+                | [ex] -> ex.Name |> should equal "Test"
+                | _ -> failwith "Example count mismatch"
+        ]
 
         it "builds dsl with nested example group" <| fun _ ->
             let group =
