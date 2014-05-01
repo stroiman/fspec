@@ -54,6 +54,7 @@
     <Compile Include="RunnerSpecs.fs" />
     <Compile Include="Selftests.fs" />
     <Compile Include="TestReportSpecs.fs" />
+    <Compile Include="MetaDataSpecs.fs" />
   </ItemGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>

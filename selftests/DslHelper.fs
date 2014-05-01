@@ -16,6 +16,7 @@ type DslHelper() =
     member self.describe x = c().describe x
     member self.init x = c().init x
     member self.it x = c().it x
+    member self.it_ x = c().it x
     member self.run () =
         let report = TestReport()
         c().run(report)

@@ -4,19 +4,31 @@ open Matchers
 let pending = fun _ -> raise PendingError
 
 module MetaData =
-    type T = Map<string,obj>
-    let create () = Map<string,obj> []
+    type T = { Data: Map<string,obj> }
+    let create data = 
+        let downCastData = data |> List.map (fun (x,y) -> (x, y :> obj))
+        { Data = Map<string,obj> downCastData }
+    let Zero = create []
+    let get<'T> name metaData = metaData.Data.Item name :?> 'T
+    type T with
+        member self.get<'T> name = get<'T> name self
+            
 
 module TestContext =
     type T = { MetaData: MetaData.T }
+        with
+            member self.metadata<'T> name = self.MetaData.get<'T> name
+
     let create metaData = { MetaData = metaData }
 
 module Example =
     type T = {
         Name: string; 
-        Test: TestContext.T -> unit
+        Test: TestContext.T -> unit;
+        MetaData: MetaData.T
     }
-    let create name test = { Name = name; Test = test }
+    let create name test = { Name = name; Test = test; MetaData = MetaData.Zero }
+    let addMetaData metaData example = { example with MetaData = metaData }
 
 module ExampleGroup =
     type TestFunc = unit -> unit
@@ -67,7 +79,7 @@ module ExampleGroup =
             let name = printNameStack(nameStack)
             try
                 try
-                    let context = MetaData.create () |> TestContext.create
+                    let context = x.MetaData |> TestContext.create
                     perform_setup exampleGroups
                     x.Test context
                 finally
@@ -110,12 +122,14 @@ type TestCollection() =
     member self.before f = ExampleGroup.addSetup f |> mutateGroup
     member self.after f = ExampleGroup.addTearDown f |> mutateGroup
     member self.it name f = Example.create name f |> ExampleGroup.addExample |> mutateGroup
+    member self.it_ metadata name f = Example.create name f |> Example.addMetaData (MetaData.create metadata) |> ExampleGroup.addExample |> mutateGroup
     member self.run(results) = ExampleGroup.run [exampleGroup] results
     member self.run() = self.run(TestReport())
 
 let c = TestCollection()
 let describe = c.describe
 let it = c.it
+let it_ = c.it_
 let before = c.before
 let context = describe
 let init = c.init
