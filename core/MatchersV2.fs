@@ -41,7 +41,7 @@ let equal report expected actual =
     |> MatchResult.setFailureMessageForShouldNot (sprintf "expected %A to not equal %A" actual expected)
     |> reportBack report
 
-let beOfType<'T> report (actual : obj) =
+let beOfType<'T> report actual =
     let expectedType = typeof<'T>
     expectedType.IsInstanceOfType(actual)
     |> MatchResult.create
