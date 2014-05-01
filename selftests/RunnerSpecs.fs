@@ -26,7 +26,7 @@ let createAnExampleWithMetaData metaData f =
 
 let runSingleExample example =
     let group = anExampleGroup |> withExamples [example]
-    ExampleGroup.run [group] (TestReport()) 
+    ExampleGroup.run group (TestReport()) 
 
 let specs =
     describe "Test runner" <| fun _ ->

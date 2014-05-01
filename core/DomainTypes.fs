@@ -62,33 +62,35 @@ module ExampleGroup =
                 head.TearDowns |> List.iter (fun y -> y())
                 performTearDown tail
     
-    let rec run exampleGroups (results : TestReport) =
-        let exampleGroup = exampleGroups |> List.head
-        let rec printNameStack(stack) : string =
-            match stack with
-            | []    -> ""
-            | head::[] -> head
-            | head::tail ->sprintf "%s %s" (printNameStack(tail)) head
+    let run exampleGroup results =
+        let rec run exampleGroups (results : TestReport) =
+            let exampleGroup = exampleGroups |> List.head
+            let rec printNameStack(stack) : string =
+                match stack with
+                | []    -> ""
+                | head::[] -> head
+                | head::tail ->sprintf "%s %s" (printNameStack(tail)) head
 
-        exampleGroup.Examples |> List.rev |> List.iter (fun example -> 
-            let nameStack = example.Name :: (exampleGroups |> List.map (fun x -> x.Name) |> List.filter (fun x -> x <> null))
-            let name = printNameStack(nameStack)
-            try
+            exampleGroup.Examples |> List.rev |> List.iter (fun example -> 
+                let nameStack = example.Name :: (exampleGroups |> List.map (fun x -> x.Name) |> List.filter (fun x -> x <> null))
+                let name = printNameStack(nameStack)
                 try
-                    let context = example.MetaData |> TestContext.create
-                    performSetup exampleGroups
-                    example.Test context
-                finally
-                    performTearDown exampleGroups
-                results.reportTestName name Success
-            with
-            | PendingError -> results.reportTestName name Pending
-            | AssertionError(e) ->
-                results.reportTestName name (Failure(e))
-            | ex -> 
-                results.reportTestName name (Error(ex))
-        )
+                    try
+                        let context = example.MetaData |> TestContext.create
+                        performSetup exampleGroups
+                        example.Test context
+                    finally
+                        performTearDown exampleGroups
+                    results.reportTestName name Success
+                with
+                | PendingError -> results.reportTestName name Pending
+                | AssertionError(e) ->
+                    results.reportTestName name (Failure(e))
+                | ex -> 
+                    results.reportTestName name (Error(ex))
+            )
 
-        exampleGroup.ChildGroups |> List.rev |> List.iter (fun x ->
-            run (x::exampleGroups) results
-        )
+            exampleGroup.ChildGroups |> List.rev |> List.iter (fun x ->
+                run (x::exampleGroups) results
+            )
+        run [exampleGroup] results
