@@ -3,28 +3,31 @@ open Matchers
 
 let pending () = raise PendingError
 
-module TestContext =
+module Example =
+    type T = {Name: string; Test: unit -> unit}
+    let create name test = { Name = name; Test = test }
+
+module ExampleGroup =
     type TestFunc = unit -> unit
-    type Test = {Name: string; Test: unit -> unit}
     type T = {
         Name: string
-        Tests: Test list;
+        Examples: Example.T list;
         Setups: TestFunc list;
         TearDowns: TestFunc list;
-        ChildContexts : T list;
+        ChildGroups : T list;
         }
 
     let create name = { 
         Name = name;
-        Tests = [];
+        Examples = [];
         Setups = [];
         TearDowns = [];
-        ChildContexts = [];
+        ChildGroups = [];
     }
-    let addTest test ctx = { ctx with Tests = test::ctx.Tests }
+    let addExample test ctx = { ctx with Examples = test::ctx.Examples }
     let addSetup setup ctx = { ctx with Setups = setup::ctx.Setups }
     let addTearDown tearDown ctx = { ctx with TearDowns = tearDown::ctx.TearDowns }
-    let addChildContext child ctx = { ctx with ChildContexts = child::ctx.ChildContexts }
+    let addChildContext child ctx = { ctx with ChildGroups = child::ctx.ChildGroups }
 
     let rec perform_setup contexts =
         match contexts with
@@ -40,23 +43,23 @@ module TestContext =
                 head.TearDowns |> List.iter (fun y -> y())
                 perform_teardown tail
     
-    let rec run contexts (results : TestReport) =
-        let context = contexts |> List.head
+    let rec run exampleGroups (results : TestReport) =
+        let exampleGroup = exampleGroups |> List.head
         let rec printNameStack(stack) : string =
             match stack with
             | []    -> ""
             | head::[] -> head
             | head::tail ->sprintf "%s %s" (printNameStack(tail)) head
 
-        context.Tests |> List.rev |> List.iter (fun x -> 
-            let nameStack = x.Name :: (contexts |> List.map (fun x -> x.Name) |> List.filter (fun x -> x <> null))
+        exampleGroup.Examples |> List.rev |> List.iter (fun x -> 
+            let nameStack = x.Name :: (exampleGroups |> List.map (fun x -> x.Name) |> List.filter (fun x -> x <> null))
             let name = printNameStack(nameStack)
             try
                 try
-                    perform_setup contexts
+                    perform_setup exampleGroups
                     x.Test()
                 finally
-                    perform_teardown contexts
+                    perform_teardown exampleGroups
                 results.reportTestName name Success
             with
             | PendingError -> results.reportTestName name Pending
@@ -66,13 +69,13 @@ module TestContext =
                 results.reportTestName name (Error(ex))
         )
 
-        context.ChildContexts |> List.rev |> List.iter (fun x ->
-            run (x::contexts) results
+        exampleGroup.ChildGroups |> List.rev |> List.iter (fun x ->
+            run (x::exampleGroups) results
         )
 
 type TestCollection() =
-    let mutable context = TestContext.create null
-    let mutateContext f = context <- f context
+    let mutable exampleGroup = ExampleGroup.create null
+    let mutateGroup f = exampleGroup <- f exampleGroup
 
     member self.init (f: unit -> 'a) : (unit -> 'a) =
         let value = ref None
@@ -87,15 +90,15 @@ type TestCollection() =
         r
 
     member self.describe (name: string) (f: unit -> unit) = 
-        let oldContext = context
-        context <- TestContext.create name
+        let oldContext = exampleGroup
+        exampleGroup <- ExampleGroup.create name
         f()
-        context <- TestContext.addChildContext context oldContext
+        exampleGroup <- ExampleGroup.addChildContext exampleGroup oldContext
 
-    member self.before f = TestContext.addSetup f |> mutateContext
-    member self.after f = TestContext.addTearDown f |> mutateContext
-    member self.it name f = TestContext.addTest { Name = name; Test = f} |> mutateContext
-    member self.run(results) = TestContext.run [context] results
+    member self.before f = ExampleGroup.addSetup f |> mutateGroup
+    member self.after f = ExampleGroup.addTearDown f |> mutateGroup
+    member self.it name f = Example.create name f |> ExampleGroup.addExample |> mutateGroup
+    member self.run(results) = ExampleGroup.run [exampleGroup] results
     member self.run() = self.run(TestReport())
 
 let c = TestCollection()
