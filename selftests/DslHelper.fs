@@ -3,8 +3,8 @@ open FSpec.Core
 open Dsl
 open Matchers
 
-let pass () = ()
-let fail () = failwithf "Test failure"
+let pass = fun _ -> ()
+let fail = fun _ -> failwithf "Test failure"
 
 type DummyType = {Name: string}
 

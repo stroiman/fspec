@@ -28,15 +28,15 @@ module MySpecModule
 let specs =
     describe "Some feature" (fun() ->
         describe "In some context" (fun() ->
-            it "has some specific behaviour" (fun _ ->
+            it "has some specific behaviour" (fun() ->
                 ()
             )
-            it "has some other specific behavior" (fun _ ->
+            it "has some other specific behavior" (fun() ->
                 ()
             )
         )
         describe "In some other context" (fun() ->
-            it "has some completely different behavior" (fun _ ->
+            it "has some completely different behavior" (fun() ->
                 ()
             )
         )
@@ -46,11 +46,11 @@ If you find the paranthesis noisy, you can use the backward pipe operator
 
 ```fsharp
 let specs =
-    describe "Some feature" <| fun _ ->
-        describe "In some context" <| fun _ ->
-            it "has some specific behaviour" <| fun _ ->
+    describe "Some feature" <| fun() ->
+        describe "In some context" <| fun() ->
+            it "has some specific behaviour" <| fun() ->
                 ()
-            it "has some other specific behaviour" <| fun _ ->
+            it "has some other specific behaviour" <| fun() ->
                 ()
 ```
 
@@ -61,7 +61,7 @@ needs to be written.
 
 ```fsharp
 let specs =
-    describe "Some feature" (fun _ ->
+    describe "Some feature" (fun () ->
         it "has some specific behaviour" pending
         it "has some other specific behaviour" pending
     )
@@ -79,12 +79,12 @@ The functions _before_/_after_ can be used to hold general setup/teardown code.
 
 ```fsharp
 let specs =
-    describe "Some feature" <| fun _ ->
-        before fun _ ->
+    describe "Some feature" <| fun() ->
+        before fun() ->
             ()
-        after fun _ ->
+        after fun() ->
             ()
-        it "Has some behavior" <| fun _ ->
+        it "Has some behavior" <| fun() ->
             ()
 ```
 
@@ -95,16 +95,16 @@ during the execution of a test
 
 ```fsharp
 let specs =
-    describe "Some feature" (fun _ ->
-        let dependency = init (fun _ -> new Dependency())
+    describe "Some feature" (fun () ->
+        let dependency = init (fun () -> new Dependency())
 
-        it "has some specific behavior" (fun _ ->
+        it "has some specific behavior" (fun () ->
             dependency().SetupInSomeStat()
             dependency().AndSomeOtherChildStat()
             ...
         )
 
-        it "has some other specific behavior" (fun _ ->
+        it "has some other specific behavior" (fun () ->
             dependency().SetupInSomeStat()
             dependency().AndSomeOtherChildStat()
             ...
@@ -130,17 +130,17 @@ data setup in a _before_ body, because in F#, you cannot access mutable values
 inside closures. Therefore you have to introduce references.
 
 ```fsharp
-describe "Some context" (fun _ ->
+describe "Some context" (fun () ->
     let counter = ref 0
 
-    before (fun _ -> 
+    before (fun () -> 
         counter := 0
-        let callback _ ->
+        let callback () ->
             counter := !counter + 1
         registerCallback callback
     )
 
-    it "Calls back twice" (fun _ ->
+    it "Calls back twice" (fun () ->
         do_something_that_triggers_the_callback
         (!counter) |> should equal 2
     )

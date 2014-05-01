@@ -1,10 +1,21 @@
 module FSpec.Core.Dsl
 open Matchers
 
-let pending () = raise PendingError
+let pending = fun _ -> raise PendingError
+
+module MetaData =
+    type T = Map<string,obj>
+    let create () = Map<string,obj> []
+
+module TestContext =
+    type T = { MetaData: MetaData.T }
+    let create metaData = { MetaData = metaData }
 
 module Example =
-    type T = {Name: string; Test: unit -> unit}
+    type T = {
+        Name: string; 
+        Test: TestContext.T -> unit
+    }
     let create name test = { Name = name; Test = test }
 
 module ExampleGroup =
@@ -56,8 +67,9 @@ module ExampleGroup =
             let name = printNameStack(nameStack)
             try
                 try
+                    let context = MetaData.create () |> TestContext.create
                     perform_setup exampleGroups
-                    x.Test()
+                    x.Test context
                 finally
                     perform_teardown exampleGroups
                 results.reportTestName name Success
