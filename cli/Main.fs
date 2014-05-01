@@ -1,6 +1,7 @@
 module Main
 open FSpec.Core
 open Dsl
+open DomainTypes
 open Microsoft.FSharp.Reflection
 open System
 open System.Reflection
@@ -19,10 +20,16 @@ let main args =
                 |> Seq.where (fun x -> FSharpType.IsModule x)
                 |> Seq.map (fun x -> x.GetProperty("specs"))
                 |> Seq.where (fun x -> x <> null)
-    specs |> Seq.iter (fun x -> x.GetValue(null) |> ignore)
+    let toExampleGroup (value : obj) =
+        match value with
+        | :? ExampleGroup.T as g -> 
+            Some g
+        | _ -> None
+    let specs' = specs |> Seq.map (fun x -> x.GetValue(null)) |> Seq.choose toExampleGroup |> List.ofSeq
 
     let report = TestReport()
-    c.run(report)
+    let exampleGroups = c.examples::specs'
+    exampleGroups |> List.iter (fun grp -> ExampleGroup.run grp report)
     report.failedTests() |> List.iter (fun x -> printfn "%s" x)
     printfn "%s" (report.summary())
     0
