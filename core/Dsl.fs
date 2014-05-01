@@ -119,6 +119,7 @@ type TestCollection() =
         f()
         exampleGroup <- ExampleGroup.addChildContext exampleGroup oldContext
 
+    member self.examples = exampleGroup
     member self.before f = ExampleGroup.addSetup f |> mutateGroup
     member self.after f = ExampleGroup.addTearDown f |> mutateGroup
     member self.it name f = Example.create name f |> ExampleGroup.addExample |> mutateGroup
