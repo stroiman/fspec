@@ -56,6 +56,7 @@
     <Compile Include="TestReportSpecs.fs" />
     <Compile Include="MetaDataSpecs.fs" />
     <Compile Include="DslV2Specs.fs" />
+    <Compile Include="TestContextSpecs.fs" />
   </ItemGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>

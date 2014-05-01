@@ -9,13 +9,18 @@ module MetaData =
     let get<'T> name metaData = metaData.Data.Item name :?> 'T
     type T with
         member self.get<'T> name = get<'T> name self
+        member self.add name value = { self with Data = self.Data |> Map.add name (value :> obj) }
 
 module TestContext =
-    type T = { MetaData: MetaData.T }
+    type T = { 
+        MetaData: MetaData.T;
+        mutable Data: MetaData.T }
         with
             member self.metadata<'T> name = self.MetaData.get<'T> name
+            member ctx.add name value = ctx.Data <- ctx.Data.add name value
+            member ctx.get<'T> name = ctx.Data.get<'T> name
 
-    let create metaData = { MetaData = metaData }
+    let create metaData = { MetaData = metaData; Data = MetaData.Zero }
 
 module Example =
     type T = {
