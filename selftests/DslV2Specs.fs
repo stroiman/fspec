@@ -29,4 +29,13 @@ let specs =
                 | [ex] -> ex.Name |> should equal "Test"
                 | _ -> failwith "Bad examples"
             | _ -> failwith "Bad groups"
+
+        it "builds examplegroup with setup" <| fun _ ->
+            let group =
+                describe "Group" [
+                    before <| fun _ -> ()
+                    before <| fun _ -> ()
+                    it "Test" pass
+                ]
+            group.Setups.Length |> should equal 2
     ]
