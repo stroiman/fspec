@@ -21,10 +21,10 @@ module TestContext =
         TearDowns = [];
         ChildContexts = [];
     }
-    let addTest ctx test = { ctx with Tests = test::ctx.Tests }
-    let addSetup ctx setup = { ctx with Setups = setup::ctx.Setups }
-    let addTearDown ctx tearDown = { ctx with TearDowns = tearDown::ctx.TearDowns }
-    let addChildContext ctx child = { ctx with ChildContexts = child::ctx.ChildContexts }
+    let addTest test ctx = { ctx with Tests = test::ctx.Tests }
+    let addSetup setup ctx = { ctx with Setups = setup::ctx.Setups }
+    let addTearDown tearDown ctx = { ctx with TearDowns = tearDown::ctx.TearDowns }
+    let addChildContext child ctx = { ctx with ChildContexts = child::ctx.ChildContexts }
 
     let rec perform_setup contexts =
         match contexts with
@@ -72,6 +72,7 @@ module TestContext =
 
 type TestCollection() =
     let mutable context = TestContext.create null
+    let mutateContext f = context <- f context
 
     member self.init (f: unit -> 'a) : (unit -> 'a) =
         let value = ref None
@@ -89,22 +90,13 @@ type TestCollection() =
         let oldContext = context
         context <- TestContext.create name
         f()
-        context <- TestContext.addChildContext oldContext context
+        context <- TestContext.addChildContext context oldContext
 
-    member self.before (f: unit -> unit) =
-        context <- TestContext.addSetup context f
-
-    member self.after (f: unit -> unit) =
-        context <- TestContext.addTearDown context f
-
-    member self.it (name: string) (f: unit -> unit) = 
-        context <- TestContext.addTest context { Name = name; Test = f}
-
-    member self.run(results: TestReport) =
-        TestContext.run [context] results
-
-    member self.run() = 
-        self.run(TestReport())
+    member self.before f = TestContext.addSetup f |> mutateContext
+    member self.after f = TestContext.addTearDown f |> mutateContext
+    member self.it name f = TestContext.addTest { Name = name; Test = f} |> mutateContext
+    member self.run(results) = TestContext.run [context] results
+    member self.run() = self.run(TestReport())
 
 let c = TestCollection()
 let describe = c.describe
