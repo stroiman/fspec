@@ -10,7 +10,7 @@ type TestCollection() =
 
     member self.init (f: unit -> 'a) : (unit -> 'a) =
         let value = ref None
-        self.before <| fun() ->
+        self.before <| fun _ ->
               value := None
         let r () =
             match !value with

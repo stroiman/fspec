@@ -32,7 +32,7 @@ module Example =
     let addMetaData metaData example = { example with MetaData = metaData }
 
 module ExampleGroup =
-    type TestFunc = unit -> unit
+    type TestFunc = TestContext.T -> unit
     type T = {
         Name: string
         Examples: Example.T list;
@@ -53,19 +53,19 @@ module ExampleGroup =
     let addTearDown tearDown ctx = { ctx with TearDowns = tearDown::ctx.TearDowns }
     let addChildContext child ctx = { ctx with ChildGroups = child::ctx.ChildGroups }
 
-    let rec performSetup exampleGroups =
+    let rec performSetup exampleGroups ctx =
         match exampleGroups with
             | [] -> ()
             | head::tail ->
-                performSetup tail
-                head.Setups |> List.iter (fun y -> y())
+                performSetup tail ctx
+                head.Setups |> List.iter (fun y -> y ctx)
     
-    let rec performTearDown exampleGroups =
+    let rec performTearDown exampleGroups ctx =
         match exampleGroups with
             | [] -> ()
             | head::tail ->
-                head.TearDowns |> List.iter (fun y -> y())
-                performTearDown tail
+                head.TearDowns |> List.iter (fun y -> y ctx)
+                performTearDown tail ctx
     
     let run exampleGroup results =
         let rec run exampleGroups (results : TestReport) =
@@ -80,12 +80,12 @@ module ExampleGroup =
                 let nameStack = example.Name :: (exampleGroups |> List.map (fun x -> x.Name) |> List.filter (fun x -> x <> null))
                 let name = printNameStack(nameStack)
                 try
+                    let context = example.MetaData |> TestContext.create
                     try
-                        let context = example.MetaData |> TestContext.create
-                        performSetup exampleGroups
+                        performSetup exampleGroups context
                         example.Test context
                     finally
-                        performTearDown exampleGroups
+                        performTearDown exampleGroups context
                     results.reportTestName name Success
                 with
                 | PendingError -> results.reportTestName name Pending

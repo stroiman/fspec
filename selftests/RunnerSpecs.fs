@@ -8,7 +8,7 @@ open DomainTypes
 let callList = ref []
 let addToCallList x = callList := x::!callList
 let actualCallList () = !callList |> List.rev
-let clearCallList () = callList := []
+let clearCallList _ = callList := []
 
 let runSpecs (specs : DslHelper -> unit) =
     let sut = DslHelper()
@@ -28,6 +28,15 @@ let runSingleExample example =
     let group = anExampleGroup |> withExamples [example]
     ExampleGroup.run group (TestReport()) 
 
+let withSetupCode f = ExampleGroup.addSetup f
+let withAnExampleWithMetaData metaData =
+    createAnExampleWithMetaData metaData (fun _ -> ())
+    |> ExampleGroup.addExample
+let shouldPass group =
+    let report = TestReport()
+    ExampleGroup.run group report
+    report.failedTests () |> List.length |> should equal 0
+
 let specs =
     describe "Test runner" <| fun _ ->
         describe "metadata handling" <| fun _ ->
@@ -36,6 +45,13 @@ let specs =
                     createAnExampleWithMetaData ("answer", 42) <| fun ctx ->
                         ctx.metadata "answer" |> should equal 42
                     |> runSingleExample 
+
+                it "passes the metadata to the setup" <| fun _ ->
+                    anExampleGroup
+                    |> withSetupCode (fun ctx -> 
+                        ctx.metadata "answer" |> should equal 42)
+                    |> withAnExampleWithMetaData ("answer", 42)
+                    |> shouldPass
 
         let sut = DslHelper()
         before <| clearCallList
