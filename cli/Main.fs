@@ -12,24 +12,35 @@ module Seq =
                 yield! x item
         }
 
-[<EntryPoint>]
-let main args =
-    let specs = args
-                |> Seq.map (fun x -> Assembly.LoadFrom(x))
-                |> Seq.mapMany (fun x -> x.ExportedTypes)
-                |> Seq.where (fun x -> FSharpType.IsModule x)
-                |> Seq.map (fun x -> x.GetProperty("specs"))
-                |> Seq.where (fun x -> x <> null)
+let getSpecsFromAssembly (assembly : Assembly) =
     let toExampleGroup (value : obj) =
         match value with
         | :? ExampleGroup.T as g -> 
             Some g
         | _ -> None
-    let specs' = specs |> Seq.map (fun x -> x.GetValue(null)) |> Seq.choose toExampleGroup |> List.ofSeq
+        
+    let specs =
+        assembly.ExportedTypes
+        |> Seq.where (fun x -> FSharpType.IsModule x)
+        |> Seq.map (fun x -> x.GetProperty("specs"))
+        |> Seq.where (fun x -> x <> null)
+        |> Seq.map (fun x -> x.GetValue(null)) 
+        |> Seq.choose toExampleGroup 
+        |> List.ofSeq
+    c.examples::specs
 
+let runSpecs specs =
     let report = TestReport()
-    let exampleGroups = c.examples::specs'
-    exampleGroups |> List.iter (fun grp -> ExampleGroup.run grp report)
+    specs |> List.iter (fun grp -> ExampleGroup.run grp report)
     report.failedTests() |> List.iter (fun x -> printfn "%s" x)
     printfn "%s" (report.summary())
+
+[<EntryPoint>]
+let main args =
+    let specs = 
+        args
+        |> Seq.map (fun assemblyName -> Assembly.LoadFrom(assemblyName))
+        |> Seq.mapMany getSpecsFromAssembly
+        |> Seq.toList
+    runSpecs specs
     0
