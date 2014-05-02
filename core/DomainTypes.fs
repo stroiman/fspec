@@ -58,25 +58,31 @@ module ExampleGroup =
         TearDowns = [];
         ChildGroups = [];
     }
+    let name grp = grp.Name
+    let setups grp = grp.Setups
+    let tearDowns grp = grp.TearDowns
     let addExample test ctx = { ctx with Examples = test::ctx.Examples }
     let addSetup setup ctx = { ctx with Setups = setup::ctx.Setups }
     let addTearDown tearDown ctx = { ctx with TearDowns = tearDown::ctx.TearDowns }
     let addChildContext child ctx = { ctx with ChildGroups = child::ctx.ChildGroups }
-    let childGroups grp = grp.ChildGroups
-    let examples grp = grp.Examples
+    let childGroups grp = grp.ChildGroups |> List.rev
+    let examples grp = grp.Examples 
+    let foldExamples folder state grp = grp.Examples |> List.rev |> List.fold folder state
+    let foldChildGroups folder state grp = grp.ChildGroups |> List.rev |> List.fold folder state
 
+module Runner =
     let rec performSetup exampleGroups ctx =
         match exampleGroups with
             | [] -> ()
             | head::tail ->
                 performSetup tail ctx
-                head.Setups |> List.iter (fun y -> y ctx)
+                head |> ExampleGroup.setups |> List.iter (fun y -> y ctx)
     
     let rec performTearDown exampleGroups ctx =
         match exampleGroups with
             | [] -> ()
             | head::tail ->
-                head.TearDowns |> List.iter (fun y -> y ctx)
+                head |> ExampleGroup.tearDowns |> List.iter (fun y -> y ctx)
                 performTearDown tail ctx
     
     let run exampleGroup report =
@@ -89,7 +95,7 @@ module ExampleGroup =
                 | head::tail ->sprintf "%s %s" (printNameStack(tail)) head
 
             let runExample (example:Example.T) report =
-                let nameStack = example.Name :: (exampleGroups |> List.map (fun x -> x.Name) |> List.filter (fun x -> x <> null))
+                let nameStack = example.Name :: (exampleGroups |> List.map ExampleGroup.name |> List.filter (fun x -> x <> null))
                 let name = printNameStack(nameStack)
                 let testResult =
                     try
@@ -106,6 +112,6 @@ module ExampleGroup =
                     | ex -> Error ex
                 Report.reportTestName name testResult report
 
-            let report' = exampleGroup.Examples |> List.rev |> List.fold (fun rep ex -> runExample ex rep) report
-            exampleGroup.ChildGroups |> List.rev |> List.fold (fun rep grp -> run (grp::exampleGroups) rep) report'
+            let report' = exampleGroup |> ExampleGroup.foldExamples (fun rep ex -> runExample ex rep) report
+            exampleGroup |> ExampleGroup.foldChildGroups (fun rep grp -> run (grp::exampleGroups) rep) report'
         run [exampleGroup] report
