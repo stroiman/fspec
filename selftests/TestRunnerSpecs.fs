@@ -15,7 +15,8 @@ let createAnExampleWithMetaData metaData f =
 
 let runSingleExample example =
     let group = anExampleGroup |> withExamples [example]
-    ExampleGroup.run group (TestReport()) 
+    let report = ExampleGroup.run group (Report.create())
+    TestReport(report)
 
 let withSetupCode f = ExampleGroup.addSetup f
 let withAnExampleWithMetaData metaData =
@@ -23,13 +24,12 @@ let withAnExampleWithMetaData metaData =
     |> ExampleGroup.addExample
 
 let run exampleGroup = 
-    ExampleGroup.run exampleGroup (TestReport())
+    ExampleGroup.run exampleGroup (Report.create())
     |> ignore
 
 let shouldPass group =
-    let report = TestReport()
-    let report' = ExampleGroup.run group report
-    report'.success() |> should equal true
+    let report' = ExampleGroup.run group (Report.create())
+    report' |> Report.success |> should equal true
 
 let specs =
     describe "Test runner" [

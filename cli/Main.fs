@@ -30,10 +30,12 @@ let getSpecsFromAssembly (assembly : Assembly) =
     c.examples::specs
 
 let runSpecs specs =
-    let report = specs |> List.fold (fun rep grp -> ExampleGroup.run grp rep) (TestReport())
-    report.failedTests() |> List.iter (fun x -> printfn "%s" x)
-    printfn "%s" (report.summary())
-    report.success()
+    let report = specs |> List.fold (fun rep grp -> ExampleGroup.run grp rep) (Report.create())
+    report.failed 
+    |> List.rev
+    |> List.iter (fun x -> printfn "%s" x)
+    printfn "%s" (report |> Report.summary)
+    report |> Report.success
 
 [<EntryPoint>]
 let main args =

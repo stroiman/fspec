@@ -45,10 +45,7 @@ module Report =
                         | _ -> addFail report name'
         addOutput report' name'
 
-type TestReport(report : Report.T) =
-    new () = TestReport(Report.create())
-
-    member self.summary() = 
+    let summary report =
         let noOfFails = report.failed |> List.length
         let noOfRuns = report.output |> List.length
         let noOfPendings = report.pending |> List.length
@@ -57,8 +54,12 @@ type TestReport(report : Report.T) =
         else
             sprintf "%d run, %d failed" noOfRuns noOfFails
 
-    member self.success() =
-        Report.success report
+type TestReport(report : Report.T) =
+    new () = TestReport(Report.create())
+
+    member self.summary() = report |> Report.summary
+
+    member self.success() = Report.success report
 
     member self.reportTestName name result =
         TestReport(Report.reportTestName report name result)

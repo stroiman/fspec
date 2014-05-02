@@ -79,8 +79,8 @@ module ExampleGroup =
                 head.TearDowns |> List.iter (fun y -> y ctx)
                 performTearDown tail ctx
     
-    let run exampleGroup results =
-        let rec run exampleGroups (results : TestReport) =
+    let run exampleGroup report =
+        let rec run exampleGroups report =
             let exampleGroup = exampleGroups |> List.head
             let rec printNameStack(stack) : string =
                 match stack with
@@ -88,7 +88,7 @@ module ExampleGroup =
                 | head::[] -> head
                 | head::tail ->sprintf "%s %s" (printNameStack(tail)) head
 
-            let runExample (example:Example.T) (results : TestReport) =
+            let runExample (example:Example.T) report =
                 let nameStack = example.Name :: (exampleGroups |> List.map (fun x -> x.Name) |> List.filter (fun x -> x <> null))
                 let name = printNameStack(nameStack)
                 let testResult =
@@ -104,8 +104,8 @@ module ExampleGroup =
                     | PendingError -> Pending
                     | AssertionError(e) -> Failure e
                     | ex -> Error ex
-                results.reportTestName name testResult
+                Report.reportTestName report name testResult
 
-            let results' = exampleGroup.Examples |> List.rev |> List.fold (fun rep ex -> runExample ex rep) results
-            exampleGroup.ChildGroups |> List.rev |> List.fold (fun rep grp -> run (grp::exampleGroups) rep) results'
-        run [exampleGroup] results
+            let report' = exampleGroup.Examples |> List.rev |> List.fold (fun rep ex -> runExample ex rep) report
+            exampleGroup.ChildGroups |> List.rev |> List.fold (fun rep grp -> run (grp::exampleGroups) rep) report'
+        run [exampleGroup] report
