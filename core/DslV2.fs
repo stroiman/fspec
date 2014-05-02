@@ -23,3 +23,5 @@ let context name operations =
     grp |> AddExampleGroupOperation
     
 let before f = AddSetupOperation f
+
+let subject f = before (fun ctx -> ctx.setSubject (f ctx))

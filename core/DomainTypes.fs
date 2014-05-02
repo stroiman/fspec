@@ -7,9 +7,16 @@ module MetaData =
         { Data = Map<string,obj> downCastData }
     let Zero = create []
     let get<'T> name metaData = metaData.Data.Item name :?> 'T
+        
+    let merge a b =
+        let newMap =
+            a.Data
+            |> Map.fold (fun state key value -> state |> Map.add key value) b.Data
+        { Data= newMap }
     type T with
         member self.get<'T> name = get<'T> name self
         member self.add name value = { self with Data = self.Data |> Map.add name (value :> obj) }
+        member self.Count with get() = self.Data.Count
 
 module TestContext =
     type T = { 
