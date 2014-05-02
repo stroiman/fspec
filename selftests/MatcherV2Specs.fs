@@ -27,6 +27,35 @@ let getErrorMsg test =
 let shouldFail test = getErrorMsg test |> ignore
 
 let specs = [
+    describe "GreaterThan matcher" [
+        context "when used with 'should'" [
+            it "succeeds when actual > expected" <| fun _ ->
+                let test () = 5 |> should be.greaterThan 4
+                test |> shouldPass
+            
+            it "fails when actual = expected" <| fun _ ->
+                let test () = 5 |> should be.greaterThan 5
+                test |> shouldFail
+
+            it "fails with the right error message" <| fun _ ->
+                let test () = 5 |> should be.greaterThan 6
+                test |> getErrorMsg |> should equal "expected 5 to be greater than 6"
+        ]
+        context "when used with 'shouldNot'" [
+            it "fails when actual > expected" <| fun _ ->
+                let test () = 5 |> shouldNot be.greaterThan 4
+                test |> shouldFail
+            
+            it "fails when actual = expected" <| fun _ ->
+                let test () = 5 |> shouldNot be.greaterThan 5
+                test |> shouldPass
+
+            it "fails with the right error message" <| fun _ ->
+                let test () = 5 |> shouldNot be.greaterThan 4
+                test |> getErrorMsg |> should equal "expected 5 to not be greater than 4"
+        ]
+    ]
+    
     describe "Equal matcher" [
         context "when used with 'should'" [
             it "succeeds when objects are equal" <| fun _ ->

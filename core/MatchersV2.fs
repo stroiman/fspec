@@ -70,3 +70,12 @@ let fail verifyResult actual =
         "expected exception to be thrown, but none was thrown"
         "exception was thrown when none was expected"
     |> verifyResult    
+
+module be =
+    let greaterThan verifyResult expected actual =
+        MatchResult.build 
+            (actual > expected)
+            (sprintf "expected %A to be greater than %A" actual expected)
+            (sprintf "expected %A to not be greater than %A" actual expected)
+        |> verifyResult
+
