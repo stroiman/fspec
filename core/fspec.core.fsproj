@@ -45,6 +45,7 @@
     <Compile Include="TestReport.fs" />
     <Compile Include="Matchers.fs" />
     <Compile Include="Dsl.fs" />
+    <Compile Include="TestDiscovery.fs" />
     <Compile Include="DslV2.fs" />
   </ItemGroup>
   <PropertyGroup>
