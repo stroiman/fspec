@@ -64,22 +64,24 @@ module Runner =
                 | head::[] -> head
                 | head::tail ->sprintf "%s %s" (printNameStack(tail)) head
 
+            let execExample (example:Example.T) =
+                try
+                    let context = example.MetaData |> TestContext.create
+                    try
+                        performSetup exampleGroups context
+                        example.Test context
+                    finally
+                        performTearDown exampleGroups context
+                    Success
+                with
+                | PendingError -> Pending
+                | AssertionError(e) -> Failure e
+                | ex -> Error ex
+
             let runExample (example:Example.T) report =
                 let nameStack = example.Name :: (exampleGroups |> List.map ExampleGroup.name |> List.filter (fun x -> x <> null))
                 let name = printNameStack(nameStack)
-                let testResult =
-                    try
-                        let context = example.MetaData |> TestContext.create
-                        try
-                            performSetup exampleGroups context
-                            example.Test context
-                        finally
-                            performTearDown exampleGroups context
-                        Success
-                    with
-                    | PendingError -> Pending
-                    | AssertionError(e) -> Failure e
-                    | ex -> Error ex
+                let testResult = execExample example
                 Report.reportTestName name testResult report
 
             let report' = exampleGroup |> ExampleGroup.foldExamples (fun rep ex -> runExample ex rep) report
