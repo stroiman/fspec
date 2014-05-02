@@ -1,7 +1,6 @@
 ﻿module FSpec.SelfTests.MetaDataSpecs
 open FSpec.Core
 open DslV2
-open DomainTypes
 open Matchers
 open DslHelper
 

@@ -1,7 +1,6 @@
 module Main
 open FSpec.Core
 open Dsl
-open DomainTypes
 open Microsoft.FSharp.Reflection
 open System
 open System.Reflection

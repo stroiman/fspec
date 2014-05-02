@@ -1,4 +1,18 @@
-﻿module FSpec.Core.DomainTypes
+﻿namespace FSpec.Core
+
+type AssertionErrorInfo = { 
+    Message: string
+} with
+    static member create = { Message = "" }
+
+exception AssertionError of AssertionErrorInfo
+exception PendingError
+
+type TestResultType =
+    | Success
+    | Pending
+    | Error of System.Exception
+    | Failure of AssertionErrorInfo
 
 module MetaData =
     type T = { Data: Map<string,obj> }
@@ -70,48 +84,3 @@ module ExampleGroup =
     let foldExamples folder state grp = grp.Examples |> List.rev |> List.fold folder state
     let foldChildGroups folder state grp = grp.ChildGroups |> List.rev |> List.fold folder state
 
-module Runner =
-    let rec performSetup exampleGroups ctx =
-        match exampleGroups with
-            | [] -> ()
-            | head::tail ->
-                performSetup tail ctx
-                head |> ExampleGroup.setups |> List.iter (fun y -> y ctx)
-    
-    let rec performTearDown exampleGroups ctx =
-        match exampleGroups with
-            | [] -> ()
-            | head::tail ->
-                head |> ExampleGroup.tearDowns |> List.iter (fun y -> y ctx)
-                performTearDown tail ctx
-    
-    let run exampleGroup report =
-        let rec run exampleGroups report =
-            let exampleGroup = exampleGroups |> List.head
-            let rec printNameStack(stack) : string =
-                match stack with
-                | []    -> ""
-                | head::[] -> head
-                | head::tail ->sprintf "%s %s" (printNameStack(tail)) head
-
-            let runExample (example:Example.T) report =
-                let nameStack = example.Name :: (exampleGroups |> List.map ExampleGroup.name |> List.filter (fun x -> x <> null))
-                let name = printNameStack(nameStack)
-                let testResult =
-                    try
-                        let context = example.MetaData |> TestContext.create
-                        try
-                            performSetup exampleGroups context
-                            example.Test context
-                        finally
-                            performTearDown exampleGroups context
-                        Success
-                    with
-                    | PendingError -> Pending
-                    | AssertionError(e) -> Failure e
-                    | ex -> Error ex
-                Report.reportTestName name testResult report
-
-            let report' = exampleGroup |> ExampleGroup.foldExamples (fun rep ex -> runExample ex rep) report
-            exampleGroup |> ExampleGroup.foldChildGroups (fun rep grp -> run (grp::exampleGroups) rep) report'
-        run [exampleGroup] report

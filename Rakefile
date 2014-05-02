@@ -21,9 +21,9 @@ def compile(output_file, prerequisites, target)
 end
 
 file 'output/FSpec.Core.dll' => [
+    'core/DomainTypes.fs',
     'core/TestReport.fs', 
     'core/Matchers.fs', 
-    'core/DomainTypes.fs',
     'core/Dsl.fs',
     'core/DslV2.fs'
     ] do |t|

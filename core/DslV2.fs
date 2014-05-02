@@ -1,5 +1,4 @@
 ﻿module FSpec.Core.DslV2
-open FSpec.Core.DomainTypes
 
 type Operation =
     | AddExampleOperation of Example.T

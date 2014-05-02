@@ -3,7 +3,6 @@ open FSpec.Core
 open Dsl
 open Matchers
 open DslHelper
-open DomainTypes
 
 let callList = ref []
 let addToCallList x = callList := x::!callList

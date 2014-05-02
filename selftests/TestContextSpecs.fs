@@ -2,7 +2,6 @@
 open FSpec.Core
 open DslV2
 open Matchers
-open DomainTypes
 
 let specs =
     describe "TestContext" [

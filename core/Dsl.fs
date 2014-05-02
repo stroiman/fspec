@@ -1,5 +1,4 @@
 module FSpec.Core.Dsl
-open DomainTypes
 
 let pending = fun _ -> raise PendingError
 

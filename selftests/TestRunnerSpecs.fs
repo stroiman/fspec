@@ -1,6 +1,5 @@
 ﻿module FSpec.SelfTests.TestRunnerSpecs
 open FSpec.Core
-open DomainTypes
 open Matchers
 open DslV2
 
