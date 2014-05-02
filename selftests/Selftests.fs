@@ -17,27 +17,25 @@ let specs =
         describe "summary" <| fun _ ->
             it "reports test success" <| fun _ ->
                 sut.it "Is a success" pass
-
-                let report = sut.run()
-                report.summary() |> should equal  "1 run, 0 failed"
+                sut.run()
+                |> Report.summary |> should equal  "1 run, 0 failed"
 
             it "reports test failures" <| fun _ ->
                 sut.it "Is a failure" fail
-
-                let report = sut.run()
-                report.summary() |> should equal "1 run, 1 failed"
+                sut.run() 
+                |> Report.summary |> should equal "1 run, 1 failed"
 
             it "reports pending tests" <| fun _ ->
                 sut.it "Is pending" pending
-                let report = sut.run()
-                report.summary() |> should equal "1 run, 0 failed, 1 pending"
+                sut.run()
+                |> Report.summary |> should equal "1 run, 0 failed, 1 pending"
 
         describe "Running status" <| fun _ ->
             it "Is reported while running" <| fun _ ->
                 sut.describe "Some context" <| fun _ ->
                     sut.it "has some behavior" pass
-                let report = sut.run()
-                report.testOutput() |> should equal ["Some context has some behavior - passed"]
+                sut.run().output
+                |> should equal ["Some context has some behavior - passed"]
 
             it "Reports multiple test results" <| fun _ ->
                 sut.describe "Some context" <| fun _ ->
@@ -45,7 +43,7 @@ let specs =
                     sut.it "has some other behavior" pass
 
                 let report = sut.run()
-                let actual = report.testOutput()
+                let actual = report.output |> List.rev
                 let expected = ["Some context has some behavior - passed";
                                 "Some context has some other behavior - passed"]
                 actual.should equal expected
@@ -56,42 +54,42 @@ let specs =
                         sut.it "has some special behavior" pass
 
                 let report = sut.run()
-                let actual = report.testOutput() |> List.head
+                let actual = report.output |> List.rev |> List.head
                 actual |> should matchRegex "Some context in some special state has some special behavior"
 
         describe "Failed tests" <| fun _ ->
             it "handles test failures in setup code" (fun _ ->
                 sut.before (fun _ -> failwith "error")
                 sut.it "works" pass
-                let result = sut.run()
-                result.success() |> should equal false
+                sut.run()
+                |> Report.success |> should equal false
             )
             
             it "handles test failures in teardown code" (fun _ ->
                 sut.after (fun _ -> failwith "error")
                 sut.it "works" pass
-                let result = sut.run()
-                result.success() |> should equal false
+                sut.run()
+                |> Report.success |> should equal false
             )
 
             it "Writes the output to the test report" <| fun _ ->
                 sut.it "Is a failing test" <| fun _ ->
                     (5).should equal 6
                 let result = sut.run()
-                let actual = result.failedTests() |> List.reduce (+)
+                let actual = result.failed |> List.reduce (+)
                 actual |> should matchRegex "expected 5 to equal 6"
 
             it "write the right output for comparison tests" <| fun _ ->
                 sut.it "Is a failing test" <| fun _ ->
                     5 |> should be.greaterThan 6
                 let result = sut.run()
-                let actual = result.failedTests() |> List.reduce (+)
+                let actual = result.failed |> List.reduce (+)
                 actual |> should matchRegex "expected 5 to be greater than 6"
 
             it "Is empty when no tests fail" <| fun _ ->
                 sut.it "Is a passing test" pass
                 let result = sut.run()
-                let actual = result.failedTests() |> List.length
+                let actual = result.failed |> List.length
                 actual.should equal 0
 
         describe "Tests with errors" <| fun _ ->
@@ -100,5 +98,5 @@ let specs =
                     raise (new System.NotImplementedException())
                     ()
                 let result = sut.run()
-                let actual = result.failedTests() |> List.reduce (+)
+                let actual = result.failed |> List.reduce (+)
                 actual |> should matchRegex "NotImplementedException"
