@@ -104,7 +104,7 @@ module ExampleGroup =
                     | PendingError -> Pending
                     | AssertionError(e) -> Failure e
                     | ex -> Error ex
-                Report.reportTestName report name testResult
+                Report.reportTestName name testResult report
 
             let report' = exampleGroup.Examples |> List.rev |> List.fold (fun rep ex -> runExample ex rep) report
             exampleGroup.ChildGroups |> List.rev |> List.fold (fun rep grp -> run (grp::exampleGroups) rep) report'

@@ -32,7 +32,7 @@ module Report =
     let addPending report pending = { report with pending = pending::report.pending }
 
     let success report = report.failed = []
-    let reportTestName report name result =
+    let reportTestName name result report =
         let name' = match result with
                     | Success -> sprintf "%s - passed" name
                     | Pending -> sprintf "%s - pending" name
@@ -62,7 +62,7 @@ type TestReport(report : Report.T) =
     member self.success() = Report.success report
 
     member self.reportTestName name result =
-        TestReport(Report.reportTestName report name result)
+        TestReport(Report.reportTestName name result report)
 
     member self.testOutput() =
         report.output |> List.rev
