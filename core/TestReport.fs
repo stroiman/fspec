@@ -55,17 +55,11 @@ module Report =
             sprintf "%d run, %d failed" noOfRuns noOfFails
 
 type TestReport(report : Report.T) =
-    new () = TestReport(Report.create())
-
     member self.summary() = report |> Report.summary
-
     member self.success() = Report.success report
-
     member self.reportTestName name result =
         TestReport(Report.reportTestName name result report)
-
     member self.testOutput() =
         report.output |> List.rev
-
     member self.failedTests() = 
         report.failed |> List.rev
