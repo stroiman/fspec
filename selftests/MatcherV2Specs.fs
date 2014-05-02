@@ -1,6 +1,6 @@
 module FSpec.SelfTests.MatcherV2Specs
 open FSpec.Core
-open Dsl
+open DslV2
 open MatchersV2
 
 type A() = class end
@@ -26,9 +26,9 @@ let getErrorMsg test =
     
 let shouldFail test = getErrorMsg test |> ignore
 
-let specs =
-    describe "Equal matcher" <| fun _ ->
-        context "when used with 'should'" <| fun _ ->
+let specs = [
+    describe "Equal matcher" [
+        context "when used with 'should'" [
             it "succeeds when objects are equal" <| fun _ ->
                 let test () = 5 |> should equal 5
                 test |> shouldPass
@@ -40,8 +40,9 @@ let specs =
             it "fails with the right error message" <| fun _ ->
                 let test () = 5 |> should equal 6
                 test |> getErrorMsg |> should equal "expected 5 to equal 6"
+        ]
 
-        context "when used with 'should not'" <| fun _ ->
+        context "when used with 'should not'" [
             it "succeeds when objects are not equal" <| fun _ ->
                 let test () = 5 |> shouldNot equal 6
                 test |> shouldPass
@@ -53,9 +54,11 @@ let specs =
             it "fails with the right error message" <| fun _ ->
                 let test () = 5 |> shouldNot equal 5
                 test |> getErrorMsg |> should equal "expected 5 to not equal 5"
+        ]
+    ]
 
-    describe "Regex matcher" <| fun _ ->
-        context "when used with 'should'" <| fun _ ->
+    describe "Regex matcher" [
+        context "when used with 'should'" [
             it "succeeds when the value match the pattern" <| fun _ ->
                 let test () = "blah blah" |> should matchRegex "^blah blah$"
                 test |> shouldPass
@@ -67,8 +70,9 @@ let specs =
             it "fails with the right error message" <| fun _ ->
                 let test () = "blah blah" |> should matchRegex "^blah$"
                 test |> getErrorMsg |> should equal "expected \"blah blah\" to match regex pattern \"^blah$\""
+        ]
         
-        context "when used with 'should not'" <| fun _ ->
+        context "when used with 'should not'" [
             it "succeeds when the value does not match the pattern" <| fun _ ->
                 let test () = "blah blah" |> shouldNot matchRegex "^blah$"
                 test |> shouldPass
@@ -80,9 +84,11 @@ let specs =
             it "fails with the right error message" <| fun _ ->
                 let test () = "blah blah" |> shouldNot matchRegex "^blah blah$"
                 test |> getErrorMsg |> should equal "expected \"blah blah\" to not match regex pattern \"^blah blah$\""
+        ]
+    ]
 
-    describe "TypeOf matcher" <| fun _ ->
-        context "when used with 'should'" <| fun _ ->
+    describe "TypeOf matcher" [
+        context "when used with 'should'" [
             it "succeeds when object is of expected type" <| fun _ -> 
                 let test () = A() |> should beOfType<A>
                 test |> shouldPass
@@ -106,8 +112,9 @@ let specs =
             it "fails with the right error message" <| fun _ ->
                 let test () = A() |> should beOfType<B>
                 test |> getErrorMsg |> should matchRegex "^expected .*A to be of type .*B$"
+        ]
 
-        context "when used with 'should not'" <| fun _ ->
+        context "when used with 'should not'" [
             it "succeeds when object is of different type" <| fun _ ->
                 let test () = A() |> shouldNot beOfType<B>
                 test |> shouldPass
@@ -115,9 +122,11 @@ let specs =
             it "fails with the right error message" <| fun _ ->
                 let test () = A() |> shouldNot beOfType<A>
                 test |> getErrorMsg |> should matchRegex "^expected .*A to not be of type .*A$"
+        ]
+    ]
 
-    describe "Fail matcher" <| fun _ ->
-        context "when used with 'should'" <| fun _ ->
+    describe "Fail matcher" [
+        context "when used with 'should'" [
             it "succeeds when function fails" <| fun _ ->
                 let test () = failwith "dummy"
                 test |> should fail
@@ -131,9 +140,13 @@ let specs =
                 let nonFailingFunction () = ()
                 let test () = nonFailingFunction |> should fail
                 test |> getErrorMsg |> should equal "expected exception to be thrown, but none was thrown"
+        ]
 
-        context "when used with 'should not'" <| fun _ ->
+        context "when used with 'should not'" [
             it "fails with the right error message" <| fun _ ->
                 let failingFunction () = failwith "dummy"
                 let test () = failingFunction |> shouldNot fail
                 test |> getErrorMsg |> should equal "exception was thrown when none was expected"
+        ]
+    ]
+]

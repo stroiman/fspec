@@ -16,7 +16,8 @@ let getSpecsFromAssembly (assembly : Assembly) =
     let toExampleGroup (value : obj) =
         match value with
         | :? ExampleGroup.T as g -> 
-            Some g
+            Some [g]
+        | :? List<ExampleGroup.T> as g -> Some g
         | _ -> None
         
     let specs =
@@ -26,6 +27,7 @@ let getSpecsFromAssembly (assembly : Assembly) =
         |> Seq.where (fun x -> x <> null)
         |> Seq.map (fun x -> x.GetValue(null)) 
         |> Seq.choose toExampleGroup 
+        |> Seq.mapMany (fun x -> x)
         |> List.ofSeq
     c.examples::specs
 
