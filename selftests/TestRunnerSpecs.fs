@@ -15,8 +15,7 @@ let createAnExampleWithMetaData metaData f =
 
 let runSingleExample example =
     let group = anExampleGroup |> withExamples [example]
-    let report = ExampleGroup.run group (Report.create())
-    TestReport(report)
+    ExampleGroup.run group (Report.create())
 
 let withSetupCode f = ExampleGroup.addSetup f
 let withAnExampleWithMetaData metaData =
@@ -39,7 +38,7 @@ let specs =
                     createAnExampleWithMetaData ("answer", 42) <| fun ctx ->
                         ctx.metadata "answer" |> should equal 42
                     |> runSingleExample
-                    |> fun x -> x.success() |> should equal true
+                    |> Report.success |> should equal true
 
                 it "passes the metadata to the setup" <| fun _ ->
                     let actual = ref 0
