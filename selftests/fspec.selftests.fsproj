@@ -50,7 +50,6 @@
   <ItemGroup>
     <Compile Include="DslHelper.fs" />
     <Compile Include="MatcherSpecs.fs" />
-    <Compile Include="MatcherV2Specs.fs" />
     <Compile Include="RunnerSpecs.fs" />
     <Compile Include="TestRunnerSpecs.fs" />
     <Compile Include="Selftests.fs" />

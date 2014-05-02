@@ -1,58 +1,81 @@
-﻿module FSpec.Core.Matchers
-open System
+module FSpec.Core.Matchers
 
-type Matcher<'a,'b> = {
-    matcherFunc : 'a -> 'b -> bool
-    writeException : 'a -> 'b -> string
-    }
-
-let equal = {
-    matcherFunc = fun actual expected -> 
-        actual.Equals(expected)
-    writeException = fun a b -> 
-        sprintf "expected %s to equal %s" (a.ToString()) (b.ToString())
-    }
-
-let matchRegex = {
-    matcherFunc = fun actual expected ->
-        let regex = System.Text.RegularExpressions.Regex expected
-        if regex.IsMatch actual then
-            true
-        else
-            false
-
-    writeException = fun a b ->
-        sprintf "expected %s to match expression %s" a b
-}
-
-let should (matcher : Matcher<'a,'b>) expected actual =
-    let success = matcher.matcherFunc actual expected
-    if not success then
-        let info = { 
-            Message = matcher.writeException actual expected}
-        raise (AssertionError(info))
-
-type System.Object with
-    member self.should (matcher : Matcher<Object,'b>) expected =
-        self |> should matcher expected
-
-let throw = {
-    matcherFunc = fun a b ->
-        let mutable exceptionThrown = false
-        try
-            a()
-        with
-            | _ -> exceptionThrown <- true
-        exceptionThrown
-    writeException = (fun a b -> "Expected exception was not thrown")
-}
-
-module be =
-    let greaterThan = {
-        matcherFunc = fun actual expected ->
-            actual > expected
-        writeException = fun a b -> 
-            sprintf "expected %s to be greater than %s" (a.ToString()) (b.ToString())
+module MatchResult =
+    type T = {
+            Success: bool;
+            FailureMessageForShould: string;
+            FailureMessageForShouldNot: string;
         }
 
-    let equalTo = equal
+    let create success = { 
+        Success = success; 
+        FailureMessageForShould =  "assertion failed";
+        FailureMessageForShouldNot = "assertion failed" 
+    }
+        
+    let build success failureMsgForShould failureMsgForShouldNot =
+        { Success = success;
+          FailureMessageForShould = failureMsgForShould;
+          FailureMessageForShouldNot = failureMsgForShouldNot }
+    let assertSuccess result =
+        if not (result.Success) then
+            raise (AssertionError({Message = result.FailureMessageForShould}))
+    let assertFail result =
+        if (result.Success) then
+            raise (AssertionError({Message = result.FailureMessageForShouldNot}))
+
+let should matcher = matcher MatchResult.assertSuccess
+let shouldNot matcher = matcher MatchResult.assertFail
+    
+type VerifyResult = MatchResult.T -> unit
+
+let isOfType (t: System.Type) actual =
+    t.IsInstanceOfType(actual)
+
+let equal verifyResult expected = 
+    fun actual ->
+        MatchResult.build 
+            (expected = actual)
+            (sprintf "expected %A to equal %A" actual expected)
+            (sprintf "expected %A to not equal %A" actual expected)
+        |> verifyResult
+
+let beOfType<'T> (verifyResult : VerifyResult) =
+    let expectedType = typeof<'T>
+    fun actual ->
+        MatchResult.build 
+            (expectedType.IsInstanceOfType(actual))
+            (sprintf "expected %A to be of type %A" actual expectedType)
+            (sprintf "expected %A to not be of type %A" actual expectedType)
+        |> verifyResult
+
+let matchRegex verifyResult pattern =
+    fun actual ->
+        let regex = System.Text.RegularExpressions.Regex pattern
+        MatchResult.build
+            (regex.IsMatch actual)
+            (sprintf "expected %A to match regex pattern %A" actual pattern)
+            (sprintf "expected %A to not match regex pattern %A" actual pattern)
+        |> verifyResult
+
+let fail verifyResult actual =
+    let isMatch =
+        try
+            actual ()
+            false
+        with
+            | _ -> true
+    MatchResult.build
+        isMatch 
+        "expected exception to be thrown, but none was thrown"
+        "exception was thrown when none was expected"
+    |> verifyResult    
+
+module be =
+    let greaterThan verifyResult expected actual =
+        MatchResult.build 
+            (actual > expected)
+            (sprintf "expected %A to be greater than %A" actual expected)
+            (sprintf "expected %A to not be greater than %A" actual expected)
+        |> verifyResult
+

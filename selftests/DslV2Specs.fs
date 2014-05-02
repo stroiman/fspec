@@ -1,7 +1,7 @@
 ﻿module FSpec.SelfTests.DslV2Specs
 open FSpec.Core.DomainTypes
 open FSpec.Core.DslV2
-open FSpec.Core.MatchersV2
+open FSpec.Core.Matchers
 
 let pass = fun _ -> ()
 

@@ -1,7 +1,7 @@
 ﻿module FSpec.SelfTests.TestContextSpecs
 open FSpec.Core
 open DslV2
-open MatchersV2
+open Matchers
 open DomainTypes
 
 let specs =

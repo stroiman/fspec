@@ -23,7 +23,6 @@ end
 file 'output/FSpec.Core.dll' => [
     'core/TestReport.fs', 
     'core/Matchers.fs', 
-    'core/MatchersV2.fs', 
     'core/DomainTypes.fs',
     'core/Dsl.fs',
     'core/DslV2.fs'
@@ -36,7 +35,6 @@ file 'output/FSpec.SelfTests.dll' => [
     'selftests/RunnerSpecs.fs', 
     'selftests/TestRunnerSpecs.fs',
     'selftests/Selftests.fs', 
-    'selftests/Matcherv2Specs.fs', 
     'selftests/MatcherSpecs.fs', 
     'selftests/TestReportSpecs.fs',
     'selftests/MetaDataSpecs.fs',

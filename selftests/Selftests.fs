@@ -46,7 +46,7 @@ let specs =
                 let actual = report.output |> List.rev
                 let expected = ["Some context has some behavior - passed";
                                 "Some context has some other behavior - passed"]
-                actual.should equal expected
+                actual |> should equal expected
 
             it "Reports nested contexts correctly" <| fun _ ->
                 sut.describe "Some context" <| fun _ ->
@@ -74,7 +74,7 @@ let specs =
 
             it "Writes the output to the test report" <| fun _ ->
                 sut.it "Is a failing test" <| fun _ ->
-                    (5).should equal 6
+                    5 |> should equal 6
                 let result = sut.run()
                 let actual = result.failed |> List.reduce (+)
                 actual |> should matchRegex "expected 5 to equal 6"
@@ -90,7 +90,7 @@ let specs =
                 sut.it "Is a passing test" pass
                 let result = sut.run()
                 let actual = result.failed |> List.length
-                actual.should equal 0
+                actual |> should equal 0
 
         describe "Tests with errors" <| fun _ ->
             it "writes the exception name" <| fun _ ->

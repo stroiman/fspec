@@ -1,7 +1,7 @@
 ﻿module FSpec.SelfTests.TestRunnerSpecs
 open FSpec.Core
 open DomainTypes
-open MatchersV2
+open Matchers
 open DslV2
 
 let anExampleGroup = ExampleGroup.create "dummy"
