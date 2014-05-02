@@ -22,11 +22,14 @@ let withAnExampleWithMetaData metaData =
     createAnExampleWithMetaData metaData (fun _ -> ())
     |> ExampleGroup.addExample
 
-let run exampleGroup = ExampleGroup.run exampleGroup (TestReport())
+let run exampleGroup = 
+    ExampleGroup.run exampleGroup (TestReport())
+    |> ignore
+
 let shouldPass group =
     let report = TestReport()
-    ExampleGroup.run group report
-    report.failedTests () |> List.length |> should equal 0
+    let report' = ExampleGroup.run group report
+    report'.success() |> should equal true
 
 let specs =
     describe "Test runner" [
@@ -35,7 +38,8 @@ let specs =
                 it "passes the metadata to the test" <| fun _ ->
                     createAnExampleWithMetaData ("answer", 42) <| fun ctx ->
                         ctx.metadata "answer" |> should equal 42
-                    |> runSingleExample 
+                    |> runSingleExample
+                    |> fun x -> x.success() |> should equal true
 
                 it "passes the metadata to the setup" <| fun _ ->
                     let actual = ref 0

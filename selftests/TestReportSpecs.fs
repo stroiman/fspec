@@ -9,17 +9,17 @@ let specs =
         describe "With success reported" <| fun _ ->
             it "Is a success" <| fun _ ->
                 let r = TestReport()
-                r.reportTestName "dummy" (Success)
-                r.success() |> should equal true
+                let r' = r.reportTestName "dummy" (Success)
+                r'.success() |> should equal true
 
         describe "With errors reported" <| fun _ ->
             it "Is a failure" <| fun _ ->
                 let r = TestReport()
-                r.reportTestName "dummy" (Error(System.Exception()))
-                r.success() |> should equal false
+                let r' = r.reportTestName "dummy" (Error(System.Exception()))
+                r'.success() |> should equal false
 
         describe "With failures reported" <| fun _ ->
             it "Is a failure" <| fun _ ->
                 let r = TestReport()
-                r.reportTestName "dummy" (Failure(AssertionErrorInfo.create))
-                r.success() |> should equal false
+                let r' = r.reportTestName "dummy" (Failure(AssertionErrorInfo.create))
+                r'.success() |> should equal false

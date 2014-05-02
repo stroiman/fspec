@@ -30,10 +30,10 @@ let getSpecsFromAssembly (assembly : Assembly) =
     c.examples::specs
 
 let runSpecs specs =
-    let report = TestReport()
-    specs |> List.iter (fun grp -> ExampleGroup.run grp report)
+    let report = specs |> List.fold (fun rep grp -> ExampleGroup.run grp rep) (TestReport())
     report.failedTests() |> List.iter (fun x -> printfn "%s" x)
     printfn "%s" (report.summary())
+    report.success()
 
 [<EntryPoint>]
 let main args =
@@ -42,5 +42,6 @@ let main args =
         |> Seq.map (fun assemblyName -> Assembly.LoadFrom(assemblyName))
         |> Seq.mapMany getSpecsFromAssembly
         |> Seq.toList
-    runSpecs specs
-    0
+    match runSpecs specs with
+    | true -> 0
+    | false -> 1

@@ -32,7 +32,6 @@ type TestCollection() =
     member self.it name f = Example.create name f |> ExampleGroup.addExample |> mutateGroup
     member self.it_ metadata name f = Example.create name f |> Example.addMetaData (MetaData.create metadata) |> ExampleGroup.addExample |> mutateGroup
     member self.run(results) = ExampleGroup.run exampleGroup results
-    member self.run() = self.run(TestReport())
 
 let c = TestCollection()
 let describe = c.describe

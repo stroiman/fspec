@@ -20,4 +20,3 @@ type DslHelper() =
     member self.run () =
         let report = TestReport()
         c().run(report)
-        report

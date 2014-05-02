@@ -45,8 +45,8 @@ module Report =
                         | _ -> addFail report name'
         addOutput report' name'
 
-type TestReport() =
-    let mutable report = Report.create()
+type TestReport(report : Report.T) =
+    new () = TestReport(Report.create())
 
     member self.summary() = 
         let noOfFails = report.failed |> List.length
@@ -61,7 +61,7 @@ type TestReport() =
         Report.success report
 
     member self.reportTestName name result =
-        report <- Report.reportTestName report name result
+        TestReport(Report.reportTestName report name result)
 
     member self.testOutput() =
         report.output |> List.rev

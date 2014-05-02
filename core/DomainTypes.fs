@@ -88,7 +88,7 @@ module ExampleGroup =
                 | head::[] -> head
                 | head::tail ->sprintf "%s %s" (printNameStack(tail)) head
 
-            exampleGroup.Examples |> List.rev |> List.iter (fun example -> 
+            let runExample (example:Example.T) (results : TestReport) =
                 let nameStack = example.Name :: (exampleGroups |> List.map (fun x -> x.Name) |> List.filter (fun x -> x <> null))
                 let name = printNameStack(nameStack)
                 let testResult =
@@ -105,9 +105,7 @@ module ExampleGroup =
                     | AssertionError(e) -> Failure e
                     | ex -> Error ex
                 results.reportTestName name testResult
-            )
 
-            exampleGroup.ChildGroups |> List.rev |> List.iter (fun x ->
-                run (x::exampleGroups) results
-            )
+            let results' = exampleGroup.Examples |> List.rev |> List.fold (fun rep ex -> runExample ex rep) results
+            exampleGroup.ChildGroups |> List.rev |> List.fold (fun rep grp -> run (grp::exampleGroups) rep) results'
         run [exampleGroup] results
