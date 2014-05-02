@@ -13,65 +13,60 @@ module MatchResult =
         FailureMessageForShouldNot = "assertion failed" 
     }
         
-    let setFailureMessageForShould message (result : T) = { result with FailureMessageForShould = message }
-    let setFailureMessageForShouldNot message result = { result with FailureMessageForShouldNot = message }
+    let build success failureMsgForShould failureMsgForShouldNot =
+        { Success = success;
+          FailureMessageForShould = failureMsgForShould;
+          FailureMessageForShouldNot = failureMsgForShouldNot }
+    let assertSuccess result =
+        if not (result.Success) then
+            raise (AssertionError({Message = result.FailureMessageForShould}))
+    let assertFail result =
+        if (result.Success) then
+            raise (AssertionError({Message = result.FailureMessageForShouldNot}))
 
-let should matcher =
-    let reportMatch (value : MatchResult.T) =
-        if not (value.Success) then
-            raise (AssertionError({Message = value.FailureMessageForShould}))
-    matcher reportMatch
-
-let shouldNot matcher =
-    let reportMatch (value : MatchResult.T) =
-        if (value.Success) then
-            raise (AssertionError({Message = value.FailureMessageForShouldNot}))
-    matcher reportMatch
+let should matcher = matcher MatchResult.assertSuccess
+let shouldNot matcher = matcher MatchResult.assertFail
     
-(* This function with explicit type arguments help make it possible to use
- * type inference in the actual matcher functions *)
-let reportBack (report: MatchResult.T -> unit) result = report result
+type VerifyResult = MatchResult.T -> unit
 
 let isOfType (t: System.Type) actual =
     t.IsInstanceOfType(actual)
 
-let equal report expected actual =
-    MatchResult.create (expected = actual)
-    |> MatchResult.setFailureMessageForShould (sprintf "expected %A to equal %A" actual expected)
-    |> MatchResult.setFailureMessageForShouldNot (sprintf "expected %A to not equal %A" actual expected)
-    |> reportBack report
+let equal verifyResult expected = 
+    fun actual ->
+        MatchResult.build 
+            (expected = actual)
+            (sprintf "expected %A to equal %A" actual expected)
+            (sprintf "expected %A to not equal %A" actual expected)
+        |> verifyResult
 
-let beOfType<'T> report actual =
+let beOfType<'T> (verifyResult : VerifyResult) =
     let expectedType = typeof<'T>
-    expectedType.IsInstanceOfType(actual)
-    |> MatchResult.create
-    |> MatchResult.setFailureMessageForShould
-        (sprintf "expected %A to be of type %A" actual expectedType)
-    |> MatchResult.setFailureMessageForShouldNot
-        (sprintf "expected %A to not be of type %A" actual expectedType)
-    |> reportBack report
+    fun actual ->
+        MatchResult.build 
+            (expectedType.IsInstanceOfType(actual))
+            (sprintf "expected %A to be of type %A" actual expectedType)
+            (sprintf "expected %A to not be of type %A" actual expectedType)
+        |> verifyResult
 
-let matchRegex report pattern actual =
-    let regex = System.Text.RegularExpressions.Regex pattern
-    regex.IsMatch actual
-    |> MatchResult.create
-    |> MatchResult.setFailureMessageForShould 
-        (sprintf "expected %A to match regex pattern %A" actual pattern)
-    |> MatchResult.setFailureMessageForShouldNot 
-        (sprintf "expected %A to not match regex pattern %A" actual pattern)
-    |> reportBack report
+let matchRegex verifyResult pattern =
+    fun actual ->
+        let regex = System.Text.RegularExpressions.Regex pattern
+        MatchResult.build
+            (regex.IsMatch actual)
+            (sprintf "expected %A to match regex pattern %A" actual pattern)
+            (sprintf "expected %A to not match regex pattern %A" actual pattern)
+        |> verifyResult
 
-let fail report actual =
+let fail verifyResult actual =
     let isMatch =
         try
             actual ()
             false
         with
             | _ -> true
-    isMatch 
-    |> MatchResult.create 
-    |> MatchResult.setFailureMessageForShould  
+    MatchResult.build
+        isMatch 
         "expected exception to be thrown, but none was thrown"
-    |> MatchResult.setFailureMessageForShouldNot
         "exception was thrown when none was expected"
-    |> reportBack report    
+    |> verifyResult    
