@@ -91,20 +91,20 @@ module ExampleGroup =
             exampleGroup.Examples |> List.rev |> List.iter (fun example -> 
                 let nameStack = example.Name :: (exampleGroups |> List.map (fun x -> x.Name) |> List.filter (fun x -> x <> null))
                 let name = printNameStack(nameStack)
-                try
-                    let context = example.MetaData |> TestContext.create
+                let testResult =
                     try
-                        performSetup exampleGroups context
-                        example.Test context
-                    finally
-                        performTearDown exampleGroups context
-                    results.reportTestName name Success
-                with
-                | PendingError -> results.reportTestName name Pending
-                | AssertionError(e) ->
-                    results.reportTestName name (Failure(e))
-                | ex -> 
-                    results.reportTestName name (Error(ex))
+                        let context = example.MetaData |> TestContext.create
+                        try
+                            performSetup exampleGroups context
+                            example.Test context
+                        finally
+                            performTearDown exampleGroups context
+                        Success
+                    with
+                    | PendingError -> Pending
+                    | AssertionError(e) -> Failure e
+                    | ex -> Error ex
+                results.reportTestName name testResult
             )
 
             exampleGroup.ChildGroups |> List.rev |> List.iter (fun x ->
