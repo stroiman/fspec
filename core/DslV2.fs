@@ -5,13 +5,14 @@ type Operation =
     | AddExampleGroupOperation of ExampleGroup.T
     | AddSetupOperation of ExampleGroup.TestFunc
     with
-        static member (-->) (md, op) =
+        static member applyMetaData metaData op =
             match op with
             | AddExampleOperation e ->
-                e |> Example.addMetaData md |> AddExampleOperation
+                e |> Example.addMetaData metaData |> AddExampleOperation
             | AddExampleGroupOperation g ->
-                g |> ExampleGroup.addMetaData md |> AddExampleGroupOperation
+                g |> ExampleGroup.addMetaData metaData |> AddExampleGroupOperation
             | _ -> failwith "not supported"
+        static member (==>) (md, op) = Operation.applyMetaData md op
 
 let it name func = AddExampleOperation <| Example.create name func
 

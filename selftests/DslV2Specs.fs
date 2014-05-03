@@ -50,7 +50,7 @@ let specs =
         it "builds example group with metadata" <| fun _ ->
             let group =
                 describe "grp" [
-                    ("answer" ++ 42) -->
+                    ("answer" ++ 42) ==>
                     context "child" []]
             group.ChildGroups.Head.MetaData.get "answer" |> should equal 42
 
@@ -59,7 +59,7 @@ let specs =
                 describe "grp" [
                     ("answer" ++ 42 |||
                      "question" ++ "universe" |||
-                     "More" ++ Some "blah") -->
+                     "More" ++ Some "blah") ==>
                     it "Test" pass
                 ]
             group.Examples.Head.MetaData.get "answer" |> should equal 42
