@@ -33,6 +33,7 @@ end
 
 file 'output/FSpec.SelfTests.dll' => [
     'selftests/DslHelper.fs', 
+    'selftests/ExampleHelper.fs',
     'selftests/RunnerSpecs.fs', 
     'selftests/TestRunnerSpecs.fs',
     'selftests/Selftests.fs', 
