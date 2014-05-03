@@ -63,6 +63,7 @@ module ExampleGroup =
         Setups: TestFunc list;
         TearDowns: TestFunc list;
         ChildGroups : T list;
+        MetaData : MetaData.T
         }
 
     let create name = { 
@@ -71,6 +72,7 @@ module ExampleGroup =
         Setups = [];
         TearDowns = [];
         ChildGroups = [];
+        MetaData = MetaData.Zero
     }
     let name grp = grp.Name
     let setups grp = grp.Setups
@@ -79,6 +81,8 @@ module ExampleGroup =
     let addSetup setup ctx = { ctx with Setups = setup::ctx.Setups }
     let addTearDown tearDown ctx = { ctx with TearDowns = tearDown::ctx.TearDowns }
     let addChildContext child ctx = { ctx with ChildGroups = child::ctx.ChildGroups }
+    let addMetaData data ctx = { ctx with MetaData = data }
+    let getMetaData grp = grp.MetaData
     let childGroups grp = grp.ChildGroups |> List.rev
     let examples grp = grp.Examples 
     let foldExamples folder state grp = grp.Examples |> List.rev |> List.fold folder state

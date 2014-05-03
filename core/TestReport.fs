@@ -58,6 +58,7 @@ module Runner =
     let run exampleGroup report =
         let rec run exampleGroups report =
             let exampleGroup = exampleGroups |> List.head
+            let metaData = exampleGroups |> List.map ExampleGroup.getMetaData |> List.fold (fun state x -> x |> MetaData.merge state) MetaData.Zero
             let rec printNameStack(stack) : string =
                 match stack with
                 | []    -> ""
@@ -65,8 +66,10 @@ module Runner =
                 | head::tail ->sprintf "%s %s" (printNameStack(tail)) head
 
             let execExample (example:Example.T) =
+                let metaDataStack = example.MetaData :: (exampleGroups |> List.map ExampleGroup.getMetaData)
+                let metaData = metaDataStack |> List.fold MetaData.merge MetaData.Zero
                 try
-                    let context = example.MetaData |> TestContext.create
+                    let context = metaData |> TestContext.create
                     try
                         performSetup exampleGroups context
                         example.Test context

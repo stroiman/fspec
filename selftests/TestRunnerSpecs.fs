@@ -8,9 +8,12 @@ let withExamples examples exampleGroup =
     let folder grp ex = ExampleGroup.addExample ex grp
     examples |> List.fold folder exampleGroup
 
+let anExample = Example.create "dummy"
+
 let createAnExampleWithMetaData metaData f =
     let metaData' = MetaData.create [metaData]
-    Example.create "dummy" f |> Example.addMetaData metaData'
+    anExample f |> Example.addMetaData metaData'
+
 
 let runSingleExample example =
     let group = anExampleGroup |> withExamples [example]
@@ -29,6 +32,9 @@ let shouldPass group =
     let report' = Runner.run group (Report.create())
     report' |> Report.success |> should equal true
 
+let withMetaData data = MetaData.create [data] |> ExampleGroup.addMetaData
+    
+
 let specs =
     describe "Test runner" [
         context "metadata handling" [
@@ -46,6 +52,49 @@ let specs =
                     |> withAnExampleWithMetaData ("answer", 42)
                     |> run
                     !actual |> should equal 42
+            ]
+
+            context "example group contains metadata" [
+                subject <| fun _ ->
+                    anExampleGroup
+                    |> withMetaData ("source", "example group")
+
+                context "test contains no metadata" [
+                    subject <| fun ctx ->
+                        ctx.subject ()
+                        |> ExampleGroup.addExample (
+                            anExample <| fun testCtx ->
+                                ctx.add "source" (testCtx.metadata "source"))
+                                
+                    it "uses metadata from setup" <| fun ctx ->
+                        ctx.subject () |> run
+                        ctx.get "source" |> should equal "example group"
+                ]   
+                context "test overrides same metadata" [
+                    subject <| fun ctx ->
+                        ctx.subject ()
+                        |> ExampleGroup.addExample (
+                            createAnExampleWithMetaData ("source", "example") <| fun testCtx ->
+                                ctx.add "source" (testCtx.metadata "source"))
+
+                    it "uses the metadata specified in test" <| fun ctx ->
+                        ctx.subject () |> run
+                        ctx.get "source" |> should equal "example"
+                ]
+                context "nested example group overrides metadata" [
+                    subject <| fun ctx ->
+                        ctx.subject ()
+                        |> ExampleGroup.addChildContext (
+                            anExampleGroup
+                            |> withMetaData ("source", "child context")
+                            |> ExampleGroup.addExample (
+                                anExample <| fun testCtx ->
+                                    ctx.add "source" (testCtx.metadata "source")))
+
+                    it "uses the metadata from the child group" <| fun ctx ->
+                        ctx.subject () |> run
+                        ctx.get "source" |> should equal "child context"
+                ]
             ]
         ]
     ]
