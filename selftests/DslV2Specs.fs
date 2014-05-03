@@ -2,6 +2,7 @@
 open FSpec.Core
 open DslV2
 open Matchers
+open MetaData
 
 let pass = fun _ -> ()
 
@@ -45,4 +46,22 @@ let specs =
                     it "Test" pass
                 ]
             group.Setups.Length |> should equal 2
+
+        it "builds example group with metadata" <| fun _ ->
+            let group =
+                describe "grp" [
+                    ("answer" ++ 42) -->
+                    context "child" []]
+            group.ChildGroups.Head.MetaData.get "answer" |> should equal 42
+
+        it "builds example with metadata" <| fun _ ->
+            let group =
+                describe "grp" [
+                    ("answer" ++ 42 |||
+                     "question" ++ "universe" |||
+                     "More" ++ Some "blah") -->
+                    it "Test" pass
+                ]
+            group.Examples.Head.MetaData.get "answer" |> should equal 42
+            group.Examples.Head.MetaData.get "question" |> should equal "universe"
     ]

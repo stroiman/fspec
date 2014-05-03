@@ -4,6 +4,14 @@ type Operation =
     | AddExampleOperation of Example.T
     | AddExampleGroupOperation of ExampleGroup.T
     | AddSetupOperation of ExampleGroup.TestFunc
+    with
+        static member (-->) (md, op) =
+            match op with
+            | AddExampleOperation e ->
+                e |> Example.addMetaData md |> AddExampleOperation
+            | AddExampleGroupOperation g ->
+                g |> ExampleGroup.addMetaData md |> AddExampleGroupOperation
+            | _ -> failwith "not supported"
 
 let it name func = AddExampleOperation <| Example.create name func
 
