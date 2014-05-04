@@ -83,7 +83,7 @@ module ExampleGroup =
     let addExample test ctx = { ctx with Examples = test::ctx.Examples }
     let addSetup setup ctx = { ctx with Setups = setup::ctx.Setups }
     let addTearDown tearDown ctx = { ctx with TearDowns = tearDown::ctx.TearDowns }
-    let addChildContext child ctx = { ctx with ChildGroups = child::ctx.ChildGroups }
+    let addChildGroup child ctx = { ctx with ChildGroups = child::ctx.ChildGroups }
     let addMetaData data ctx = { ctx with MetaData = data }
     let getMetaData grp = grp.MetaData
     let childGroups grp = grp.ChildGroups |> List.rev

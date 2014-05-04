@@ -22,7 +22,7 @@ type TestCollection() =
         let oldContext = exampleGroup
         exampleGroup <- ExampleGroup.create name
         f()
-        exampleGroup <- ExampleGroup.addChildContext exampleGroup oldContext
+        exampleGroup <- ExampleGroup.addChildGroup exampleGroup oldContext
 
     member self.examples = exampleGroup
     member self.before f = ExampleGroup.addSetup f |> mutateGroup

@@ -53,7 +53,7 @@ let specs =
                 context "nested example group overrides metadata" [
                     subject <| fun ctx ->
                         ctx.subject ()
-                        |> ExampleGroup.addChildContext (
+                        |> ExampleGroup.addChildGroup(
                             anExampleGroup
                             |> withMetaData ("source", "child context")
                             |> ExampleGroup.addExample (

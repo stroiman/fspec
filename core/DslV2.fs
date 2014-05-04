@@ -19,7 +19,7 @@ let it name func = AddExampleOperation <| Example.create name func
 let applyOperation grp op =
     match op with
     | AddExampleOperation example -> grp |> ExampleGroup.addExample example
-    | AddExampleGroupOperation childGrp -> grp |> ExampleGroup.addChildContext childGrp
+    | AddExampleGroupOperation childGrp -> grp |> ExampleGroup.addChildGroup childGrp
     | AddSetupOperation f -> grp |> ExampleGroup.addSetup f
 
 let describe name operations =
