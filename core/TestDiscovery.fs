@@ -29,14 +29,16 @@ let getSpecsFromAssembly (assembly : Assembly) =
     c.examples::specs
 
 let runSpecs specs =
-    let report = specs |> Seq.fold (fun rep grp -> Runner.run grp rep) (Report.create())
+    let emptyReport = Report.create()
+    let reporter = ClassicReporter().createReporter ()
+    let report = specs |> Seq.fold (fun rep grp -> Runner.doRun grp reporter rep) emptyReport
     report.failed 
     |> List.rev
     |> List.iter (fun x -> printfn "%s" x)
     printfn "%s" (report |> Report.summary)
-    report 
+    report |> reporter.Success
 
 let toExitCode result =
-    match result |> Report.success with
+    match result with
     | true -> 0
     | false -> 1

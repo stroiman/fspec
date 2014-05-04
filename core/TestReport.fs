@@ -4,7 +4,8 @@ type Reporter<'T> = {
     BeginGroup : ExampleGroup.T -> 'T -> 'T
     BeginExample: Example.T -> 'T -> 'T
     EndExample: TestResultType -> 'T -> 'T
-    EndGroup: 'T -> 'T }
+    EndGroup: 'T -> 'T;
+    Success: 'T -> bool }
 
 module Report =
     type T = {
@@ -76,7 +77,8 @@ type ClassicReporter() =
         BeginGroup = beginGroup;
         BeginExample = beginExample;
         EndGroup = endGroup;
-        EndExample = endExample }
+        EndExample = endExample;
+        Success = Report.success }
 
 
 module Runner =
