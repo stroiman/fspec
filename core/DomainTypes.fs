@@ -56,6 +56,7 @@ module Example =
         MetaData: MetaData.T
     }
     let create name test = { Name = name; Test = test; MetaData = MetaData.Zero }
+    let name example = example.Name
     let addMetaData metaData example = { example with MetaData = metaData }
 
 module ExampleGroup =

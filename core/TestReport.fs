@@ -1,5 +1,11 @@
 namespace FSpec.Core
 
+type Reporter<'T> = {
+    BeginGroup : ExampleGroup.T -> 'T -> 'T
+    BeginExample: Example.T -> 'T -> 'T
+    EndExample: TestResultType -> 'T -> 'T
+    EndGroup: 'T -> 'T }
+
 module Report =
     type T = {
         output: string list;
@@ -42,6 +48,37 @@ module Report =
         else
             sprintf "%d run, %d failed" noOfRuns noOfFails
 
+type ClassicReporter() = 
+    // Not that classic - just mimcs the way the system worked during
+    // the first iterations. This class serves mostly to keep unit
+    // tests running until they have been rewritten to support the
+    // separation of runner and reporter
+    let mutable (names : string list) = []
+    let beginGroup group (report : Report.T) =
+        names <- (group |> ExampleGroup.name) :: names
+        report
+    let beginExample example (report : Report.T) =
+        names <- (example |> Example.name) :: names
+        report
+    let endExample result (report : Report.T) =
+        let rec printNameStack(stack) : string =
+            match stack with
+            | []    -> ""
+            | head::[] -> head
+            | head::tail ->sprintf "%s %s" (printNameStack(tail)) head
+        let (name : string) = printNameStack names
+        names <- names.Tail
+        report |> Report.reportTestName name result
+    let endGroup (report : Report.T) = 
+        names <- names.Tail
+        report
+    member self.createReporter () = {
+        BeginGroup = beginGroup;
+        BeginExample = beginExample;
+        EndGroup = endGroup;
+        EndExample = endExample }
+
+
 module Runner =
     let rec performSetup exampleGroups ctx =
         match exampleGroups with
@@ -57,15 +94,11 @@ module Runner =
                 head |> ExampleGroup.tearDowns |> List.iter (fun y -> y ctx)
                 performTearDown tail ctx
     
-    let run exampleGroup report =
+    let doRun exampleGroup reporter report =
         let rec run exampleGroups report =
             let exampleGroup = exampleGroups |> List.head
+            let report = reporter.BeginGroup exampleGroup report
             let metaData = exampleGroups |> List.map ExampleGroup.getMetaData |> List.fold (fun state x -> x |> MetaData.merge state) MetaData.Zero
-            let rec printNameStack(stack) : string =
-                match stack with
-                | []    -> ""
-                | head::[] -> head
-                | head::tail ->sprintf "%s %s" (printNameStack(tail)) head
 
             let execExample (example:Example.T) =
                 let metaDataStack = example.MetaData :: (exampleGroups |> List.map ExampleGroup.getMetaData)
@@ -84,11 +117,16 @@ module Runner =
                 | ex -> Error ex
 
             let runExample (example:Example.T) report =
-                let nameStack = example.Name :: (exampleGroups |> List.map ExampleGroup.name |> List.filter (fun x -> x <> null))
-                let name = printNameStack(nameStack)
+                let report' = reporter.BeginExample example report
                 let testResult = execExample example
-                Report.reportTestName name testResult report
+                reporter.EndExample testResult report'
 
-            let report' = exampleGroup |> ExampleGroup.foldExamples (fun rep ex -> runExample ex rep) report
-            exampleGroup |> ExampleGroup.foldChildGroups (fun rep grp -> run (grp::exampleGroups) rep) report'
+            let report'' = exampleGroup |> ExampleGroup.foldExamples (fun rep ex -> runExample ex rep) report
+            let report''' = exampleGroup |> ExampleGroup.foldChildGroups (fun rep grp -> run (grp::exampleGroups) rep) report''
+            reporter.EndGroup report'''
         run [exampleGroup] report
+
+    let run exampleGroup report =
+        let classicReporter = ClassicReporter()
+        let reporter = classicReporter.createReporter ()
+        doRun exampleGroup reporter report
