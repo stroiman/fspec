@@ -2,95 +2,87 @@ module FSpec.SelfTests.SuiteBuilderSpecs
 open FSpec.Core
 open Dsl
 open Matchers
-open DslHelper
+open ExampleHelper
 
+let getFailed (report : Report.T) = report.failed |> List.reduce (+)
 let specs =
     describe "Reporting" <| fun _ ->
-        let sut = DslHelper()
-
         describe "summary" <| fun _ ->
             it "reports test success" <| fun _ ->
-                sut.it "Is a success" pass
-                sut.run()
+                aPassingExample
+                |> runSingleExample
                 |> Report.summary |> should equal  "1 run, 0 failed"
 
             it "reports test failures" <| fun _ ->
-                sut.it "Is a failure" fail
-                sut.run() 
+                aFailingExample
+                |> runSingleExample
                 |> Report.summary |> should equal "1 run, 1 failed"
 
             it "reports pending tests" <| fun _ ->
-                sut.it "Is pending" pending
-                sut.run()
+                aPendingExample
+                |> runSingleExample 
                 |> Report.summary |> should equal "1 run, 0 failed, 1 pending"
 
         describe "Running status" <| fun _ ->
             it "Is reported while running" <| fun _ ->
-                sut.describe "Some context" <| fun _ ->
-                    sut.it "has some behavior" pass
-                sut.run().output
+                anExampleGroupNamed "Some context"
+                |> withAnExampleNamed "has some behavior"
+                |> run |> Report.output
                 |> should equal ["Some context has some behavior - passed"]
 
             it "Reports multiple test results" <| fun _ ->
-                sut.describe "Some context" <| fun _ ->
-                    sut.it "has some behavior" pass
-                    sut.it "has some other behavior" pass
-
-                let report = sut.run()
-                let actual = report.output |> List.rev
-                let expected = ["Some context has some behavior - passed";
-                                "Some context has some other behavior - passed"]
-                actual |> should equal expected
+                anExampleGroupNamed "Some context"
+                |> withExamples [
+                    anExampleNamed "has some behavior"
+                    anExampleNamed "has some other behavior" 
+                ]
+                |> run |> Report.output |> List.rev
+                |> should equal ["Some context has some behavior - passed"
+                                 "Some context has some other behavior - passed"]
+ 
 
             it "Reports nested contexts correctly" <| fun _ ->
-                sut.describe "Some context" <| fun _ ->
-                    sut.describe "in some special state" <| fun _ ->
-                        sut.it "has some special behavior" pass
-
-                let report = sut.run()
-                let actual = report.output |> List.rev |> List.head
-                actual |> should matchRegex "Some context in some special state has some special behavior"
+                anExampleGroupNamed "Some context"
+                |> withChildGroup (
+                    anExampleGroupNamed "in some special state"
+                    |> withAnExampleNamed "has some special behavior")
+                |> run
+                |> Report.output |> List.reduce (+)
+                |> should matchRegex "Some context in some special state has some special behavior"
 
         describe "Failed tests" <| fun _ ->
             it "handles test failures in setup code" (fun _ ->
-                sut.before (fun _ -> failwith "error")
-                sut.it "works" pass
-                sut.run()
+                anExampleGroup
+                |> withSetupCode (fun _ -> failwith "error")
+                |> withAnExample
+                |> run
                 |> Report.success |> should equal false
             )
             
             it "handles test failures in teardown code" (fun _ ->
-                sut.after (fun _ -> failwith "error")
-                sut.it "works" pass
-                sut.run()
+                anExampleGroup
+                |> withTearDownCode (fun _ -> failwith "error")
+                |> withAnExample
+                |> run
                 |> Report.success |> should equal false
             )
 
             it "Writes the output to the test report" <| fun _ ->
-                sut.it "Is a failing test" <| fun _ ->
-                    5 |> should equal 6
-                let result = sut.run()
-                let actual = result.failed |> List.reduce (+)
-                actual |> should matchRegex "expected 5 to equal 6"
-
-            it "write the right output for comparison tests" <| fun _ ->
-                sut.it "Is a failing test" <| fun _ ->
-                    5 |> should be.greaterThan 6
-                let result = sut.run()
-                let actual = result.failed |> List.reduce (+)
-                actual |> should matchRegex "expected 5 to be greater than 6"
+                anExample (fun _ ->
+                    5 |> should equal 6)
+                |> runSingleExample
+                |> Report.failed |> List.reduce (+)
+                |> should matchRegex "expected 5 to equal 6"
 
             it "Is empty when no tests fail" <| fun _ ->
-                sut.it "Is a passing test" pass
-                let result = sut.run()
-                let actual = result.failed |> List.length
-                actual |> should equal 0
+                aPassingExample
+                |> runSingleExample
+                |> Report.failed |> List.length
+                |> should equal 0
 
         describe "Tests with errors" <| fun _ ->
             it "writes the exception name" <| fun _ ->
-                sut.it "Is a failing test" <| fun _ ->
-                    raise (new System.NotImplementedException())
-                    ()
-                let result = sut.run()
-                let actual = result.failed |> List.reduce (+)
-                actual |> should matchRegex "NotImplementedException"
+                anExample (fun _ -> raise (new System.NotImplementedException()))
+                |> runSingleExample
+                |> Report.failed |> List.reduce (+)
+                |> should matchRegex "NotImplementedException"

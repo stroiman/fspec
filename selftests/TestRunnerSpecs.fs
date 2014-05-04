@@ -19,7 +19,7 @@ let specs =
                     anExampleGroup
                     |> withSetupCode (fun ctx -> actual := ctx.metadata "answer")
                     |> withAnExampleWithMetaData ("answer", 42)
-                    |> run
+                    |> run |> ignore
                     !actual |> should equal 42
             ]
 
@@ -36,7 +36,7 @@ let specs =
                                 ctx.add "source" (testCtx.metadata "source"))
                                 
                     it "uses metadata from setup" <| fun ctx ->
-                        ctx.subject () |> run
+                        ctx.subject () |> run |> ignore
                         ctx.get "source" |> should equal "example group"
                 ]   
                 context "test overrides same metadata" [
@@ -47,7 +47,7 @@ let specs =
                                 ctx.add "source" (testCtx.metadata "source"))
 
                     it "uses the metadata specified in test" <| fun ctx ->
-                        ctx.subject () |> run
+                        ctx.subject () |> run |> ignore
                         ctx.get "source" |> should equal "example"
                 ]
                 context "nested example group overrides metadata" [
@@ -61,7 +61,7 @@ let specs =
                                     ctx.add "source" (testCtx.metadata "source")))
 
                     it "uses the metadata from the child group" <| fun ctx ->
-                        ctx.subject () |> run
+                        ctx.subject () |> run |> ignore
                         ctx.get "source" |> should equal "child context"
                 ]
             ]

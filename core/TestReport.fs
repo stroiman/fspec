@@ -17,6 +17,8 @@ module Report =
     let addFail report fail = { report with failed = fail::report.failed }
     let addPending report pending = { report with pending = pending::report.pending }
 
+    let failed report = report.failed
+    let output report = report.output
     let success report = report.failed = []
     let reportTestName name result report =
         let name' = match result with
