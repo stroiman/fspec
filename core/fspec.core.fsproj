@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="DomainTypes.fs" />
     <Compile Include="TestReport.fs" />
+    <Compile Include="Runner.fs" />
     <Compile Include="Matchers.fs" />
     <Compile Include="Dsl.fs" />
     <Compile Include="TestDiscovery.fs" />

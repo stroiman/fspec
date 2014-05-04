@@ -23,6 +23,7 @@ end
 file 'output/FSpec.Core.dll' => [
     'core/DomainTypes.fs',
     'core/TestReport.fs', 
+    'core/Runner.fs',
     'core/Matchers.fs', 
     'core/Dsl.fs',
     'core/DslV2.fs',
