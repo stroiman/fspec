@@ -26,12 +26,10 @@ let specs =
 
             it "child contexts execute in the order they appear" (fun _ ->
                 anExampleGroup
-                |> withChildGroup (
-                    anExampleGroup
-                    |> withExampleCode (recordFunctionCall "test 1"))
-                |> withChildGroup (
-                    anExampleGroup
-                    |> withExampleCode (recordFunctionCall "test 2"))
+                |> withNestedGroup (
+                    withExampleCode (recordFunctionCall "test 1"))
+                |> withNestedGroup (
+                    withExampleCode (recordFunctionCall "test 2"))
                 |> run |> ignore
                 actualCallList() |> should equal ["test 1"; "test 2"]
             )
@@ -48,10 +46,9 @@ let specs =
             it "runs outer setup before inner setup" <| fun _ ->
                 anExampleGroup
                 |> withSetupCode (recordFunctionCall "outer setup")
-                |> withChildGroup (
-                    anExampleGroup
-                    |> withSetupCode (recordFunctionCall "inner setup")
-                    |> withExampleCode (recordFunctionCall "test"))
+                |> withNestedGroup (
+                    withSetupCode (recordFunctionCall "inner setup")
+                    >> withExampleCode (recordFunctionCall "test"))
                 |> run |> ignore
                 let expected = [ "outer setup"; "inner setup"; "test" ]
                 actualCallList() |> should equal expected
@@ -59,10 +56,9 @@ let specs =
             it "runs inner tear down before outer tear down" <| fun _ ->
                 anExampleGroup
                 |> withTearDownCode (recordFunctionCall "outer tear down")
-                |> withChildGroup (
-                    anExampleGroup
-                    |> withTearDownCode (recordFunctionCall "inner tear down")
-                    |> withExampleCode (recordFunctionCall "test"))
+                |> withNestedGroup (
+                    withTearDownCode (recordFunctionCall "inner tear down")
+                    >> withExampleCode (recordFunctionCall "test"))
                 |> run |> ignore
                 let expected = ["test"; "inner tear down"; "outer tear down"]
                 actualCallList() |> should equal expected
@@ -84,11 +80,10 @@ let specs =
                 anExampleGroup
                 |> withSetupCode (recordFunctionCall "outer setup")
                 |> withExampleCode (recordFunctionCall "outer test")
-                |> withChildGroup (
-                    anExampleGroup
-                    |> withSetupCode (recordFunctionCall "inner setup")
-                    |> withExampleCode (recordFunctionCall "inner test 1")
-                    |> withExampleCode (recordFunctionCall "inner test 2"))
+                |> withNestedGroup (
+                    withSetupCode (recordFunctionCall "inner setup")
+                    >> withExampleCode (recordFunctionCall "inner test 1")
+                    >> withExampleCode (recordFunctionCall "inner test 2"))
                 |> run |> ignore
                 actualCallList() |> should equal
                     ["outer setup"; "outer test";
@@ -107,10 +102,9 @@ let specs =
                 anExampleGroup
                 |> withTearDownCode (fun _ -> addToCallList "outer tearDown")
                 |> withExampleCode (fun _ -> addToCallList "outer test")
-                |> withChildGroup (
-                    anExampleGroup
-                        |> withTearDownCode (recordFunctionCall "inner tearDown")
-                        |> withExampleCode (recordFunctionCall "inner test"))
+                |> withNestedGroup (
+                    withTearDownCode (recordFunctionCall "inner tearDown")
+                    >> withExampleCode (recordFunctionCall "inner test"))
                 |> run |> ignore
                 actualCallList() |> should equal 
                     ["outer test"; "outer tearDown";

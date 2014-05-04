@@ -43,9 +43,8 @@ let specs =
 
             it "Reports nested contexts correctly" <| fun _ ->
                 anExampleGroupNamed "Some context"
-                |> withChildGroup (
-                    anExampleGroupNamed "in some special state"
-                    |> withAnExampleNamed "has some special behavior")
+                |> withNestedGroupNamed "in some special state" (
+                    withAnExampleNamed "has some special behavior")
                 |> run
                 |> Report.output |> List.reduce (+)
                 |> should matchRegex "Some context in some special state has some special behavior"

@@ -15,7 +15,9 @@ let withExamples examples exampleGroup =
 let withSetupCode = ExampleGroup.addSetup
 let withTearDownCode = ExampleGroup.addTearDown
 
-let withChildGroup = ExampleGroup.addChildContext
+let applyNestedContext f grp = grp |> f |> ExampleGroup.addChildContext
+let withNestedGroupNamed name f = anExampleGroupNamed name |> applyNestedContext f
+let withNestedGroup f = anExampleGroup |> applyNestedContext f
 let anExampleNamed name = Example.create name pass
 let anExample = Example.create "dummy"
 let aPassingExample = anExample pass
