@@ -1,7 +1,9 @@
 ﻿module FSpec.SelfTests.ExampleHelper
 open FSpec.Core
 open Matchers
-open DslHelper
+
+let pass = fun _ -> ()
+let fail = fun _ -> failwithf "Test failure"
 
 let anExampleGroupNamed = ExampleGroup.create
 let anExampleGroup = anExampleGroupNamed "dummy"
@@ -16,7 +18,7 @@ let withTearDownCode = ExampleGroup.addTearDown
 let withChildGroup = ExampleGroup.addChildContext
 let anExampleNamed name = Example.create name pass
 let anExample = Example.create "dummy"
-let aPassingExample = anExample (fun _ -> ())
+let aPassingExample = anExample pass
 let aFailingExample = anExample fail
 let aPendingExample = anExample Dsl.pending
 

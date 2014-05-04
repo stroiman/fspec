@@ -2,7 +2,6 @@ module FSpec.SelfTests.RunnerSpecs
 open FSpec.Core
 open Dsl
 open Matchers
-open DslHelper
 open ExampleHelper
 
 let callList = ref []

@@ -48,7 +48,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DslHelper.fs" />
     <Compile Include="ExampleHelper.fs" />
     <Compile Include="MatcherSpecs.fs" />
     <Compile Include="RunnerSpecs.fs" />
