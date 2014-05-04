@@ -10,6 +10,7 @@ let withExamples examples exampleGroup =
     let folder grp ex = ExampleGroup.addExample ex grp
     examples |> List.fold folder exampleGroup
 
+let withSetupCode = ExampleGroup.addSetup
 let withTearDownCode = ExampleGroup.addTearDown
 
 let withChildGroup = ExampleGroup.addChildContext
@@ -29,10 +30,10 @@ let run exampleGroup =
 let runSingleExample example =
     anExampleGroup |> withExamples [example] |> run
 
-let withSetupCode f = ExampleGroup.addSetup f
 let withAnExampleWithMetaData metaData =
     createAnExampleWithMetaData metaData (fun _ -> ())
     |> ExampleGroup.addExample
+let withExampleCode f = Example.create "dummy" f |> ExampleGroup.addExample
 let withAnExample = aPassingExample |> ExampleGroup.addExample
 let withAnExampleNamed name = anExampleNamed name |> ExampleGroup.addExample
 

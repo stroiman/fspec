@@ -2,7 +2,6 @@ module FSpec.SelfTests.TestReportSpecs
 open FSpec.Core
 open Dsl
 open Matchers
-open DslHelper
 
 let specs =
     describe "TestReport" <| fun _ ->

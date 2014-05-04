@@ -2,7 +2,6 @@
 open FSpec.Core
 open DslV2
 open Matchers
-open DslHelper
 
 type TestContext.T with
     member self.data with get () = self.subject<MetaData.T> ()

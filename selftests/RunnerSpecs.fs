@@ -3,108 +3,78 @@ open FSpec.Core
 open Dsl
 open Matchers
 open DslHelper
+open ExampleHelper
 
 let callList = ref []
 let addToCallList x = callList := x::!callList
 let actualCallList () = !callList |> List.rev
 let clearCallList _ = callList := []
 
-let runSpecs (specs : DslHelper -> unit) =
-    let sut = DslHelper()
-    specs sut
-    sut.run() |> ignore
+let recordFunctionCall name = fun _ -> addToCallList name
 
 let specs =
     describe "Test runner" <| fun _ ->
-        let sut = DslHelper()
         before <| clearCallList
 
         describe "test execution order" <| fun _ ->
             it "tests execute in the order they appear" (fun _ ->
-                runSpecs (fun sut ->
-                    sut.describe("context") <| fun _ ->
-                        sut.it("has test 1") <| fun _ -> addToCallList "test 1"
-                        sut.it("has test 2") <| fun _ -> addToCallList "test 2"
-                )
+                anExampleGroup
+                |> withExampleCode (recordFunctionCall "test 1")
+                |> withExampleCode (recordFunctionCall "test 2")
+                |> run |> ignore
                 actualCallList() |> should equal ["test 1"; "test 2"]
             )
 
             it "child contexts execute in the order they appear" (fun _ ->
-                runSpecs (fun sut ->
-                    sut.describe("context") <| fun _ ->
-                        sut.it("has test 1") <| fun _ -> addToCallList "test 1"
-                    sut.describe("other context") <| fun _ ->
-                        sut.it("has test 2") <| fun _ -> addToCallList "test 2"
-                )
+                anExampleGroup
+                |> withChildGroup (
+                    anExampleGroup
+                    |> withExampleCode (recordFunctionCall "test 1"))
+                |> withChildGroup (
+                    anExampleGroup
+                    |> withExampleCode (recordFunctionCall "test 2"))
+                |> run |> ignore
                 actualCallList() |> should equal ["test 1"; "test 2"]
-            )
-
-        describe "Lazy object initialization" <| fun _ ->
-            it "can be used to create objects to test" (fun _ ->
-                sut.describe "Ctx" <| fun _ ->
-                    let initializer = sut.init <| fun _ ->
-                        "Value from initializer"
-                    sut.it "uses the value" <| fun _ ->
-                        addToCallList (initializer())
-                sut.run() |> ignore
-                actualCallList() |> should equal ["Value from initializer"]
-            )
-
-            it "only initializes object once" (fun _ ->
-                runSpecs (fun sut ->
-                    sut.describe "Ctx" <| fun _ ->
-                        let initializer = sut.init <| fun _ ->
-                            addToCallList "init"
-
-                        sut.it "uses value" <| fun _ ->
-                            let x = initializer()
-                            addToCallList "test 1"
-
-                        sut.it "uses value twice" <| fun _ ->
-                            let x = initializer()
-                            let y = initializer()
-                            addToCallList "test 2"
-                )
-                let expected = ["init"; "test 1"; "init"; "test 2"]
-                actualCallList() |> should equal expected
             )
 
         describe "General setup/test/teardown handling" <| fun _ ->
             it "runs the sequence before, spec, teardown" <| fun _ ->
-                sut.before <| fun _ -> addToCallList "setup"
-                sut.after <| fun _ -> addToCallList "tearDown"
-                sut.it "works" <| fun _ -> addToCallList "test"
-                sut.run() |> ignore
-
+                anExampleGroup
+                |> withSetupCode (recordFunctionCall "setup")
+                |> withTearDownCode (recordFunctionCall "tearDown")
+                |> withExampleCode (recordFunctionCall "test")
+                |> run |> ignore
                 actualCallList() |> should equal ["setup"; "test"; "tearDown"]
 
             it "runs outer setup before inner setup" <| fun _ ->
-                sut.describe "A feature" <| fun _  ->
-                    sut.before <| fun _ -> addToCallList "outer setup"
-                    sut.describe "in a specific context" <| fun _ ->
-                        sut.before <| fun _ -> addToCallList "inner setup"
-                        sut.it "works in a specific way" <| fun _ -> addToCallList "test"
-                sut.run() |> ignore
+                anExampleGroup
+                |> withSetupCode (recordFunctionCall "outer setup")
+                |> withChildGroup (
+                    anExampleGroup
+                    |> withSetupCode (recordFunctionCall "inner setup")
+                    |> withExampleCode (recordFunctionCall "test"))
+                |> run |> ignore
                 let expected = [ "outer setup"; "inner setup"; "test" ]
                 actualCallList() |> should equal expected
 
             it "runs inner tear down before outer tear down" <| fun _ ->
-                sut.describe "A feature" <| fun _ ->
-                    sut.after <| fun _ -> addToCallList "outer tear down"
-                    sut.describe "in a specific context" <| fun _ ->
-                        sut.after <| fun _ -> addToCallList "inner tear down"
-                        sut.it "works in a specific way" <| fun _ -> addToCallList "test"
-                sut.run() |> ignore
+                anExampleGroup
+                |> withTearDownCode (recordFunctionCall "outer tear down")
+                |> withChildGroup (
+                    anExampleGroup
+                    |> withTearDownCode (recordFunctionCall "inner tear down")
+                    |> withExampleCode (recordFunctionCall "test"))
+                |> run |> ignore
                 let expected = ["test"; "inner tear down"; "outer tear down"]
                 actualCallList() |> should equal expected
 
             it "runs setup/teardown once for each test" <| fun _ ->
-                sut.before <| fun _ -> addToCallList "setup"
-                sut.after <| fun _ -> addToCallList "tear down"
-                sut.it "test 1" <| fun _ -> addToCallList "test 1"
-                sut.it "test 2" <| fun _ -> addToCallList "test 2"
-                sut.run() |> ignore
-
+                anExampleGroup
+                |> withSetupCode (recordFunctionCall "setup")
+                |> withTearDownCode (recordFunctionCall "tear down")
+                |> withExampleCode (recordFunctionCall "test 1")
+                |> withExampleCode (recordFunctionCall "test 2")
+                |> run |> ignore
                 let expected = [
                     "setup"; "test 1"; "tear down";
                     "setup"; "test 2"; "tear down"]
@@ -112,38 +82,38 @@ let specs =
             
         describe "setup" <| fun _ ->
             it "is only run in same context, or nested context" <| fun _ ->
-                sut.describe "Ctx" <| fun _ ->
-                    sut.before <| fun _ -> addToCallList "outer setup"
-                    sut.it "Outer test" <| fun _ -> addToCallList "outer test"
-                    sut.describe "Inner ctx" <| fun _ ->
-                        sut.before <| fun _ -> addToCallList "inner setup"
-                        sut.it "inner test 1" <| fun _ -> addToCallList "inner test 1"
-                        sut.it "inner test 2" <| fun _ -> addToCallList "inner test 2"
-                sut.run() |> ignore
-
-                let expected = [
-                    "outer setup"; "outer test";
-                    "outer setup"; "inner setup"; "inner test 1";
-                    "outer setup"; "inner setup"; "inner test 2"]
-                actualCallList() |> should equal expected
+                anExampleGroup
+                |> withSetupCode (recordFunctionCall "outer setup")
+                |> withExampleCode (recordFunctionCall "outer test")
+                |> withChildGroup (
+                    anExampleGroup
+                    |> withSetupCode (recordFunctionCall "inner setup")
+                    |> withExampleCode (recordFunctionCall "inner test 1")
+                    |> withExampleCode (recordFunctionCall "inner test 2"))
+                |> run |> ignore
+                actualCallList() |> should equal
+                    ["outer setup"; "outer test";
+                     "outer setup"; "inner setup"; "inner test 1";
+                     "outer setup"; "inner setup"; "inner test 2"]
 
         describe "tear down" <| fun _ ->
             it "runs if test fail" <| fun _ ->
-                sut.after <| fun _ -> addToCallList "tearDown"
-                sut.it "fails" <| fun _ -> failwith "some failure"
-                sut.run() |> ignore
-
+                anExampleGroup
+                |> withTearDownCode (fun _ -> addToCallList "tearDown")
+                |> withExamples [ aFailingExample ]
+                |> run |> ignore
                 actualCallList() |> should equal ["tearDown"]
 
             it "runs teardown in the right context" <| fun _ ->
-                sut.describe "outer ctx" <| fun _ ->
-                    sut.after <| (fun _ -> addToCallList "outer tearDown")
-                    sut.it "outer test" <| (fun _ -> addToCallList "outer test")
-                    sut.describe "inner ctx" <| fun _ ->
-                        sut.after <| (fun _ -> addToCallList "inner tearDown")
-                        sut.it "inner text" <| (fun _ -> addToCallList "inner test")
-                sut.run() |> ignore
-
-                let expected = ["outer test"; "outer tearDown"; "inner test"; "inner tearDown"; "outer tearDown"]
-                actualCallList() |> should equal expected
+                anExampleGroup
+                |> withTearDownCode (fun _ -> addToCallList "outer tearDown")
+                |> withExampleCode (fun _ -> addToCallList "outer test")
+                |> withChildGroup (
+                    anExampleGroup
+                        |> withTearDownCode (recordFunctionCall "inner tearDown")
+                        |> withExampleCode (recordFunctionCall "inner test"))
+                |> run |> ignore
+                actualCallList() |> should equal 
+                    ["outer test"; "outer tearDown";
+                     "inner test"; "inner tearDown"; "outer tearDown"]
 
