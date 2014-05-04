@@ -7,6 +7,34 @@ type Reporter<'T> = {
     EndGroup: 'T -> 'T;
     Success: 'T -> bool }
 
+module TreeReporter =
+    type T = {
+        Success: bool;
+        Indentation: string list }
+    let Zero = { Success = true; Indentation = [] }
+    let printIndentation report =
+        report.Indentation |> List.rev |> List.iter (printf "%s")
+    let beginGroup exampleGroup report =
+        printIndentation report
+        printfn "%s" (exampleGroup |> ExampleGroup.name)
+        { report with Indentation = "  " :: report.Indentation }
+    let popIndentation report = { report with Indentation = report.Indentation.Tail }
+    let endGroup = popIndentation
+    let beginExample example report =
+        printIndentation report
+        printf "- %s" (example |> Example.name)
+        report
+    let endExample result report =
+        printfn " - %A" result
+        report
+    let success report = report.Success;
+    let createReporter = {
+        BeginGroup  = beginGroup;
+        EndGroup = endGroup;
+        BeginExample = beginExample;
+        EndExample = endExample;
+        Success = success }
+    
 module Report =
     type T = {
         output: string list;
