@@ -28,8 +28,10 @@ let getSpecsFromAssembly (assembly : Assembly) =
     specs
 
 let runSpecs specs =
-    let emptyReport = TreeReporter.Zero
-    let reporter = TreeReporter.createReporter
+//    let emptyReport = TreeReporter.Zero
+//    let reporter = TreeReporter.createReporter
+    let emptyReport = Report.create ()
+    let reporter = ClassicReporter().createReporter ()
     let report = specs |> Seq.fold (fun rep grp -> Runner.doRun grp reporter rep) emptyReport
 //    report.failed 
 //    |> List.rev

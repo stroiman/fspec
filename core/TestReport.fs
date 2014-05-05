@@ -5,7 +5,8 @@ type Reporter<'T> = {
     BeginExample: Example.T -> 'T -> 'T
     EndExample: TestResultType -> 'T -> 'T
     EndGroup: 'T -> 'T;
-    Success: 'T -> bool }
+    Success: 'T -> bool;
+    Zero: 'T }
 
 module TreeReporter =
     type T = {
@@ -33,7 +34,8 @@ module TreeReporter =
         EndGroup = endGroup;
         BeginExample = beginExample;
         EndExample = endExample;
-        Success = success }
+        Success = success;
+        Zero = Zero }
     
 module Report =
     type T = {
@@ -106,5 +108,6 @@ type ClassicReporter() =
         BeginExample = beginExample;
         EndGroup = endGroup;
         EndExample = endExample;
-        Success = Report.success }
+        Success = Report.success;
+        Zero = Report.create () }
 
