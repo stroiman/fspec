@@ -4,28 +4,34 @@ open Dsl
 open Matchers
 open Runner
 
-type TestContext.T with 
-    member self.Reporter () = self.subject<Reporter<Report.T>> ()
-   
 let anExample = Example.create "dummy" (fun _ -> ())
 
 let itBehavesLikeATestReporter<'T> () =
     let getSubject (ctx : TestContext.T) =
-        ctx.subject<Reporter<Report.T>> ()
+        ctx.subject<Reporter<'T>> ()
 
     context "reporter" [
         context "With success reported" [
             it "Is a success" <| fun c ->
-                let r = c.Reporter ()
+                let r = getSubject c
                 r.Zero
                 |> r.BeginExample anExample
                 |> r.EndExample Success
                 |> r.Success |> should equal true
         ]
+            
+        context "With pendings reported" [
+            it "Is not a failure" <| fun c ->
+                let r = getSubject c
+                r.Zero
+                |> r.BeginExample anExample
+                |> r.EndExample Pending
+                |> r.Success |> should equal true
+        ]
 
         context "With errors reported" [
             it "Is a failure" <| fun c ->
-                let r = c.Reporter ()
+                let r = getSubject c
                 r.Zero
                 |> r.BeginExample anExample
                 |> r.EndExample (Error(System.Exception()))
@@ -34,7 +40,7 @@ let itBehavesLikeATestReporter<'T> () =
             
         context "With failures reported" [
             it "Is a failure" <| fun c ->
-                let r = c.Reporter ()
+                let r = getSubject c
                 r.Zero
                 |> r.BeginExample anExample
                 |> r.EndExample (Failure(AssertionErrorInfo.create))
@@ -44,7 +50,16 @@ let itBehavesLikeATestReporter<'T> () =
     
 let specs =
     describe "TestReport" [
-        subject <| fun _ -> ClassicReporter().createReporter()
-        
-        itBehavesLikeATestReporter<Report.T>()
+
+        context "Classic reporter" [
+            subject <| fun _ -> ClassicReporter().createReporter()
+            
+            itBehavesLikeATestReporter<Report.T>()
+        ]
+
+        context "Tree reporter" [
+            subject <| fun _ -> TreeReporter.createReporter
+
+            itBehavesLikeATestReporter<TreeReporter.T>()
+        ]
     ]

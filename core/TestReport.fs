@@ -26,8 +26,13 @@ module TreeReporter =
         printf "- %s" (example |> Example.name)
         report
     let endExample result report =
+        let success = match result with
+                        | Success -> report.Success
+                        | Pending -> report.Success
+                        | Failure(_) -> false
+                        | Error(_) -> false
         printfn " - %A" result
-        report
+        { report with Success = success }
     let success report = report.Success;
     let createReporter = {
         BeginGroup  = beginGroup;
