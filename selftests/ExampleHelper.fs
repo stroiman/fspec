@@ -1,6 +1,7 @@
 ﻿module FSpec.SelfTests.ExampleHelper
 open FSpec.Core
 open Matchers
+open Dsl
 
 let pass = fun _ -> ()
 let fail = fun _ -> failwithf "Test failure"
@@ -22,7 +23,7 @@ let anExampleNamed name = Example.create name pass
 let anExample = Example.create "dummy"
 let aPassingExample = anExample pass
 let aFailingExample = anExample fail
-let aPendingExample = anExample DslV2.pending
+let aPendingExample = anExample pending
 
 let createAnExampleWithMetaData metaData f =
     let metaData' = MetaData.create [metaData]

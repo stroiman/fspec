@@ -1,6 +1,6 @@
 module FSpec.SelfTests.MatcherSpecs
 open FSpec.Core
-open DslV2
+open Dsl
 open Matchers
 
 type A() = class end

@@ -1,6 +1,6 @@
 ﻿module FSpec.SelfTests.TestContextSpecs
 open FSpec.Core
-open DslV2
+open Dsl
 open Matchers
 
 let specs =

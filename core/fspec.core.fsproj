@@ -45,7 +45,7 @@
     <Compile Include="TestReport.fs" />
     <Compile Include="Matchers.fs" />
     <Compile Include="TestDiscovery.fs" />
-    <Compile Include="DslV2.fs" />
+    <Compile Include="Dsl.fs" />
   </ItemGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>

@@ -1,4 +1,4 @@
-﻿module FSpec.Core.DslV2
+﻿module FSpec.Core.Dsl
 
 let pending = fun _ -> raise PendingError
 type Operation =

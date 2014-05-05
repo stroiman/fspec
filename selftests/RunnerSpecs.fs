@@ -1,6 +1,6 @@
 module FSpec.SelfTests.RunnerSpecs
 open FSpec.Core
-open DslV2
+open Dsl
 open Matchers
 open ExampleHelper
 

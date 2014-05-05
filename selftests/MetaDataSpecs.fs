@@ -1,6 +1,6 @@
 ﻿module FSpec.SelfTests.MetaDataSpecs
 open FSpec.Core
-open DslV2
+open Dsl
 open Matchers
 
 type TestContext.T with

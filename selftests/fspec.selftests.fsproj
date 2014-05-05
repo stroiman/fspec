@@ -55,7 +55,7 @@
     <Compile Include="Selftests.fs" />
     <Compile Include="TestReportSpecs.fs" />
     <Compile Include="MetaDataSpecs.fs" />
-    <Compile Include="DslV2Specs.fs" />
+    <Compile Include="DslSpecs.fs" />
     <Compile Include="TestContextSpecs.fs" />
   </ItemGroup>
   <PropertyGroup>
