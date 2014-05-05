@@ -12,10 +12,10 @@ let clearCallList _ = callList := []
 let recordFunctionCall name = fun _ -> addToCallList name
 
 let specs =
-    describe "Test runner" <| fun _ ->
+    describe "Test runner" [
         before <| clearCallList
 
-        describe "test execution order" <| fun _ ->
+        context "test execution order" [
             it "tests execute in the order they appear" (fun _ ->
                 anExampleGroup
                 |> withExampleCode (recordFunctionCall "test 1")
@@ -33,8 +33,9 @@ let specs =
                 |> run |> ignore
                 actualCallList() |> should equal ["test 1"; "test 2"]
             )
+        ]
 
-        describe "General setup/test/teardown handling" <| fun _ ->
+        context "General setup/test/teardown handling" [
             it "runs the sequence before, spec, teardown" <| fun _ ->
                 anExampleGroup
                 |> withSetupCode (recordFunctionCall "setup")
@@ -74,8 +75,9 @@ let specs =
                     "setup"; "test 1"; "tear down";
                     "setup"; "test 2"; "tear down"]
                 actualCallList() |> should equal expected
+        ]
             
-        describe "setup" <| fun _ ->
+        context "setup" [
             it "is only run in same context, or nested context" <| fun _ ->
                 anExampleGroup
                 |> withSetupCode (recordFunctionCall "outer setup")
@@ -89,8 +91,9 @@ let specs =
                     ["outer setup"; "outer test";
                      "outer setup"; "inner setup"; "inner test 1";
                      "outer setup"; "inner setup"; "inner test 2"]
+        ]
 
-        describe "tear down" <| fun _ ->
+        context "tear down" [
             it "runs if test fail" <| fun _ ->
                 anExampleGroup
                 |> withTearDownCode (fun _ -> addToCallList "tearDown")
@@ -109,4 +112,5 @@ let specs =
                 actualCallList() |> should equal 
                     ["outer test"; "outer tearDown";
                      "inner test"; "inner tearDown"; "outer tearDown"]
-
+        ]
+    ]

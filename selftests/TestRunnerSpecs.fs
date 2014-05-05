@@ -1,7 +1,7 @@
 ﻿module FSpec.SelfTests.TestRunnerSpecs
 open FSpec.Core
 open Matchers
-open DslV2
+open Dsl
 open ExampleHelper
 
 let specs =

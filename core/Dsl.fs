@@ -1,40 +1,36 @@
-module FSpec.Core.Dsl
+﻿module FSpec.Core.Dsl
 
 let pending = fun _ -> raise PendingError
+type Operation =
+    | AddExampleOperation of Example.T
+    | AddExampleGroupOperation of ExampleGroup.T
+    | AddSetupOperation of ExampleGroup.TestFunc
+    with
+        static member applyMetaData metaData op =
+            match op with
+            | AddExampleOperation e ->
+                e |> Example.addMetaData metaData |> AddExampleOperation
+            | AddExampleGroupOperation g ->
+                g |> ExampleGroup.addMetaData metaData |> AddExampleGroupOperation
+            | _ -> failwith "not supported"
+        static member (==>) (md, op) = Operation.applyMetaData md op
 
-type TestCollection() =
-    let mutable exampleGroup = ExampleGroup.create null
-    let mutateGroup f = exampleGroup <- f exampleGroup
+let it name func = AddExampleOperation <| Example.create name func
 
-    member self.init (f: unit -> 'a) : (unit -> 'a) =
-        let value = ref None
-        self.before <| fun _ ->
-              value := None
-        let r () =
-            match !value with
-            | None -> let result = f()
-                      value := Some(result)
-                      result
-            | Some(x) -> x
-        r
+let applyOperation grp op =
+    match op with
+    | AddExampleOperation example -> grp |> ExampleGroup.addExample example
+    | AddExampleGroupOperation childGrp -> grp |> ExampleGroup.addChildGroup childGrp
+    | AddSetupOperation f -> grp |> ExampleGroup.addSetup f
 
-    member self.describe (name: string) (f: unit -> unit) = 
-        let oldContext = exampleGroup
-        exampleGroup <- ExampleGroup.create name
-        f()
-        exampleGroup <- ExampleGroup.addChildGroup exampleGroup oldContext
+let describe name operations =
+    let grp = ExampleGroup.create name
+    operations |> List.fold applyOperation grp
+    
+let context name operations =
+    let grp = describe name operations
+    grp |> AddExampleGroupOperation
+    
+let before f = AddSetupOperation f
 
-    member self.examples = exampleGroup
-    member self.before f = ExampleGroup.addSetup f |> mutateGroup
-    member self.after f = ExampleGroup.addTearDown f |> mutateGroup
-    member self.it name f = Example.create name f |> ExampleGroup.addExample |> mutateGroup
-    member self.it_ metadata name f = Example.create name f |> Example.addMetaData (MetaData.create metadata) |> ExampleGroup.addExample |> mutateGroup
-    member self.run(results) = Runner.run exampleGroup results
-
-let c = TestCollection()
-let describe = c.describe
-let it = c.it
-let it_ = c.it_
-let before = c.before
-let context = describe
-let init = c.init
+let subject f = before (fun ctx -> ctx.setSubject (f ctx))
