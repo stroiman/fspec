@@ -15,6 +15,10 @@ type Operation =
             | _ -> failwith "not supported"
         static member (==>) (md, op) = Operation.applyMetaData md op
 
+let applyGroup s f = function
+    | AddExampleGroupOperation grp -> s grp
+    | _ -> f ()
+
 let it name func = AddExampleOperation <| Example.create name func
 
 let applyOperation grp op =
@@ -26,10 +30,9 @@ let applyOperation grp op =
 let describe name operations =
     let grp = ExampleGroup.create name
     operations |> List.fold applyOperation grp
+    |> AddExampleGroupOperation
     
-let context name operations =
-    let grp = describe name operations
-    grp |> AddExampleGroupOperation
+let context = describe
     
 let before f = AddSetupOperation f
 
