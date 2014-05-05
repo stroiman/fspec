@@ -1,5 +1,6 @@
 ﻿module FSpec.Core.DslV2
 
+let pending = fun _ -> raise PendingError
 type Operation =
     | AddExampleOperation of Example.T
     | AddExampleGroupOperation of ExampleGroup.T

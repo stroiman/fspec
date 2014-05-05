@@ -22,7 +22,7 @@ let anExampleNamed name = Example.create name pass
 let anExample = Example.create "dummy"
 let aPassingExample = anExample pass
 let aFailingExample = anExample fail
-let aPendingExample = anExample Dsl.pending
+let aPendingExample = anExample DslV2.pending
 
 let createAnExampleWithMetaData metaData f =
     let metaData' = MetaData.create [metaData]

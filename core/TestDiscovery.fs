@@ -1,5 +1,4 @@
 ﻿module FSpec.Core.TestDiscovery
-open FSpec.Core.Dsl
 open Microsoft.FSharp.Reflection
 open System.Reflection
 
@@ -26,7 +25,7 @@ let getSpecsFromAssembly (assembly : Assembly) =
         |> Seq.choose toExampleGroup 
         |> Seq.mapMany (fun x -> x)
         |> List.ofSeq
-    c.examples::specs
+    specs
 
 let runSpecs specs =
     let report = specs |> Seq.fold (fun rep grp -> Runner.run grp rep) (Report.create())
