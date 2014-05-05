@@ -1,13 +1,13 @@
 module FSpec.SelfTests.SuiteBuilderSpecs
 open FSpec.Core
-open Dsl
+open DslV2
 open Matchers
 open ExampleHelper
 
 let getFailed (report : Report.T) = report.failed |> List.reduce (+)
 let specs =
-    describe "Reporting" <| fun _ ->
-        describe "summary" <| fun _ ->
+    describe "Reporting" [
+        context "summary" [
             it "reports test success" <| fun _ ->
                 aPassingExample
                 |> runSingleExample
@@ -22,8 +22,9 @@ let specs =
                 aPendingExample
                 |> runSingleExample 
                 |> Report.summary |> should equal "1 run, 0 failed, 1 pending"
+        ]
 
-        describe "Running status" <| fun _ ->
+        context "Running status" [
             it "Is reported while running" <| fun _ ->
                 anExampleGroupNamed "Some context"
                 |> withAnExampleNamed "has some behavior"
@@ -48,8 +49,9 @@ let specs =
                 |> run
                 |> Report.output |> List.reduce (+)
                 |> should matchRegex "Some context in some special state has some special behavior"
+        ]
 
-        describe "Failed tests" <| fun _ ->
+        context "Failed tests" [
             it "handles test failures in setup code" (fun _ ->
                 anExampleGroup
                 |> withSetupCode (fun _ -> failwith "error")
@@ -78,10 +80,13 @@ let specs =
                 |> runSingleExample
                 |> Report.failed |> List.length
                 |> should equal 0
+        ]
 
-        describe "Tests with errors" <| fun _ ->
+        context "Tests with errors" [
             it "writes the exception name" <| fun _ ->
                 anExample (fun _ -> raise (new System.NotImplementedException()))
                 |> runSingleExample
                 |> Report.failed |> List.reduce (+)
                 |> should matchRegex "NotImplementedException"
+        ]
+    ]
