@@ -9,4 +9,9 @@ let specs =
             let ctx = TestContext.create MetaData.Zero
             ctx.add "answer" 42
             ctx.get "answer" |> should equal 42
+        
+        it "can set and retrieve data using operator ?" <| fun _ ->
+            let ctx = TestContext.create MetaData.Zero
+            ctx?answer <- 42
+            ctx?answer |> should equal 42
     ]

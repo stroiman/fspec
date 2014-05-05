@@ -41,12 +41,17 @@ module TestContext =
         MetaData: MetaData.T;
         mutable Subect: obj;
         mutable Data: MetaData.T }
-        with
-            member self.metadata = self.MetaData
-            member ctx.add name value = ctx.Data <- ctx.Data.add name value
-            member ctx.get<'T> name = ctx.Data.get<'T> name
-            member ctx.setSubject s = ctx.Subect <- s :> obj
-            member ctx.subject<'T> () = ctx.Subect :?> 'T
+
+    let get<'T> name context = context.Data.get<'T> name
+    let set<'T> name value context = context.Data <- context.Data.add name value
+    type T with
+        member self.metadata = self.MetaData
+        member ctx.add name value = ctx.Data <- ctx.Data.add name value
+        member ctx.get<'T> name = ctx.Data.get<'T> name
+        member ctx.setSubject s = ctx.Subect <- s :> obj
+        member ctx.subject<'T> () = ctx.Subect :?> 'T
+        static member (?) (self,name) = get name self
+        static member (?<-) (self,name,value) = set name value self
 
     let create metaData = { MetaData = metaData; Data = MetaData.Zero; Subect = null }
 
