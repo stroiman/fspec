@@ -1,4 +1,5 @@
 namespace FSpec.Core
+open System
 
 type Reporter<'T> = {
     BeginGroup : ExampleGroup.T -> 'T -> 'T
@@ -7,11 +8,20 @@ type Reporter<'T> = {
     EndGroup: 'T -> 'T;
     Success: 'T -> bool;
     Zero: 'T }
-
 module TreeReporter =
     type T = {
         Success: bool;
         Indentation: string list }
+    let cprintfn c fmt = 
+        Printf.kprintf
+            (fun s -> 
+                let old = System.Console.ForegroundColor 
+                try 
+                  System.Console.ForegroundColor <- c;
+                  System.Console.WriteLine s
+                finally
+                  System.Console.ForegroundColor <- old) 
+            fmt
     let Zero = { Success = true; Indentation = [] }
     let printIndentation report =
         report.Indentation |> List.rev |> List.iter (printf "%s")
@@ -26,12 +36,20 @@ module TreeReporter =
         printf "- %s" (example |> Example.name)
         report
     let endExample result report =
+        printf " - "
         let success = match result with
-                        | Success -> report.Success
-                        | Pending -> report.Success
-                        | Failure(_) -> false
-                        | Error(_) -> false
-        printfn " - %A" result
+                        | Success -> 
+                            cprintfn ConsoleColor.Green "%s" "Success"
+                            report.Success
+                        | Pending -> 
+                            cprintfn ConsoleColor.Yellow "%s" "Pending"
+                            report.Success
+                        | Failure(_) -> 
+                            cprintfn ConsoleColor.Red "%A" result
+                            false
+                        | Error(_) -> 
+                            cprintfn ConsoleColor.Red "%A" result
+                            false
         { report with Success = success }
     let success report = report.Success;
     let createReporter = {

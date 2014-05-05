@@ -28,15 +28,15 @@ let getSpecsFromAssembly (assembly : Assembly) =
     specs
 
 let runSpecs specs =
-//    let emptyReport = TreeReporter.Zero
-//    let reporter = TreeReporter.createReporter
-    let emptyReport = Report.create ()
-    let reporter = ClassicReporter().createReporter ()
+    let emptyReport = TreeReporter.Zero
+    let reporter = TreeReporter.createReporter
+//    let emptyReport = Report.create ()
+//    let reporter = ClassicReporter().createReporter ()
     let report = specs |> Seq.fold (fun rep grp -> Runner.doRun grp reporter rep) emptyReport
-    report.failed 
-    |> List.rev
-    |> List.iter (fun x -> printfn "%s" x)
-    printfn "%s" (report |> Report.summary)
+//    report.failed 
+//    |> List.rev
+//    |> List.iter (fun x -> printfn "%s" x)
+//    printfn "%s" (report |> Report.summary)
     report |> reporter.Success
 
 let toExitCode result =
