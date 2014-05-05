@@ -31,6 +31,7 @@ module MetaData =
         member self.get<'T> name = get<'T> name self
         member self.add name value = { self with Data = self.Data |> Map.add name (value :> obj) }
         member self.Count with get() = self.Data.Count
+        static member (?) (self,name) = get name self
         static member (|||) (a,b) = merge a b
 
     let (++) a b = [(a,b)] |> create

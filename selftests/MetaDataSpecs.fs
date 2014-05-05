@@ -8,6 +8,12 @@ type TestContext.T with
 
 let specs =
     describe "MetaData" [
+        context "Dynamic operator" [
+            it "can retrieve data" (fun _ ->
+                let md = MetaData.create [("data",1)]
+                md?data |> should equal 1
+            )
+        ]
         context "Merge" [
             context "When two metadata sets have different objects" [
                 subject <| fun _ ->
