@@ -6,13 +6,29 @@ _RSpec inspired test framework for F#_
 The aim of this project is to provide a test framework to the .NET platform
 having the same elegance as the RSpec framework has on Ruby.
 
-The code is still in a very exploratory state, so the actual syntax for writing
-tests may change. 
-
 The framework is currently self testing, i.e. the framework is used to test
 itself.
 
-## Usage (subject to change) ##
+Currently the following features are supported
+
+ * Nested example groups/contexts
+ * Setup/teardown in example groups
+ * Test context - can be used to pass data from setup to test
+ * Metadata on individual examples or example groups (accessible from setup)
+ * Assertion framework
+ * Implicit subject
+
+Ideas for future improvements (prioritized list)
+
+ * Support for missing metadata, i.e. test context can try to retrieve meta
+   data that may or may not have been initialized.
+ * Better error messages when context/meta data does not exist, or is of
+   incorrect type.
+ * One liner verifications using expressions (I want this)
+ * Context data and meta data keys can be other types than strings, e.g.
+   discriminated unions.
+
+## General syntax ##
 
 Create an assembly containing your specs. Place your specs in a module, and
 assign the spec code to the value _spec_. Pass the name of the assembly to
@@ -22,28 +38,29 @@ the fspec runner command line.
 module MySpecModule
 
 let specs =
-    describe "Some feature" (fun() ->
-        describe "In some context" (fun() ->
-            it "has some specific behaviour" (fun _ ->
-                ()
-            )
-            it "has some other specific behavior" (fun _ ->
-                ()
-            )
-        )
-        describe "In some other context" (fun() ->
-            it "has some completely different behavior" (fun _ ->
-                ()
-            )
-        )
+    describe "Some component" [
+        describe "Some feature" [
+            context "In some context" [
+                it "has some specific behaviour" (fun _ ->
+                    ()
+                )
+                it "has some other specific behavior" (fun _ ->
+                    ()
+                )
+            ]
+            context "In some other context" [
+                it "has some completely different behavior" (fun _ ->
+                    ()
+                )
+            ]]]
 ```
 
 If you find the paranthesis noisy, you can use the backward pipe operator
 
 ```fsharp
 let specs =
-    describe "Some feature" <| fun _ ->
-        describe "In some context" <| fun _ ->
+    describe "Some feature" [
+        context "In some context" [
             it "has some specific behaviour" <| fun _ ->
                 ()
             it "has some other specific behaviour" <| fun _ ->
@@ -57,17 +74,18 @@ needs to be written.
 
 ```fsharp
 let specs =
-    describe "Some feature" (fun _ ->
+    describe "Some feature" [
         it "has some specific behaviour" pending
         it "has some other specific behaviour" pending
-    )
+    ]
 ```
 
 This allows you to quickly describe required functionality without being forced
 to write a full test up front. 
 
 The test runner reports pending tests, thus you will know if you have more work
-to do before the feature is complete.
+to do before the feature is complete. The test runner will not fail because of
+pending tests.
 
 ### General setup/teardown code ###
 
@@ -76,74 +94,141 @@ The functions _before_/_after_ can be used to hold general setup/teardown code.
 ```fsharp
 let specs =
     describe "Some feature" <| fun _ ->
-        before fun _ ->
+        before <| fun _ ->
             ()
-        after fun _ ->
+        after <| fun _ ->
             ()
         it "Has some behavior" <| fun _ ->
             ()
 ```
 
-### Initialization ###
+## Test Context ##
 
-You can use the function _init_ to initialize an object once, and only once,
-during the execution of a test
+Setup, teardown, and test functions all receive aa _TestContext_ parameter. Test
+metadata can be received from this context, and specific test data can be
+stored in the context. The latter is useful if the test needs to use data
+created in the setup.
+
+The context data is accessible using the ? operator.
 
 ```fsharp
 let specs =
-    describe "Some feature" (fun _ ->
-        let dependency = init (fun _ -> new Dependency())
-
-        it "has some specific behavior" (fun _ ->
-            dependency().SetupInSomeStat()
-            dependency().AndSomeOtherChildStat()
-            ...
-        )
-
-        it "has some other specific behavior" (fun _ ->
-            dependency().SetupInSomeStat()
-            dependency().AndSomeOtherChildStat()
-            ...
-        )
-    )
+    describe "createUser function" <| fun ctx ->
+        before <| fun _ ->
+            ctx?user = createUser "John" "Doe"
+        it "sets the first name" <| fun ctx ->
+            ctx?user |> User.firstName |> should equal "John"
+        it "sets the last name" <| fun ctx ->
+            ctx?user |> User.lastName |> should equal "Doe"
 ```
 
-In the above example, the _Dependency_ class will only be instantiated once for
-each test. This is also true if it is accessed from setup code inside a _before_
-block.
+### Implicit subject ###
 
-## What I don't like ##
-
-What I currently don't like is the handling of mutable data. Testing is in
-itself not a problem that is necessarily best solved in a functional programming
-domain. This is particularly true when multiple tests need to reuse a fixture
-set up using common setup code. This forces the introduction of imperative
-programming with the current fspec framework implementation.
-
-And although F# is a multi-paradigm language, adding imperative programming just
-doesn't appear as 'clean' as a purely functional. This becomes even worse with
-data setup in a _before_ body, because in F#, you cannot access mutable values
-inside closures. Therefore you have to introduce references.
+A special context variable, subject, can be used to reference the thing under
+test. It can be setup using the _subject_ function.
 
 ```fsharp
-describe "Some context" (fun _ ->
-    let counter = ref 0
+let specs =
+    describe "createUser function" [
+        subject <| fun _ -> createUser "John" "Doe"
 
-    before (fun _ -> 
-        counter := 0
-        let callback _ ->
-            counter := !counter + 1
-        registerCallback callback
-    )
-
-    it "Calls back twice" (fun _ ->
-        do_something_that_triggers_the_callback
-        (!counter) |> should equal 2
-    )
-)
+        it "sets the first name" <| fun ctx ->
+            ctx.subject () |> User.firstName |> should equal "John"
+        it "sets the last name" <| fun ctx ->
+            ctx.subject () |> User.lastName |> should equal "Doe"
+    ]
 ```
 
-The use of references introduces quite a lot of language noise, imho.
+### Test metadata ###
 
-I have an idea for an alternate DSL that can clean up some of the noise, but at
-the expense of other noise, unfortunately.
+You can associate metadata to an individual example, or an example group. The
+syntax is currently a strange set of operators. The metadata is basically a map
+of _string_ keys and _obj_ values.
+
+The metadata getter is generic, but will fail at runtime if the actual data is
+not of the correct type.
+
+Metadata can be useful when you want to modify a general setup in a more
+specific context.
+
+```fsharp
+let specs =
+    describe "Register new user feature" [
+        before (fun ctx ->
+            let user = ctx.metadata?existing_user
+            Mock<IUserRepository>()
+                .Setup(fun x -> <@ x.FindByEmail(email) @>)
+                .Returns(user)
+                .Create()
+            |> // do something with the mock
+        )
+
+        ("existing_user" ++ null) ==>
+        context "when no user exists" [
+            it "succeeds" (...)
+        ]
+
+        ("existing_user" ++ createValidUser()) ==>
+        context "when a user has already been registered with that email" [
+            it "fails" (...)
+        ]
+
+        context "an example with many pieces of metadata" [
+            ("data1" ++ 42 |||
+             "data2" ++ "Yummy" |||
+             "data3" ++ Some [1;2;3]) ==>
+            it "can easily specify a lot of metadata" (fun _ -> ())
+        ]
+    ]
+```
+
+The _++_ operator combines creates a collection of metadata, and the _|||_
+operator combines two collections of metadata. The _==>_ operator passes a
+collection of metadata to the following example or example group.
+
+Metadata with the same name on a child example group will override the value of
+the parent group, and metadata on an example will override that of the group.
+
+## Assertion framework ##
+
+FSpec has it's own set of assertions (not very complete currently). The
+assertions are typed, so the actual value must be of the correct type
+
+```fsharp
+5 |> should equal 5 // pass
+5 |> should be.greaterThan 6 // fail
+5 |> should equal 5.0 // does not compile.
+"blah blah" |> should beInstanceOf<string> // pass
+42 |> should beInstanceOf<string> // fail
+"foobar" |> should matchRegex "ooba" // pass
+```
+
+The strongly typed matchers also works with context data.
+
+```fsharp
+ctx?user |> User.firstName |> should equal "John"
+ctx.metadata?email |> should equal "john.doe@example.com"
+```
+
+This will automatically cause the data collections to try to retrieve the
+object of the correct type.
+
+### Writing new assertions ###
+
+Is possible, and soon to be documented.
+
+## Running the tests ##
+
+You can either use the console runner for running the specs. Or - create you
+spec assembly as a console application, and use this following piece of code as
+the main function
+
+```fsharp
+[<EntryPoint>]
+let main args =
+    System.Reflection.Assembly.GetExecutingAssembly()
+    |> getSpecsFromAssembly
+    |> runSpecs
+    |> toExitCode
+```
+
