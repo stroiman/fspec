@@ -3,7 +3,7 @@ open FSpec.Core
 open Dsl
 open Matchers
 
-type TestContext.T with
+type TestContext with
     member self.data with get () = self.Subject<MetaData.T> ()
 
 let specs =

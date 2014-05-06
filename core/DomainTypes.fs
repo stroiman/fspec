@@ -39,37 +39,33 @@ module MetaData =
 
     let (++) a b = [(a,b)] |> create
 
-module TestContext =
-    type T = { 
+type TestContext =
+    { 
         MetaData: MetaData.T;
         mutable Subect: obj;
         mutable Data: MetaData.T }
-
-    let get<'T> name context = context.Data.Get<'T> name
-    let set<'T> name value context = context.Data <- context.Data.Add name value
-    type T with
+    with
         member self.metadata = self.MetaData
         member ctx.Set name value = ctx.Data <- ctx.Data.Add name value
         member ctx.Get<'T> name = ctx.Data.Get<'T> name
         member ctx.TryGet<'T> name = ctx.Data |> MetaData.tryGet<'T> name
         member ctx.SetSubject s = ctx.Subect <- s :> obj
         member ctx.Subject<'T> () = ctx.Subect :?> 'T
-        static member (?) (self,name) = get name self
-        static member (?<-) (self,name,value) = set name value self
-
-    let create metaData = { MetaData = metaData; Data = MetaData.Zero; Subect = null }
+        static member (?) (self:TestContext,name) = self.Get name 
+        static member (?<-) (self:TestContext,name,value) = self.Set name value 
+        static member create metaData = { MetaData = metaData; Data = MetaData.Zero; Subect = null }
 
 module Example =
     type T = {
         Name: string; 
-        Test: TestContext.T -> unit;
+        Test: TestContext -> unit;
         MetaData: MetaData.T
     }
     let create name test = { Name = name; Test = test; MetaData = MetaData.Zero }
-    let addMetaData metaData example = { example with MetaData = metaData }
+    let addMetaData metaData example = { example with Name = example.Name; MetaData = metaData }
 
 module ExampleGroup =
-    type TestFunc = TestContext.T -> unit
+    type TestFunc = TestContext -> unit
     type T = {
         Name: string
         Examples: Example.T list;
@@ -90,11 +86,11 @@ module ExampleGroup =
     let name grp = grp.Name
     let setups grp = grp.Setups
     let tearDowns grp = grp.TearDowns
-    let addExample test ctx = { ctx with Examples = test::ctx.Examples }
-    let addSetup setup ctx = { ctx with Setups = setup::ctx.Setups }
-    let addTearDown tearDown ctx = { ctx with TearDowns = tearDown::ctx.TearDowns }
-    let addChildGroup child ctx = { ctx with ChildGroups = child::ctx.ChildGroups }
-    let addMetaData data ctx = { ctx with MetaData = data }
+    let addExample test grp = { grp with Examples = test::grp.Examples }
+    let addSetup setup grp = { grp with Setups = setup::grp.Setups }
+    let addTearDown tearDown grp = { grp with TearDowns = tearDown::grp.TearDowns }
+    let addChildGroup child grp = { grp with ChildGroups = child::grp.ChildGroups }
+    let addMetaData data grp = { grp with Name = grp.Name; MetaData = data }
     let getMetaData grp = grp.MetaData
     let childGroups grp = grp.ChildGroups |> List.rev
     let examples grp = grp.Examples 
