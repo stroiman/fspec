@@ -6,7 +6,7 @@ open Matchers
 let itCanLookupTheData =
     MultipleOperations [
         it "can be retrieved using 'get'" <| fun c ->
-            c.get "answer" |> should equal 42
+            c.Get "answer" |> should equal 42
         
         it "can be retrieved using dynamic operator" <| fun c ->
             c?answer |> should equal 42
@@ -20,7 +20,7 @@ let specs =
         ]
 
         context "data initialized with 'set'" [
-            before (fun c -> c.set "answer" 42)
+            before (fun c -> c.Set "answer" 42)
             itCanLookupTheData
         ]
 
@@ -29,7 +29,7 @@ let specs =
                 before (fun c -> c?data <- 42)
                 
                 it "retrieves the expected data" (fun c ->
-                    match c.tryGet "data" with
+                    match c.TryGet "data" with
                     | Some x -> x |> should equal 42
                     | None -> failwith "Data not found"
                 )
@@ -37,7 +37,7 @@ let specs =
 
             context "data not initialized in the context" [
                 it "returns none" (fun c ->
-                    match c.tryGet "data" with
+                    match c.TryGet "data" with
                     | None -> ()
                     | _ -> failwith "Data should not be found"
                 )

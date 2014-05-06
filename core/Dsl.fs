@@ -38,4 +38,4 @@ let context = describe
     
 let before f = AddSetupOperation f
 
-let subject f = before (fun ctx -> ctx.setSubject (f ctx))
+let subject f = before (fun ctx -> ctx.SetSubject (f ctx))

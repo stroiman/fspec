@@ -30,39 +30,39 @@ let specs =
 
                 context "test contains no metadata" [
                     subject <| fun ctx ->
-                        ctx.subject ()
+                        ctx.Subject ()
                         |> ExampleGroup.addExample (
                             anExample <| fun testCtx ->
-                                ctx.set "source" (testCtx.metadata?source))
+                                ctx.Set "source" (testCtx.metadata?source))
                                 
                     it "uses metadata from setup" <| fun ctx ->
-                        ctx.subject () |> run |> ignore
-                        ctx.get "source" |> should equal "example group"
+                        ctx.Subject () |> run |> ignore
+                        ctx.Get "source" |> should equal "example group"
                 ]   
                 context "test overrides same metadata" [
                     subject <| fun ctx ->
-                        ctx.subject ()
+                        ctx.Subject ()
                         |> ExampleGroup.addExample (
                             createAnExampleWithMetaData ("source", "example") <| fun testCtx ->
-                                ctx.set "source" (testCtx.metadata?source))
+                                ctx.Set "source" (testCtx.metadata?source))
 
                     it "uses the metadata specified in test" <| fun ctx ->
-                        ctx.subject () |> run |> ignore
-                        ctx.get "source" |> should equal "example"
+                        ctx.Subject () |> run |> ignore
+                        ctx.Get "source" |> should equal "example"
                 ]
                 context "nested example group overrides metadata" [
                     subject <| fun ctx ->
-                        ctx.subject ()
+                        ctx.Subject ()
                         |> ExampleGroup.addChildGroup(
                             anExampleGroup
                             |> withMetaData ("source", "child context")
                             |> ExampleGroup.addExample (
                                 anExample <| fun testCtx ->
-                                    ctx.set "source" (testCtx.metadata?source)))
+                                    ctx.Set "source" (testCtx.metadata?source)))
 
                     it "uses the metadata from the child group" <| fun ctx ->
-                        ctx.subject () |> run |> ignore
-                        ctx.get "source" |> should equal "child context"
+                        ctx.Subject () |> run |> ignore
+                        ctx.Get "source" |> should equal "child context"
                 ]
             ]
         ]

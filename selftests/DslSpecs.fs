@@ -16,12 +16,12 @@ let specs =
                 ] |> extractGroup
 
             it "should have no child groups" <| fun ctx ->
-                ctx.subject ()
+                ctx.Subject ()
                 |> ExampleGroup.childGroups
                 |> List.length |> should equal 0
 
             it "should have one example named 'Test'" <| fun ctx ->
-                match ctx.subject () |> ExampleGroup.examples with
+                match ctx.Subject () |> ExampleGroup.examples with
                 | [ex] -> ex.Name |> should equal "Test"
                 | _ -> failwith "Example count mismatch"
         ]
@@ -66,7 +66,7 @@ let specs =
                 describe "grp" [
                     ("answer" ++ 42) ==>
                     context "child" []] |> extractGroup
-            group.ChildGroups.Head.MetaData.get "answer" |> should equal 42
+            group.ChildGroups.Head.MetaData.Get "answer" |> should equal 42
 
         it "builds example with metadata" <| fun _ ->
             let group =
@@ -76,6 +76,6 @@ let specs =
                      "More" ++ Some "blah") ==>
                     it "Test" pass
                 ] |> extractGroup
-            group.Examples.Head.MetaData.get "answer" |> should equal 42
-            group.Examples.Head.MetaData.get "question" |> should equal "universe"
+            group.Examples.Head.MetaData.Get "answer" |> should equal 42
+            group.Examples.Head.MetaData.Get "question" |> should equal "universe"
     ]

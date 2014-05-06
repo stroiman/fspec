@@ -31,8 +31,8 @@ module MetaData =
             |> Map.fold (fun state key value -> state |> Map.add key value) b.Data
         { Data= newMap }
     type T with
-        member self.get<'T> name = get<'T> name self
-        member self.add name value = { self with Data = self.Data |> Map.add name (value :> obj) }
+        member self.Get<'T> name = get<'T> name self
+        member self.Add name value = { self with Data = self.Data |> Map.add name (value :> obj) }
         member self.Count with get() = self.Data.Count
         static member (?) (self,name) = get name self
         static member (|||) (a,b) = merge a b
@@ -45,15 +45,15 @@ module TestContext =
         mutable Subect: obj;
         mutable Data: MetaData.T }
 
-    let get<'T> name context = context.Data.get<'T> name
-    let set<'T> name value context = context.Data <- context.Data.add name value
+    let get<'T> name context = context.Data.Get<'T> name
+    let set<'T> name value context = context.Data <- context.Data.Add name value
     type T with
         member self.metadata = self.MetaData
-        member ctx.set name value = ctx.Data <- ctx.Data.add name value
-        member ctx.get<'T> name = ctx.Data.get<'T> name
-        member ctx.tryGet<'T> name = ctx.Data |> MetaData.tryGet<'T> name
-        member ctx.setSubject s = ctx.Subect <- s :> obj
-        member ctx.subject<'T> () = ctx.Subect :?> 'T
+        member ctx.Set name value = ctx.Data <- ctx.Data.Add name value
+        member ctx.Get<'T> name = ctx.Data.Get<'T> name
+        member ctx.TryGet<'T> name = ctx.Data |> MetaData.tryGet<'T> name
+        member ctx.SetSubject s = ctx.Subect <- s :> obj
+        member ctx.Subject<'T> () = ctx.Subect :?> 'T
         static member (?) (self,name) = get name self
         static member (?<-) (self,name,value) = set name value self
 
