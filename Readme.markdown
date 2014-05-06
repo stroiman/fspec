@@ -6,11 +6,7 @@ _RSpec inspired test framework for F#_
 The aim of this project is to provide a test framework to the .NET platform
 having the same elegance as the RSpec framework has on Ruby.
 
-You can easily use this framework to write tests in F# to test a system
-implemented in C#.
-
-The framework is currently self testing, i.e. the framework is used to test
-itself.
+You can easily use this framework to test C# code.
 
 Currently the following features are supported
 
@@ -32,6 +28,8 @@ Ideas for future improvements (prioritized list)
  * Context data and meta data keys can be other types than strings, e.g.
    discriminated unions, partly to avoid name clashes.
  * Global setup/teardown code, useful for clearing database between tests.
+
+The framework is self testing, i.e. the framework is used to test itself.
 
 ## General syntax ##
 
@@ -118,24 +116,43 @@ The context data is accessible using the ? operator.
 
 ```fsharp
 let specs =
-    describe "createUser function" <| fun ctx ->
+    describe "createUser function" [
         before <| fun _ ->
             ctx?user = createUser "John" "Doe"
         it "sets the first name" <| fun ctx ->
             ctx?user |> User.firstName |> should equal "John"
         it "sets the last name" <| fun ctx ->
             ctx?user |> User.lastName |> should equal "Doe"
+    ]
 ```
 
-### Implicit subject ###
+Where other test frameworks relies on class member fields to share data
+between, e.g. general setup and test code, the _TestContext_ is the place to
+store it in FSpec.
 
-A special context variable, _Subject_, can be used to reference the thing under
-test. It can be setup using the _getSubject_ function.
+If you get a compiler error saying that the it cannot infer the type, use
+the generic _Get<'T>_ function instead.
 
 ```fsharp
 let specs =
     describe "createUser function" [
-        subject <| fun _ -> createUser "John" "Doe"
+        before <| fun _ ->
+            ctx?user = createUser "John" "Doe"
+        it "sets the first name" <| fun ctx ->
+            let user = ctx.Get<User> "user"
+            user.FirstName |> should equal "John"
+    ]
+```
+  
+### Implicit subject ###
+
+A special context variable, _Subject_, can be used to reference the thing under
+test. It can be retrieved using the _getSubject_ function.
+
+```fsharp
+let specs =
+    describe "createUser function" [
+        subject <| fun _ -> createuser "john" "doe"
 
         it "sets the first name" <| fun ctx ->
             ctx |> getSubject |> User.firstName |> should equal "John"
@@ -147,6 +164,18 @@ let specs =
 _getSubject_ is generic, taking the actual type of subject as type argument,
 but often F# type inference will figure out the type argument based on the
 usage.
+
+The subject can also be a function.
+
+```fsharp
+let specs =
+    describe "createUser function, when user already exists" [
+        ...
+        subject <| fun _ -> 
+            (fun () -> CreateAndSaveNewUser())
+        it "should fail" <| fun ctx ->
+            ctx |> getSubject |> should fail
+```
 
 ### Test metadata ###
 
