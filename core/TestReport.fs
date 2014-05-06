@@ -1,6 +1,10 @@
 namespace FSpec.Core
 open System
 
+/// Represenations of the colors used to print to the console
+type Color =
+    | Red | Yellow | Green | Default
+
 type Reporter<'T> = {
     BeginGroup : ExampleGroup.T -> 'T -> 'T
     BeginExample: Example.T -> 'T -> 'T
@@ -12,53 +16,59 @@ module TreeReporter =
     type T = {
         Success: bool;
         Indentation: string list }
-    let cprintfn c fmt = 
-        Printf.kprintf
-            (fun s -> 
-                let old = System.Console.ForegroundColor 
-                try 
-                  System.Console.ForegroundColor <- c;
-                  System.Console.WriteLine s
-                finally
-                  System.Console.ForegroundColor <- old) 
-            fmt
     let Zero = { Success = true; Indentation = [] }
     let printIndentation report =
         report.Indentation |> List.rev |> List.iter (printf "%s")
-    let beginGroup exampleGroup report =
+    let beginGroup printer exampleGroup report =
         printIndentation report
-        printfn "%s" (exampleGroup |> ExampleGroup.name)
+        sprintf "%s" (exampleGroup |> ExampleGroup.name) |> printer Color.Default
         { report with Indentation = "  " :: report.Indentation }
     let popIndentation report = { report with Indentation = report.Indentation.Tail }
     let endGroup = popIndentation
-    let beginExample example report =
+    let beginExample printer example report =
         printIndentation report
-        printf "- %s" (example |> Example.name)
+        sprintf "- %s" (example |> Example.name) |> printer Default
         report
-    let endExample result report =
-        printf " - "
-        let success = match result with
-                        | Success -> 
-                            cprintfn ConsoleColor.Green "%s" "Success"
-                            report.Success
-                        | Pending -> 
-                            cprintfn ConsoleColor.Yellow "%s" "Pending"
-                            report.Success
-                        | Failure(_) -> 
-                            cprintfn ConsoleColor.Red "%A" result
-                            false
-                        | Error(_) -> 
-                            cprintfn ConsoleColor.Red "%A" result
-                            false
+    let endExample printer result report =
+        sprintf " - " |> printer Default
+        let success = 
+            match result with
+            | Success -> 
+                sprintf "%s\n" "Success" |> printer Green
+                report.Success
+            | Pending -> 
+                sprintf "%s" "Pending" |> printer Yellow
+                report.Success
+            | Failure e -> 
+                sprintf "%A" e.Message |> printer Red
+                false
+            | Error(_) -> 
+                sprintf "%A" result |> printer Red
+                false
         { report with Success = success }
     let success report = report.Success;
-    let createReporter = {
-        BeginGroup  = beginGroup;
+
+    let consolePrinter color (msg:string) =
+        let old = System.Console.ForegroundColor 
+        let consoleColor = 
+            match color with
+            | Red -> System.Console.ForegroundColor <- ConsoleColor.Red
+            | Yellow -> System.Console.ForegroundColor <- ConsoleColor.Yellow
+            | Green -> System.Console.ForegroundColor <- ConsoleColor.Green
+            | Default -> ()
+        try 
+            System.Console.Write msg
+        finally
+            System.Console.ForegroundColor <- old
+
+    let createReporterWithPrinter printer = {
+        BeginGroup  = beginGroup printer;
         EndGroup = endGroup;
-        BeginExample = beginExample;
-        EndExample = endExample;
+        BeginExample = beginExample printer;
+        EndExample = endExample printer;
         Success = success;
         Zero = Zero }
+    let createReporter = createReporterWithPrinter consolePrinter
     
 module Report =
     type T = {
