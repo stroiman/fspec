@@ -23,4 +23,24 @@ let specs =
             before (fun c -> c.set "answer" 42)
             itCanLookupTheData
         ]
+
+        describe "tryGet" [
+            context "data initialized in the context" [
+                before (fun c -> c?data <- 42)
+                
+                it "retrieves the expected data" (fun c ->
+                    match c.tryGet "data" with
+                    | Some x -> x |> should equal 42
+                    | None -> failwith "Data not found"
+                )
+            ]
+
+            context "data not initialized in the context" [
+                it "returns none" (fun c ->
+                    match c.tryGet "data" with
+                    | None -> ()
+                    | _ -> failwith "Data should not be found"
+                )
+            ]
+        ]
     ]

@@ -20,6 +20,9 @@ module MetaData =
         let downCastData = data |> List.map (fun (x,y) -> (x, y :> obj))
         { Data = Map<string,obj> downCastData }
     let Zero = create []
+    let tryGet<'T> name metaData =
+        metaData.Data.TryFind name 
+        |> Option.bind (fun x -> Some (x :?> 'T))
     let get<'T> name metaData = metaData.Data.Item name :?> 'T
         
     let merge a b =
@@ -48,6 +51,7 @@ module TestContext =
         member self.metadata = self.MetaData
         member ctx.set name value = ctx.Data <- ctx.Data.add name value
         member ctx.get<'T> name = ctx.Data.get<'T> name
+        member ctx.tryGet<'T> name = ctx.Data |> MetaData.tryGet<'T> name
         member ctx.setSubject s = ctx.Subect <- s :> obj
         member ctx.subject<'T> () = ctx.Subect :?> 'T
         static member (?) (self,name) = get name self
