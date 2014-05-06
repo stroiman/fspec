@@ -6,6 +6,9 @@ _RSpec inspired test framework for F#_
 The aim of this project is to provide a test framework to the .NET platform
 having the same elegance as the RSpec framework has on Ruby.
 
+You can easily use this framework to write tests in F# to test a system
+implemented in C#.
+
 The framework is currently self testing, i.e. the framework is used to test
 itself.
 
@@ -26,7 +29,8 @@ Ideas for future improvements (prioritized list)
    incorrect type.
  * One liner verifications using expressions (I want this)
  * Context data and meta data keys can be other types than strings, e.g.
-   discriminated unions.
+   discriminated unions, partly to avoid name clashes.
+ * Global setup/teardown code, useful for clearing database between tests.
 
 ## General syntax ##
 
@@ -216,6 +220,32 @@ object of the correct type.
 ### Writing new assertions ###
 
 Is possible, and soon to be documented.
+
+## Extending Test Context ##
+
+Common test functionality can be created by writing extensions to the
+TestContext type. E.g. here, where FSpec is used to test a typical C#
+dependency injection architectural project.
+
+```fsharp
+module MyApplicationSpecs.TestHelpers
+open FSpec.Core
+
+type TestContext with
+    member self.AutoMocker =
+        match self.TryGet "auto_mocker" with
+        | Some mocker -> mocker
+        | None ->
+              let mocker = AutoMocker()
+              self.Set "auto_mocker" mocker
+              mocker
+    member self.GetMock<'T> () = self.AutoMocker.GetMock<'T> ()
+    member self.Get<'T> () = self.AutoMocker.Get<'T> ()
+```
+
+Open the _TestHelpers_ module from any test module where you need to test a
+component with mocked dependencies, and you will have access to the _Get<'T>()_
+and _GetMock<'T>()_ methods.
 
 ## Running the tests ##
 
