@@ -46,7 +46,7 @@ module TestContext =
     let set<'T> name value context = context.Data <- context.Data.add name value
     type T with
         member self.metadata = self.MetaData
-        member ctx.add name value = ctx.Data <- ctx.Data.add name value
+        member ctx.set name value = ctx.Data <- ctx.Data.add name value
         member ctx.get<'T> name = ctx.Data.get<'T> name
         member ctx.setSubject s = ctx.Subect <- s :> obj
         member ctx.subject<'T> () = ctx.Subect :?> 'T

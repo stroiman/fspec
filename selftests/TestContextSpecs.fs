@@ -3,15 +3,24 @@ open FSpec.Core
 open Dsl
 open Matchers
 
+let itCanLookupTheData =
+    MultipleOperations [
+        it "can be retrieved using 'get'" <| fun c ->
+            c.get "answer" |> should equal 42
+        
+        it "can be retrieved using dynamic operator" <| fun c ->
+            c?answer |> should equal 42
+    ]
+
 let specs =
     describe "TestContext" [
-        it "can receive data" <| fun _ ->
-            let ctx = TestContext.create MetaData.Zero
-            ctx.add "answer" 42
-            ctx.get "answer" |> should equal 42
-        
-        it "can set and retrieve data using operator ?" <| fun _ ->
-            let ctx = TestContext.create MetaData.Zero
-            ctx?answer <- 42
-            ctx?answer |> should equal 42
+        context "data initialized with dynamic operator" [
+            before (fun c -> c?answer <- 42)
+            itCanLookupTheData
+        ]
+
+        context "data initialized with 'set'" [
+            before (fun c -> c.set "answer" 42)
+            itCanLookupTheData
+        ]
     ]

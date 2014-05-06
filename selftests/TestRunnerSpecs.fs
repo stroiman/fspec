@@ -33,7 +33,7 @@ let specs =
                         ctx.subject ()
                         |> ExampleGroup.addExample (
                             anExample <| fun testCtx ->
-                                ctx.add "source" (testCtx.metadata?source))
+                                ctx.set "source" (testCtx.metadata?source))
                                 
                     it "uses metadata from setup" <| fun ctx ->
                         ctx.subject () |> run |> ignore
@@ -44,7 +44,7 @@ let specs =
                         ctx.subject ()
                         |> ExampleGroup.addExample (
                             createAnExampleWithMetaData ("source", "example") <| fun testCtx ->
-                                ctx.add "source" (testCtx.metadata?source))
+                                ctx.set "source" (testCtx.metadata?source))
 
                     it "uses the metadata specified in test" <| fun ctx ->
                         ctx.subject () |> run |> ignore
@@ -58,7 +58,7 @@ let specs =
                             |> withMetaData ("source", "child context")
                             |> ExampleGroup.addExample (
                                 anExample <| fun testCtx ->
-                                    ctx.add "source" (testCtx.metadata?source)))
+                                    ctx.set "source" (testCtx.metadata?source)))
 
                     it "uses the metadata from the child group" <| fun ctx ->
                         ctx.subject () |> run |> ignore
