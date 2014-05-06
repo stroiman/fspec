@@ -5,22 +5,23 @@ open Matchers
 open MetaData
 
 let pass = fun _ -> ()
+let extractGroup = applyGroup id (fun _ -> failwith "error")
 
 let specs =
     describe "Example building DSL" [
         context "an example group initialized with one example" [
-            before <| fun ctx ->
+            subject <| fun _ ->
                 describe "Group" [
                     it "Test" pass
-                ] |> ctx.setSubject
+                ] |> extractGroup
 
             it "should have no child groups" <| fun ctx ->
-                ctx.subject ()
+                ctx.Subject ()
                 |> ExampleGroup.childGroups
                 |> List.length |> should equal 0
 
             it "should have one example named 'Test'" <| fun ctx ->
-                match ctx.subject () |> ExampleGroup.examples with
+                match ctx.Subject () |> ExampleGroup.examples with
                 | [ex] -> ex.Name |> should equal "Test"
                 | _ -> failwith "Example count mismatch"
         ]
@@ -28,9 +29,22 @@ let specs =
         it "builds dsl with nested example group" <| fun _ ->
             let group =
                 describe "Group" [
+                    describe "Context" [
+                        it "Test" pass
+                ]] |> extractGroup
+            match group.ChildGroups with
+            | [grp] -> 
+                match grp.Examples with
+                | [ex] -> ex.Name |> should equal "Test"
+                | _ -> failwith "Bad examples"
+            | _ -> failwith "Bad groups"
+
+        it "builds dsl with nested context" <| fun _ ->
+            let group =
+                describe "Group" [
                     context "Context" [
                         it "Test" pass
-                ]]
+                ]] |> extractGroup
             match group.ChildGroups with
             | [grp] -> 
                 match grp.Examples with
@@ -44,15 +58,15 @@ let specs =
                     before <| fun _ -> ()
                     before <| fun _ -> ()
                     it "Test" pass
-                ]
+                ] |> extractGroup
             group.Setups.Length |> should equal 2
 
         it "builds example group with metadata" <| fun _ ->
             let group =
                 describe "grp" [
                     ("answer" ++ 42) ==>
-                    context "child" []]
-            group.ChildGroups.Head.MetaData.get "answer" |> should equal 42
+                    context "child" []] |> extractGroup
+            group.ChildGroups.Head.MetaData.Get "answer" |> should equal 42
 
         it "builds example with metadata" <| fun _ ->
             let group =
@@ -61,7 +75,7 @@ let specs =
                      "question" ++ "universe" |||
                      "More" ++ Some "blah") ==>
                     it "Test" pass
-                ]
-            group.Examples.Head.MetaData.get "answer" |> should equal 42
-            group.Examples.Head.MetaData.get "question" |> should equal "universe"
+                ] |> extractGroup
+            group.Examples.Head.MetaData.Get "answer" |> should equal 42
+            group.Examples.Head.MetaData.Get "question" |> should equal "universe"
     ]

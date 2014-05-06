@@ -20,6 +20,9 @@ module MetaData =
         let downCastData = data |> List.map (fun (x,y) -> (x, y :> obj))
         { Data = Map<string,obj> downCastData }
     let Zero = create []
+    let tryGet<'T> name metaData =
+        metaData.Data.TryFind name 
+        |> Option.bind (fun x -> Some (x :?> 'T))
     let get<'T> name metaData = metaData.Data.Item name :?> 'T
         
     let merge a b =
@@ -28,39 +31,42 @@ module MetaData =
             |> Map.fold (fun state key value -> state |> Map.add key value) b.Data
         { Data= newMap }
     type T with
-        member self.get<'T> name = get<'T> name self
-        member self.add name value = { self with Data = self.Data |> Map.add name (value :> obj) }
+        member self.Get<'T> name = get<'T> name self
+        member self.Add name value = { self with Data = self.Data |> Map.add name (value :> obj) }
         member self.Count with get() = self.Data.Count
+        static member (?) (self,name) = get name self
         static member (|||) (a,b) = merge a b
 
     let (++) a b = [(a,b)] |> create
 
-module TestContext =
-    type T = { 
+type TestContext =
+    { 
         MetaData: MetaData.T;
         mutable Subect: obj;
         mutable Data: MetaData.T }
-        with
-            member self.metadata<'T> name = self.MetaData.get<'T> name
-            member ctx.add name value = ctx.Data <- ctx.Data.add name value
-            member ctx.get<'T> name = ctx.Data.get<'T> name
-            member ctx.setSubject s = ctx.Subect <- s :> obj
-            member ctx.subject<'T> () = ctx.Subect :?> 'T
-
-    let create metaData = { MetaData = metaData; Data = MetaData.Zero; Subect = null }
+    with
+        member self.metadata = self.MetaData
+        member ctx.Set name value = ctx.Data <- ctx.Data.Add name value
+        member ctx.Get<'T> name = ctx.Data.Get<'T> name
+        member ctx.TryGet<'T> name = ctx.Data |> MetaData.tryGet<'T> name
+        member ctx.SetSubject s = ctx.Subect <- s :> obj
+        member ctx.Subject<'T> () = ctx.Subect :?> 'T
+        static member (?) (self:TestContext,name) = self.Get name 
+        static member (?<-) (self:TestContext,name,value) = self.Set name value 
+        static member create metaData = { MetaData = metaData; Data = MetaData.Zero; Subect = null }
 
 module Example =
     type T = {
         Name: string; 
-        Test: TestContext.T -> unit;
+        Test: TestContext -> unit;
         MetaData: MetaData.T
     }
     let create name test = { Name = name; Test = test; MetaData = MetaData.Zero }
     let name example = example.Name
-    let addMetaData metaData example = { example with MetaData = metaData }
+    let addMetaData metaData example = { example with Name = example.Name; MetaData = metaData }
 
 module ExampleGroup =
-    type TestFunc = TestContext.T -> unit
+    type TestFunc = TestContext -> unit
     type T = {
         Name: string
         Examples: Example.T list;
@@ -81,11 +87,11 @@ module ExampleGroup =
     let name grp = grp.Name
     let setups grp = grp.Setups
     let tearDowns grp = grp.TearDowns
-    let addExample test ctx = { ctx with Examples = test::ctx.Examples }
-    let addSetup setup ctx = { ctx with Setups = setup::ctx.Setups }
-    let addTearDown tearDown ctx = { ctx with TearDowns = tearDown::ctx.TearDowns }
-    let addChildGroup child ctx = { ctx with ChildGroups = child::ctx.ChildGroups }
-    let addMetaData data ctx = { ctx with MetaData = data }
+    let addExample test grp = { grp with Examples = test::grp.Examples }
+    let addSetup setup grp = { grp with Setups = setup::grp.Setups }
+    let addTearDown tearDown grp = { grp with TearDowns = tearDown::grp.TearDowns }
+    let addChildGroup child grp = { grp with ChildGroups = child::grp.ChildGroups }
+    let addMetaData data grp = { grp with Name = grp.Name; MetaData = data }
     let getMetaData grp = grp.MetaData
     let childGroups grp = grp.ChildGroups |> List.rev
     let examples grp = grp.Examples 

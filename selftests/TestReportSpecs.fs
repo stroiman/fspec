@@ -7,8 +7,8 @@ open Runner
 let anExample = Example.create "dummy" (fun _ -> ())
 
 let itBehavesLikeATestReporter<'T> () =
-    let getSubject (ctx : TestContext.T) =
-        ctx.subject<Reporter<'T>> ()
+    let getSubject (ctx : TestContext) =
+        ctx.Subject<Reporter<'T>> ()
 
     context "reporter" [
         context "With success reported" [

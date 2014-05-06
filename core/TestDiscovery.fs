@@ -1,6 +1,7 @@
 ﻿module FSpec.Core.TestDiscovery
 open Microsoft.FSharp.Reflection
 open System.Reflection
+open FSpec.Core.Dsl
 
 module Seq =
     let mapMany x y =
@@ -10,10 +11,17 @@ module Seq =
 
 let getSpecsFromAssembly (assembly : Assembly) =
     let toExampleGroup (value : obj) =
+        let exampleGroupFromOp = function
+            | AddExampleGroupOperation g -> Some g
+            | _ -> None
+
         match value with
-        | :? ExampleGroup.T as g -> 
-            Some [g]
+        | :? Operation as o ->
+            exampleGroupFromOp o 
+            |> Option.bind (fun x -> Some [x])
+        | :? ExampleGroup.T as g -> Some [g]
         | :? List<ExampleGroup.T> as g -> Some g
+        | :? List<Operation> as l -> Some (l |> List.choose exampleGroupFromOp)
         | _ -> None
         
     let specs =

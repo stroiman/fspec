@@ -1,0 +1,5 @@
+{
+  "core/*.fs": { "command": "core" },
+  "selftests/*.fs": { "command": "spec" },
+  "cli/*.fs": { "command": "cli" }
+}
