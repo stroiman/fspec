@@ -2,6 +2,7 @@
 open FSpec.Core
 open Dsl
 open Matchers
+open TestContextOperations
 
 let itCanLookupTheData =
     MultipleOperations [
@@ -41,6 +42,15 @@ let specs =
                     | None -> ()
                     | _ -> failwith "Data should not be found"
                 )
+            ]
+        ]
+
+        describe "subject" [
+            context "subject is a function" [
+                subject <| fun _ ->
+                    (fun () -> ())
+                it "is evaluated when a matcher expects a function" <| fun ctx ->
+                    ctx |> getSubject |> shouldNot fail
             ]
         ]
     ]
