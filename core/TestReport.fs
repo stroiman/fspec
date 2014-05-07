@@ -9,32 +9,42 @@ type Reporter<'T> = {
     BeginGroup : ExampleGroup.T -> 'T -> 'T
     BeginExample: Example.T -> 'T -> 'T
     EndExample: TestResultType -> 'T -> 'T
-    EndGroup: 'T -> 'T;
-    Success: 'T -> bool;
+    EndTestRun: 'T -> 'T
+    EndGroup: 'T -> 'T
+    Success: 'T -> bool
     Zero: 'T }
 module TreeReporter =
     type T = {
         Success: bool;
         Indentation: string list }
     let Zero = { Success = true; Indentation = [] }
+    
     let printIndentation report =
         report.Indentation |> List.rev |> List.iter (printf "%s")
+
     let beginGroup printer exampleGroup report =
         printIndentation report
-        sprintf "%s" (exampleGroup |> ExampleGroup.name) |> printer Color.Default
+        sprintf "%s\n" (exampleGroup |> ExampleGroup.name) |> printer Color.Default
         { report with Indentation = "  " :: report.Indentation }
-    let popIndentation report = { report with Indentation = report.Indentation.Tail }
-    let endGroup = popIndentation
+
+    let endGroup report = { report with Indentation = report.Indentation.Tail }
+    
     let beginExample printer example report =
         printIndentation report
         sprintf "- %s" (example |> Example.name) |> printer Default
+        report
+
+    let printSummary printer report =
+        match report.Success with
+        | true -> ()
+        | false -> "\n Test run not successful\n" |> printer Red
         report
     let endExample printer result report =
         sprintf " - " |> printer Default
         let success = 
             match result with
             | Success -> 
-                sprintf "%s\n" "Success" |> printer Green
+                sprintf "%s" "Success" |> printer Green
                 report.Success
             | Pending -> 
                 sprintf "%s" "Pending" |> printer Yellow
@@ -45,6 +55,7 @@ module TreeReporter =
             | Error(_) -> 
                 sprintf "%A" result |> printer Red
                 false
+        "\n" |> printer Default
         { report with Success = success }
     let success report = report.Success;
 
@@ -67,6 +78,7 @@ module TreeReporter =
         BeginExample = beginExample printer;
         EndExample = endExample printer;
         Success = success;
+        EndTestRun = printSummary printer;
         Zero = Zero }
     let createReporter = createReporterWithPrinter consolePrinter
     
@@ -141,6 +153,7 @@ type ClassicReporter() =
         BeginExample = beginExample;
         EndGroup = endGroup;
         EndExample = endExample;
+        EndTestRun = id
         Success = Report.success;
         Zero = Report.create () }
 

@@ -40,7 +40,10 @@ let runSpecs specs =
     let reporter = TreeReporter.createReporter
 //    let emptyReport = Report.create ()
 //    let reporter = ClassicReporter().createReporter ()
-    let report = specs |> Seq.fold (fun rep grp -> Runner.doRun grp reporter rep) emptyReport
+    let report = 
+        specs 
+        |> Seq.fold (fun rep grp -> Runner.doRun grp reporter rep) emptyReport
+        |> reporter.EndTestRun
 //    report.failed 
 //    |> List.rev
 //    |> List.iter (fun x -> printfn "%s" x)

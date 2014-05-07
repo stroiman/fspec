@@ -3,12 +3,24 @@ open FSpec.Core
 open Dsl
 open Matchers
 open Runner
+open Helpers
+open System.Text
 
 let anExample = Example.create "dummy" (fun _ -> ())
+let aFailure = Failure({Message="Dummy"})
+
+let getSubject<'T> (ctx : TestContext) =
+    ctx.Subject<Reporter<'T>> ()
+
+type TestContext with
+    member ctx.Builder : StringBuilder = ctx?builder
+    member ctx.ClearOutput = ctx.Builder.Clear
+    member ctx.Lines =
+        let chars = [|"\r";"\n"|]
+        ctx.Builder.ToString().Split(chars, System.StringSplitOptions.RemoveEmptyEntries);
 
 let itBehavesLikeATestReporter<'T> () =
-    let getSubject (ctx : TestContext) =
-        ctx.Subject<Reporter<'T>> ()
+    let getSubject = getSubject<'T>
 
     context "reporter" [
         context "With success reported" [
@@ -58,8 +70,39 @@ let specs =
         ]
 
         context "Tree reporter" [
-            subject <| fun _ -> TreeReporter.createReporter
+            subject <| fun ctx -> 
+                let builder = StringBuilder()
+                ctx?builder <- builder
+                TreeReporter.createReporterWithPrinter (stringBuilderPrinter builder)
 
             itBehavesLikeATestReporter<TreeReporter.T>()
+
+            context "With no errors reported" [
+                it "Does not print errors" (fun c ->
+                    let r = getSubject<TreeReporter.T> c
+                    let b = c.Get<StringBuilder> "builder"
+                    let report = 
+                        r.Zero
+                        |> r.BeginExample anExample
+                        |> r.EndExample Success
+                    b.Clear() |> ignore
+                    report |> r.EndTestRun |> ignore
+                    c?builder.ToString() |> should equal ""
+                )
+            ]
+
+            context "With errors reported" [
+                it "Does print errors" (fun c ->
+                    let r = getSubject<TreeReporter.T> c
+                    let b = c.Get<StringBuilder> "builder"
+                    let report = 
+                        r.Zero
+                        |> r.BeginExample anExample
+                        |> r.EndExample aFailure
+                    b.Clear() |> ignore
+                    report |> r.EndTestRun |> ignore
+                    c?builder.ToString() |> shouldNot equal ""
+                )
+            ]
         ]
     ]
