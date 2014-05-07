@@ -27,6 +27,7 @@ Ideas for future improvements (prioritized list)
    data that may or may not have been initialized.
  * Better error messages when context/meta data does not exist, or is of
    incorrect type.
+ * Better support for batch building examples.
  * One liner verifications using expressions (I want this)
  * Context data and meta data keys can be other types than strings, e.g.
    discriminated unions, partly to avoid name clashes.
@@ -247,6 +248,34 @@ Open the _TestHelpers_ module from any test module where you need to test a
 component with mocked dependencies, and you will have access to the _Get<'T>()_
 and _GetMock<'T>()_ methods.
 
+### Batch building examples ###
+
+Because examples are created at runtime, you can use _List_ operations to
+generate batches of test cases.
+
+Although this example is a bit noisy with paranthesis, it shows that it can
+be done with the current api.
+
+```fsharp
+let specs =
+    describe "Email validator" (
+        (["user@example.com"
+          ...
+          "dotted.user@example.com"]
+         |> List.map (fun email ->
+            it (sprintf "validates email: %s" email) (fun _ ->
+                email |> validateEmail |> should equal true))
+        ) @ 
+        (["user@example";
+          ...
+          "user@.com"]
+         |> List.map (fun email ->
+            it (sprintf "does not validate email: %s" email) (fun _ ->
+                email |> validateEmail |> should equal false))
+        )
+    )
+```
+
 ## Running the tests ##
 
 You can either use the console runner for running the specs. Or - create you
@@ -261,4 +290,3 @@ let main args =
     |> runSpecs
     |> toExitCode
 ```
-
