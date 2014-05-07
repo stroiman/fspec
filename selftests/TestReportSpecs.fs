@@ -5,12 +5,13 @@ open Matchers
 open Runner
 open Helpers
 open System.Text
+open TestContextOperations
 
 let anExample = Example.create "dummy" (fun _ -> ())
 let aFailure = Failure({Message="Dummy"})
 
 let getSubject<'T> (ctx : TestContext) =
-    ctx.Subject<Reporter<'T>> ()
+    ctx |> getSubject<Reporter<'T>>
 
 type TestContext with
     member ctx.Builder : StringBuilder = ctx?builder

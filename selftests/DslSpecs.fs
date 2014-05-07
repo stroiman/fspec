@@ -3,6 +3,7 @@ open FSpec.Core
 open Dsl
 open Matchers
 open MetaData
+open TestContextOperations
 
 let pass = fun _ -> ()
 let extractGroup = applyGroup id (fun _ -> failwith "error")
@@ -16,12 +17,12 @@ let specs =
                 ] |> extractGroup
 
             it "should have no child groups" <| fun ctx ->
-                ctx.Subject ()
+                ctx |> getSubject
                 |> ExampleGroup.childGroups
                 |> List.length |> should equal 0
 
             it "should have one example named 'Test'" <| fun ctx ->
-                match ctx.Subject () |> ExampleGroup.examples with
+                match ctx |> getSubject |> ExampleGroup.examples with
                 | [ex] -> ex.Name |> should equal "Test"
                 | _ -> failwith "Example count mismatch"
         ]
