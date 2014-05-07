@@ -6,15 +6,14 @@ type Operation =
     | AddExampleGroupOperation of ExampleGroup.T
     | AddSetupOperation of ExampleGroup.TestFunc
     | MultipleOperations of Operation list
-    with
-        static member applyMetaData metaData op =
-            match op with
-            | AddExampleOperation e ->
-                e |> Example.addMetaData metaData |> AddExampleOperation
-            | AddExampleGroupOperation g ->
-                g |> ExampleGroup.addMetaData metaData |> AddExampleGroupOperation
-            | _ -> failwith "not supported"
-        static member (==>) (md, op) = Operation.applyMetaData md op
+    static member ApplyMetaData metaData op =
+        match op with
+        | AddExampleOperation e ->
+            e |> Example.addMetaData metaData |> AddExampleOperation
+        | AddExampleGroupOperation g ->
+            g |> ExampleGroup.addMetaData metaData |> AddExampleGroupOperation
+        | _ -> failwith "not supported"
+    static member (==>) (md, op) = Operation.ApplyMetaData md op
 
 let applyGroup s f = function
     | AddExampleGroupOperation grp -> s grp
