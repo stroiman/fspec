@@ -13,6 +13,8 @@ module MatchResult =
         FailureMessageForShouldNot = "assertion failed" 
     }
         
+    let success result = result.Success
+
     let build success failureMsgForShould failureMsgForShouldNot =
         { Success = success;
           FailureMessageForShould = failureMsgForShould;
@@ -79,3 +81,14 @@ module be =
             (sprintf "expected %A to not be greater than %A" actual expected)
         |> verifyResult
 
+let toBe matcher =
+    matcher MatchResult.success
+
+module have =
+    let element verifyResult matcher actual =
+        let result = actual |> Seq.exists (fun y -> matcher y)
+        MatchResult.build
+            result
+            ""
+            ""
+        |> verifyResult
