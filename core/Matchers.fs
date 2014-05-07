@@ -86,7 +86,7 @@ let toBe matcher =
 
 module have =
     let element verifyResult matcher actual =
-        let result = actual |> Seq.exists (fun y -> matcher y)
+        let result = actual |> Seq.exists matcher
         MatchResult.build
             result
             ""
