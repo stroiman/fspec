@@ -78,7 +78,7 @@ let specs =
             itBehavesLikeATestReporter<TreeReporter.T>()
 
             context "With no errors reported" [
-                it "Does not print errors" (fun c ->
+                before (fun c ->
                     let r = getSubject<TreeReporter.T> c
                     let b = c.Get<StringBuilder> "builder"
                     let report = 
@@ -87,12 +87,19 @@ let specs =
                         |> r.EndExample Success
                     b.Clear() |> ignore
                     report |> r.EndTestRun |> ignore
-                    c?builder.ToString() |> should equal ""
+                )
+
+                it "writes one line" (fun c ->
+                    c.Lines.Length |> should equal 1
+                )
+
+                it "Does not print errors" (fun c ->
+                    c?builder.ToString() |> should matchRegex "0 failed"
                 )
             ]
 
             context "With errors reported" [
-                it "Does print errors" (fun c ->
+                before (fun c ->
                     let r = getSubject<TreeReporter.T> c
                     let b = c.Get<StringBuilder> "builder"
                     let report = 
@@ -101,7 +108,31 @@ let specs =
                         |> r.EndExample aFailure
                     b.Clear() |> ignore
                     report |> r.EndTestRun |> ignore
-                    c?builder.ToString() |> shouldNot equal ""
+                )
+
+                it "writes more than one line" (fun c ->
+                    c.Lines.Length |> should be.greaterThan 1)
+
+                it "Does print errors" (fun c ->
+                    c?builder.ToString() |> should matchRegex "1 failed"
+                )
+            ]
+
+            context "With two errors reported" [
+                before (fun c ->
+                    let r = getSubject<TreeReporter.T> c
+                    let b = c.Get<StringBuilder> "builder"
+                    let report = 
+                        r.Zero
+                        |> r.BeginExample anExample
+                        |> r.EndExample aFailure
+                        |> r.BeginExample anExample
+                        |> r.EndExample aFailure
+                    b.Clear() |> ignore
+                    report |> r.EndTestRun |> ignore
+                )
+                it "Does print errors" (fun c ->
+                    c?builder.ToString() |> should matchRegex "2 failed"
                 )
             ]
         ]

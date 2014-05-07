@@ -15,9 +15,13 @@ type Reporter<'T> = {
     Zero: 'T }
 module TreeReporter =
     type T = {
-        Success: bool;
+        CurrentExample: Example.T option
+        FailedTests: Example.T list
         Indentation: string list }
-    let Zero = { Success = true; Indentation = [] }
+    let Zero = { 
+        CurrentExample = None
+        FailedTests = []
+        Indentation = [] }
     
     let printIndentation report =
         report.Indentation |> List.rev |> List.iter (printf "%s")
@@ -32,12 +36,14 @@ module TreeReporter =
     let beginExample printer example report =
         printIndentation report
         sprintf "- %s" (example |> Example.name) |> printer Default
-        report
+        { report with CurrentExample = Some example }
 
     let printSummary printer report =
-        match report.Success with
-        | true -> ()
-        | false -> "\n Test run not successful\n" |> printer Red
+        match report.FailedTests with
+        | [] -> "0 failed\n" |> printer Default
+        | x -> 
+            "The following tests failed: ???\n" |> printer Red
+            sprintf "%d failed\n" x.Length |> printer Default
         report
     let endExample printer result report =
         sprintf " - " |> printer Default
@@ -45,19 +51,19 @@ module TreeReporter =
             match result with
             | Success -> 
                 sprintf "%s" "Success" |> printer Green
-                report.Success
+                report.FailedTests
             | Pending -> 
                 sprintf "%s" "Pending" |> printer Yellow
-                report.Success
+                report.FailedTests
             | Failure e -> 
                 sprintf "%A" e.Message |> printer Red
-                false
+                report.CurrentExample.Value :: report.FailedTests
             | Error(_) -> 
                 sprintf "%A" result |> printer Red
-                false
+                report.CurrentExample.Value :: report.FailedTests
         "\n" |> printer Default
-        { report with Success = success }
-    let success report = report.Success;
+        { report with FailedTests = success }
+    let success report = report.FailedTests.Length = 0
 
     let consolePrinter color (msg:string) =
         let old = System.Console.ForegroundColor 
