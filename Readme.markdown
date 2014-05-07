@@ -129,8 +129,8 @@ let specs =
 
 ### Implicit subject ###
 
-A special context variable, subject, can be used to reference the thing under
-test. It can be setup using the _subject_ function.
+A special context variable, _Subject_, can be used to reference the thing under
+test. It can be setup using the _getSubject_ function.
 
 ```fsharp
 let specs =
@@ -138,11 +138,15 @@ let specs =
         subject <| fun _ -> createUser "John" "Doe"
 
         it "sets the first name" <| fun ctx ->
-            ctx.subject () |> User.firstName |> should equal "John"
+            ctx |> getSubject |> User.firstName |> should equal "John"
         it "sets the last name" <| fun ctx ->
-            ctx.subject () |> User.lastName |> should equal "Doe"
+            ctx |> getSubject |> User.lastName |> should equal "Doe"
     ]
 ```
+
+_getSubject_ is generic, taking the actual type of subject as type argument,
+but often F# type inference will figure out the type argument based on the
+usage.
 
 ### Test metadata ###
 

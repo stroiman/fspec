@@ -2,9 +2,10 @@
 open FSpec.Core
 open Dsl
 open Matchers
+open TestContextOperations
 
 type TestContext with
-    member self.data with get () = self.Subject<MetaData.T> ()
+    member self.data with get () = self |> getSubject<MetaData.T>
 
 let specs =
     describe "MetaData" [
@@ -22,7 +23,7 @@ let specs =
                     a |> MetaData.merge b
                     
                 it "contains two elements" <| fun ctx ->
-                    let result = ctx.Subject<MetaData.T>()
+                    let result = ctx.data
                     result.Count |> should equal 2
 
                 it "returns a metadata with both objects" <| fun ctx ->
@@ -37,10 +38,10 @@ let specs =
                     a |> MetaData.merge b
                     
                 it "should have one element" <| fun ctx ->
-                    ctx.Subject<MetaData.T>().Count |> should equal 1
+                    ctx.data.Count |> should equal 1
 
                 it "returns a metadata with the 'last' given value" <| fun ctx ->
-                    ctx.Subject<MetaData.T>().Get "a" |> should equal 2
+                    ctx.data.Get "a" |> should equal 2
             ]
         ]
     ]

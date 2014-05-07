@@ -3,6 +3,7 @@ open FSpec.Core
 open Matchers
 open Dsl
 open ExampleHelper
+open TestContextOperations
 
 let specs =
     describe "Test runner" [
@@ -30,29 +31,29 @@ let specs =
 
                 context "test contains no metadata" [
                     subject <| fun ctx ->
-                        ctx.Subject ()
+                        ctx |> getSubject
                         |> ExampleGroup.addExample (
                             anExample <| fun testCtx ->
                                 ctx.Set "source" (testCtx.metadata?source))
                                 
                     it "uses metadata from setup" <| fun ctx ->
-                        ctx.Subject () |> run |> ignore
+                        ctx |> getSubject |> run |> ignore
                         ctx.Get "source" |> should equal "example group"
                 ]   
                 context "test overrides same metadata" [
                     subject <| fun ctx ->
-                        ctx.Subject ()
+                        ctx |> getSubject
                         |> ExampleGroup.addExample (
                             createAnExampleWithMetaData ("source", "example") <| fun testCtx ->
                                 ctx.Set "source" (testCtx.metadata?source))
 
                     it "uses the metadata specified in test" <| fun ctx ->
-                        ctx.Subject () |> run |> ignore
+                        ctx |> getSubject |> run |> ignore
                         ctx.Get "source" |> should equal "example"
                 ]
                 context "nested example group overrides metadata" [
                     subject <| fun ctx ->
-                        ctx.Subject ()
+                        ctx |> getSubject
                         |> ExampleGroup.addChildGroup(
                             anExampleGroup
                             |> withMetaData ("source", "child context")
@@ -61,7 +62,7 @@ let specs =
                                     ctx.Set "source" (testCtx.metadata?source)))
 
                     it "uses the metadata from the child group" <| fun ctx ->
-                        ctx.Subject () |> run |> ignore
+                        ctx |> getSubject |> run |> ignore
                         ctx.Get "source" |> should equal "child context"
                 ]
             ]
