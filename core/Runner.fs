@@ -37,9 +37,8 @@ let doRun exampleGroup reporter report =
             | ex -> Error ex
 
         let runExample (example:Example.T) report =
-            let report' = reporter.BeginExample example report
             let testResult = execExample example
-            reporter.EndExample testResult report'
+            reporter.ReportExample example testResult report
 
         let report'' = exampleGroup |> ExampleGroup.foldExamples (fun rep ex -> runExample ex rep) report
         let report''' = exampleGroup |> ExampleGroup.foldChildGroups (fun rep grp -> run (grp::exampleGroups) rep) report''

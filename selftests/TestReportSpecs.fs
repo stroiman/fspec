@@ -27,8 +27,7 @@ let itBehavesLikeATestReporter<'T> () =
             it "Is a success" <| fun c ->
                 let r = getSubject c
                 r.Zero
-                |> r.BeginExample anExample
-                |> r.EndExample Success
+                |> r.ReportExample anExample Success
                 |> r.Success |> should equal true
         ]
             
@@ -36,8 +35,7 @@ let itBehavesLikeATestReporter<'T> () =
             it "Is not a failure" <| fun c ->
                 let r = getSubject c
                 r.Zero
-                |> r.BeginExample anExample
-                |> r.EndExample Pending
+                |> r.ReportExample anExample Pending
                 |> r.Success |> should equal true
         ]
 
@@ -45,8 +43,7 @@ let itBehavesLikeATestReporter<'T> () =
             it "Is a failure" <| fun c ->
                 let r = getSubject c
                 r.Zero
-                |> r.BeginExample anExample
-                |> r.EndExample (Error(System.Exception()))
+                |> r.ReportExample anExample (Error(System.Exception()))
                 |> r.Success |> should equal false
         ]
             
@@ -54,8 +51,7 @@ let itBehavesLikeATestReporter<'T> () =
             it "Is a failure" <| fun c ->
                 let r = getSubject c
                 r.Zero
-                |> r.BeginExample anExample
-                |> r.EndExample (Failure(AssertionErrorInfo.create))
+                |> r.ReportExample anExample (Failure(AssertionErrorInfo.create))
                 |> r.Success |> should equal false
         ]
     ]
@@ -83,8 +79,7 @@ let specs =
                     let b = c.Get<StringBuilder> "builder"
                     let report = 
                         r.Zero
-                        |> r.BeginExample anExample
-                        |> r.EndExample Success
+                        |> r.ReportExample anExample Success
                     b.Clear() |> ignore
                     report |> r.EndTestRun |> ignore
                 )
@@ -104,8 +99,7 @@ let specs =
                     let b = c.Get<StringBuilder> "builder"
                     let report = 
                         r.Zero
-                        |> r.BeginExample anExample
-                        |> r.EndExample aFailure
+                        |> r.ReportExample anExample aFailure
                     b.Clear() |> ignore
                     report |> r.EndTestRun |> ignore
                 )
@@ -124,10 +118,8 @@ let specs =
                     let b = c.Get<StringBuilder> "builder"
                     let report = 
                         r.Zero
-                        |> r.BeginExample anExample
-                        |> r.EndExample aFailure
-                        |> r.BeginExample anExample
-                        |> r.EndExample aFailure
+                        |> r.ReportExample anExample aFailure
+                        |> r.ReportExample anExample aFailure
                     b.Clear() |> ignore
                     report |> r.EndTestRun |> ignore
                 )

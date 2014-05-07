@@ -7,37 +7,30 @@ type Color =
 
 type Reporter<'T> = {
     BeginGroup : ExampleGroup.T -> 'T -> 'T
-    BeginExample: Example.T -> 'T -> 'T
-    EndExample: TestResultType -> 'T -> 'T
+    ReportExample: Example.T -> TestResultType -> 'T -> 'T
     EndTestRun: 'T -> 'T
     EndGroup: 'T -> 'T
     Success: 'T -> bool
     Zero: 'T }
+
 module TreeReporter =
     type T = {
-        CurrentExample: Example.T option
         FailedTests: Example.T list
         Indentation: string list }
     let Zero = { 
-        CurrentExample = None
         FailedTests = []
         Indentation = [] }
     
-    let printIndentation report =
-        report.Indentation |> List.rev |> List.iter (printf "%s")
+    let printIndentation printer report =
+        report.Indentation |> List.rev |> List.iter (printer Default)
 
     let beginGroup printer exampleGroup report =
-        printIndentation report
+        printIndentation printer report
         sprintf "%s\n" (exampleGroup |> ExampleGroup.name) |> printer Color.Default
         { report with Indentation = "  " :: report.Indentation }
 
     let endGroup report = { report with Indentation = report.Indentation.Tail }
     
-    let beginExample printer example report =
-        printIndentation report
-        sprintf "- %s" (example |> Example.name) |> printer Default
-        { report with CurrentExample = Some example }
-
     let printSummary printer report =
         match report.FailedTests with
         | [] -> "0 failed\n" |> printer Default
@@ -45,8 +38,10 @@ module TreeReporter =
             "The following tests failed: ???\n" |> printer Red
             sprintf "%d failed\n" x.Length |> printer Default
         report
-    let endExample printer result report =
-        sprintf " - " |> printer Default
+
+    let reportExample printer example result report =
+        printIndentation printer report
+        sprintf "- %s - " (example |> Example.name) |> printer Default
         let success = 
             match result with
             | Success -> 
@@ -57,10 +52,10 @@ module TreeReporter =
                 report.FailedTests
             | Failure e -> 
                 sprintf "%A" e.Message |> printer Red
-                report.CurrentExample.Value :: report.FailedTests
+                example :: report.FailedTests
             | Error(_) -> 
                 sprintf "%A" result |> printer Red
-                report.CurrentExample.Value :: report.FailedTests
+                example :: report.FailedTests
         "\n" |> printer Default
         { report with FailedTests = success }
     let success report = report.FailedTests.Length = 0
@@ -81,8 +76,7 @@ module TreeReporter =
     let createReporterWithPrinter printer = {
         BeginGroup  = beginGroup printer;
         EndGroup = endGroup;
-        BeginExample = beginExample printer;
-        EndExample = endExample printer;
+        ReportExample = reportExample printer;
         Success = success;
         EndTestRun = printSummary printer;
         Zero = Zero }
@@ -139,10 +133,9 @@ type ClassicReporter() =
     let beginGroup group (report : Report.T) =
         names <- (group |> ExampleGroup.name) :: names
         report
-    let beginExample example (report : Report.T) =
+
+    let reportExample example result (report : Report.T) =
         names <- (example |> Example.name) :: names
-        report
-    let endExample result (report : Report.T) =
         let rec printNameStack(stack) : string =
             match stack with
             | []    -> ""
@@ -151,14 +144,15 @@ type ClassicReporter() =
         let (name : string) = printNameStack names
         names <- names.Tail
         report |> Report.reportTestName name result
+
     let endGroup (report : Report.T) = 
         names <- names.Tail
         report
+
     member self.createReporter () = {
         BeginGroup = beginGroup;
-        BeginExample = beginExample;
         EndGroup = endGroup;
-        EndExample = endExample;
+        ReportExample = reportExample;
         EndTestRun = id
         Success = Report.success;
         Zero = Report.create () }
