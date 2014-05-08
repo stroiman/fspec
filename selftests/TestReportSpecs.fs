@@ -8,6 +8,7 @@ open System.Text
 open TestContextOperations
 
 let anExampleNamed name = Example.create name (fun _ -> ())
+let anExampleGroupNamed name = ExampleGroup.create name
 let anExample = anExampleNamed "dummy"
 let aFailure = Failure({Message="Dummy"})
 
@@ -90,21 +91,30 @@ let specs =
                     c.Lines.Length |> should equal 1
                 )
 
-                it "Does not print errors" (fun c ->
+                it "prints '1 success'" pending
+
+                it "prints '0 failed'" (fun c ->
                     c?builder.ToString() |> should matchRegex "0 failed"
                 )
             ]
 
             context "With errors reported" [
                 setupReport (fun r ->
-                    r.ReportExample anExample aFailure)
+                    r.BeginGroup (anExampleGroupNamed "Group")
+                    >> r.ReportExample (anExampleNamed "Test1") aFailure
+                    >> r.EndGroup)
 
                 it "writes more than one line" (fun c ->
                     c.Lines.Length |> should be.greaterThan 1)
 
                 it "Does print errors" (fun c ->
-                    c?builder.ToString() |> should matchRegex "1 failed"
-                )
+                    c?builder.ToString() |> should matchRegex "1 failed" )
+
+                it "Prints the example name" (fun c ->
+                    c.Lines |> should have.element (toBe matchRegex "Test1"))
+
+                it "Prints the example group name" (fun c ->
+                    c.Lines |> should have.element (toBe matchRegex "Group"))
             ]
 
             context "With two errors reported" [

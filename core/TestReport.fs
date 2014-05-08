@@ -14,35 +14,60 @@ type Reporter<'T> = {
     Zero: 'T }
 
 module TreeReporter =
+    type ExecutedExample = {
+        Example: Example.T
+        ContainingGroups: ExampleGroup.T List }
+
     type T = {
-        FailedTests: Example.T list
+        FailedTests: ExecutedExample list
+        Groups: ExampleGroup.T list
         Indentation: string list }
     let Zero = { 
+        Groups = []
         FailedTests = []
         Indentation = [] }
     
     let printIndentation printer report =
         report.Indentation |> List.rev |> List.iter (printer Default)
 
+    let exampleName x = x.Example |> Example.name
+
+    let printFailedExample printer executedExample =
+        let rec print indentation executedExample = 
+            match executedExample.ContainingGroups with
+            | head::tail ->
+                head |> ExampleGroup.name |> (sprintf "%s%s\n" indentation) |> printer Default
+                print (indentation + "  ") { executedExample with ContainingGroups = executedExample.ContainingGroups.Tail }
+            | [] -> 
+                sprintf "%s- %s\n" indentation (executedExample |> exampleName) |> printer Red
+        print "" { executedExample with ContainingGroups = executedExample.ContainingGroups |> List.rev }
+
     let beginGroup printer exampleGroup report =
         printIndentation printer report
         sprintf "%s\n" (exampleGroup |> ExampleGroup.name) |> printer Color.Default
-        { report with Indentation = "  " :: report.Indentation }
+        { report with 
+            Indentation = "  " :: report.Indentation
+            Groups = exampleGroup :: report.Groups }
 
-    let endGroup report = { report with Indentation = report.Indentation.Tail }
+    let endGroup report = 
+        { report with 
+            Indentation = report.Indentation.Tail
+            Groups = report.Groups.Tail }
     
     let printSummary printer report =
         match report.FailedTests with
         | [] -> "0 failed\n" |> printer Default
         | x -> 
             "The following tests failed: \n" |> printer Red
-            report.FailedTests |> List.iter (Example.name >> printer Default)
+            report.FailedTests |> List.iter (printFailedExample printer)
             sprintf "%d failed\n" x.Length |> printer Default
         report
 
     let reportExample printer example result report =
         printIndentation printer report
         sprintf "- %s - " (example |> Example.name) |> printer Default
+        let executedExample = 
+            { Example = example; ContainingGroups = report.Groups }
         let success = 
             match result with
             | Success -> 
@@ -53,10 +78,10 @@ module TreeReporter =
                 report.FailedTests
             | Failure e -> 
                 sprintf "%A" e.Message |> printer Red
-                example :: report.FailedTests
+                executedExample :: report.FailedTests
             | Error(_) -> 
                 sprintf "%A" result |> printer Red
-                example :: report.FailedTests
+                executedExample :: report.FailedTests
         "\n" |> printer Default
         { report with FailedTests = success }
     let success report = report.FailedTests.Length = 0
