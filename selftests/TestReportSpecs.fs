@@ -20,6 +20,14 @@ type TestContext with
     member ctx.Lines =
         let chars = [|"\r";"\n"|]
         ctx.Builder.ToString().Split(chars, System.StringSplitOptions.RemoveEmptyEntries);
+       
+    member ctx.Report f =
+        let r = getSubject<TreeReporter.T> ctx
+        let report = r.Zero |> (f r)
+        ctx.Builder.Clear() |> ignore
+        report |> r.EndTestRun |> ignore
+
+let setupReport f = before (fun c -> c.Report f)
 
 let itBehavesLikeATestReporter<'T> () =
     let getSubject = getSubject<'T>
@@ -76,15 +84,7 @@ let specs =
             itBehavesLikeATestReporter<TreeReporter.T>()
 
             context "With no errors reported" [
-                before (fun c ->
-                    let r = getSubject<TreeReporter.T> c
-                    let b = c.Get<StringBuilder> "builder"
-                    let report = 
-                        r.Zero
-                        |> r.ReportExample anExample Success
-                    b.Clear() |> ignore
-                    report |> r.EndTestRun |> ignore
-                )
+                setupReport (fun r -> r.ReportExample anExample Success)
 
                 it "writes one line" (fun c ->
                     c.Lines.Length |> should equal 1
@@ -96,15 +96,8 @@ let specs =
             ]
 
             context "With errors reported" [
-                before (fun c ->
-                    let r = getSubject<TreeReporter.T> c
-                    let b = c.Get<StringBuilder> "builder"
-                    let report = 
-                        r.Zero
-                        |> r.ReportExample anExample aFailure
-                    b.Clear() |> ignore
-                    report |> r.EndTestRun |> ignore
-                )
+                setupReport (fun r ->
+                    r.ReportExample anExample aFailure)
 
                 it "writes more than one line" (fun c ->
                     c.Lines.Length |> should be.greaterThan 1)
@@ -115,34 +108,23 @@ let specs =
             ]
 
             context "With two errors reported" [
-                before (fun c ->
-                    let r = getSubject<TreeReporter.T> c
-                    let b = c.Get<StringBuilder> "builder"
-                    let report = 
-                        r.Zero
-                        |> r.ReportExample anExample aFailure
-                        |> r.ReportExample anExample aFailure
-                    b.Clear() |> ignore
-                    report |> r.EndTestRun |> ignore
-                )
+                setupReport (fun r ->
+                    r.ReportExample anExample aFailure
+                    >> r.ReportExample anExample aFailure)
+
                 it "Does print errors" (fun c ->
                     c?builder.ToString() |> should matchRegex "2 failed"
                 )
             ]
 
             context "with two examples, one fails" [
-                before (fun c ->
-                    let r = getSubject<TreeReporter.T> c
-                    let b = c.Get<StringBuilder> "builder"
-                    let report = 
-                        r.Zero
-                        |> r.ReportExample (anExampleNamed "Test1") Success
-                        |> r.ReportExample (anExampleNamed "Test2") aFailure
-                    b.Clear() |> ignore
-                    report |> r.EndTestRun |> ignore
-                )
+                setupReport (fun r ->
+                    r.ReportExample (anExampleNamed "Test1") Success
+                    >> r.ReportExample (anExampleNamed "Test2") aFailure)
+
                 it "does not print 'Test1'" <| fun c ->
                     c.Lines |> shouldNot have.element (toBe matchRegex "Test1")
+
                 it "prints 'Test2'" <| fun c ->
                     c.Lines |> should have.element (toBe matchRegex "Test2")
             ]
