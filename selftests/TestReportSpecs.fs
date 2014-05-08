@@ -10,7 +10,8 @@ open TestContextOperations
 let anExampleNamed name = Example.create name (fun _ -> ())
 let anExampleGroupNamed name = ExampleGroup.create name
 let anExample = anExampleNamed "dummy"
-let aFailure = Failure({Message="Dummy"})
+let aFailureWithMessage message = Failure {Message=message}
+let aFailure = aFailureWithMessage "dummy"
 
 let getSubject<'T> (ctx : TestContext) =
     ctx |> getSubject<Reporter<'T>>
@@ -62,7 +63,7 @@ let itBehavesLikeATestReporter<'T> () =
             it "Is a failure" <| fun c ->
                 let r = getSubject c
                 r.Zero
-                |> r.ReportExample anExample (Failure(AssertionErrorInfo.create))
+                |> r.ReportExample anExample (aFailure)
                 |> r.Success |> should equal false
         ]
     ]
@@ -98,10 +99,10 @@ let specs =
                 )
             ]
 
-            context "With errors reported" [
+            context "With failure 'Failure msg' reported" [
                 setupReport (fun r ->
                     r.BeginGroup (anExampleGroupNamed "Group")
-                    >> r.ReportExample (anExampleNamed "Test1") aFailure
+                    >> r.ReportExample (anExampleNamed "Test1") (aFailureWithMessage "Failure msg")
                     >> r.EndGroup)
 
                 it "writes more than one line" (fun c ->
@@ -115,6 +116,9 @@ let specs =
 
                 it "Prints the example group name" (fun c ->
                     c.Lines |> should have.element (toBe matchRegex "Group"))
+
+                it "Prints 'Failure msg'" (fun c ->
+                    c.Lines |> should have.element (toBe matchRegex "Failure msg"))
             ]
 
             context "With two errors reported" [

@@ -16,6 +16,7 @@ type Reporter<'T> = {
 module TreeReporter =
     type ExecutedExample = {
         Example: Example.T
+        Result : TestResultType
         ContainingGroups: ExampleGroup.T List }
 
     type T = {
@@ -39,7 +40,9 @@ module TreeReporter =
                 head |> ExampleGroup.name |> (sprintf "%s%s\n" indentation) |> printer Default
                 print (indentation + "  ") { executedExample with ContainingGroups = executedExample.ContainingGroups.Tail }
             | [] -> 
-                sprintf "%s- %s\n" indentation (executedExample |> exampleName) |> printer Red
+                sprintf "%s- %s - " indentation (executedExample |> exampleName) |> printer Default
+                "FAILED\n" |> printer Red
+                sprintf "%A\n" executedExample.Result |> printer Default
         print "" { executedExample with ContainingGroups = executedExample.ContainingGroups |> List.rev }
 
     let beginGroup printer exampleGroup report =
@@ -67,7 +70,7 @@ module TreeReporter =
         printIndentation printer report
         sprintf "- %s - " (example |> Example.name) |> printer Default
         let executedExample = 
-            { Example = example; ContainingGroups = report.Groups }
+            { Example = example; ContainingGroups = report.Groups; Result = result }
         let success = 
             match result with
             | Success -> 
