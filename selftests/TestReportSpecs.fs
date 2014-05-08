@@ -7,7 +7,8 @@ open Helpers
 open System.Text
 open TestContextOperations
 
-let anExample = Example.create "dummy" (fun _ -> ())
+let anExampleNamed name = Example.create name (fun _ -> ())
+let anExample = anExampleNamed "dummy"
 let aFailure = Failure({Message="Dummy"})
 
 let getSubject<'T> (ctx : TestContext) =
@@ -127,6 +128,23 @@ let specs =
                 it "Does print errors" (fun c ->
                     c?builder.ToString() |> should matchRegex "2 failed"
                 )
+            ]
+
+            context "with two examples, one fails" [
+                before (fun c ->
+                    let r = getSubject<TreeReporter.T> c
+                    let b = c.Get<StringBuilder> "builder"
+                    let report = 
+                        r.Zero
+                        |> r.ReportExample (anExampleNamed "Test1") Success
+                        |> r.ReportExample (anExampleNamed "Test2") aFailure
+                    b.Clear() |> ignore
+                    report |> r.EndTestRun |> ignore
+                )
+                it "does not print 'Test1'" <| fun c ->
+                    c.Lines |> shouldNot have.element (toBe matchRegex "Test1")
+                it "prints 'Test2'" <| fun c ->
+                    c.Lines |> should have.element (toBe matchRegex "Test2")
             ]
         ]
     ]

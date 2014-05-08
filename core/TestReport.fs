@@ -35,7 +35,8 @@ module TreeReporter =
         match report.FailedTests with
         | [] -> "0 failed\n" |> printer Default
         | x -> 
-            "The following tests failed: ???\n" |> printer Red
+            "The following tests failed: \n" |> printer Red
+            report.FailedTests |> List.iter (Example.name >> printer Default)
             sprintf "%d failed\n" x.Length |> printer Default
         report
 
