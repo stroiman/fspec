@@ -45,14 +45,15 @@ module TreeReporter =
     let result ex = ex.Result
 
     let printFailedExamples printer executedExamples =
-        let rec print indentation executedExamples = 
+        let rec print indent executedExamples = 
+            let indentation = indent |> List.fold (+) ""
             match executedExamples with
             | [] -> ()
             | x::xs ->
                 match x.ContainingGroups with
                 | head::tail ->
                     head |> ExampleGroup.name |> (sprintf "%s%s\n" indentation) |> printer Default
-                    print (indentation + "  ") [{ x with ContainingGroups = x.ContainingGroups.Tail }]
+                    print ("  " :: indent) [{ x with ContainingGroups = x.ContainingGroups.Tail }]
                 | [] -> 
                     sprintf "%s- %s - " indentation (x |> exampleName) |> printer Default
                     match result x with
@@ -61,7 +62,7 @@ module TreeReporter =
                         sprintf "%A\n" x.Result |> printer Default
                     | Pending -> "PENDING\n" |> printer Yellow
                     | _ -> ()
-                print indentation xs     
+                print indent xs     
 
         let failed executedExample = 
             match result executedExample with
@@ -71,7 +72,7 @@ module TreeReporter =
         executedExamples |> List.filter failed 
         |> List.rev
         |> List.map (fun x -> {x with ContainingGroups = x.ContainingGroups |> List.rev })
-        |> (print "")
+        |> (print [])
 
 
     let beginGroup printer exampleGroup report =
