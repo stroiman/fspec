@@ -1,30 +1,37 @@
 module FSpec.Core.Matchers
 
+type IsMatch = IsMatch of bool
+type ShouldMessage = ShouldMessage of string
+type ShouldNotMessage = ShouldNotMessage of string
+
 module MatchResult =
     type T = {
-            Success: bool;
-            FailureMessageForShould: string;
-            FailureMessageForShouldNot: string;
+            IsMatch: IsMatch
+            FailureMessageForShould: ShouldMessage
+            FailureMessageForShouldNot: ShouldNotMessage
         }
 
     let create success = { 
-        Success = success; 
-        FailureMessageForShould =  "assertion failed";
-        FailureMessageForShouldNot = "assertion failed" 
-    }
+        IsMatch = success;
+        FailureMessageForShould =  ShouldMessage "assertion failed"
+        FailureMessageForShouldNot = ShouldNotMessage "assertion failed" }
         
-    let success result = result.Success
+    let success result = 
+        let apply (IsMatch m) = m
+        apply result.IsMatch
 
-    let build success failureMsgForShould failureMsgForShouldNot =
-        { Success = success;
+    let build isMatch failureMsgForShould failureMsgForShouldNot =
+        { IsMatch = isMatch;
           FailureMessageForShould = failureMsgForShould;
           FailureMessageForShouldNot = failureMsgForShouldNot }
     let assertSuccess result =
-        if not (result.Success) then
-            raise (AssertionError({Message = result.FailureMessageForShould}))
+        if not (result |> success) then
+            let apply (ShouldMessage msg) = msg
+            raise (AssertionError({Message = (apply result.FailureMessageForShould)}))
     let assertFail result =
-        if (result.Success) then
-            raise (AssertionError({Message = result.FailureMessageForShouldNot}))
+        if (result |> success) then
+            let apply (ShouldNotMessage msg) = msg
+            raise (AssertionError({Message = apply result.FailureMessageForShouldNot}))
 
 let should matcher = matcher MatchResult.assertSuccess
 let shouldNot matcher = matcher MatchResult.assertFail
@@ -37,48 +44,48 @@ let isOfType (t: System.Type) actual =
 let equal verifyResult expected = 
     fun actual ->
         MatchResult.build 
-            (expected = actual)
-            (sprintf "expected %A to equal %A" actual expected)
-            (sprintf "expected %A to not equal %A" actual expected)
+            (IsMatch (expected = actual))
+            (ShouldMessage (sprintf "expected %A to equal %A" actual expected))
+            (ShouldNotMessage (sprintf "expected %A to not equal %A" actual expected))
         |> verifyResult
 
 let beOfType<'T> (verifyResult : VerifyResult) =
     let expectedType = typeof<'T>
     fun actual ->
         MatchResult.build 
-            (expectedType.IsInstanceOfType(actual))
-            (sprintf "expected %A to be of type %A" actual expectedType)
-            (sprintf "expected %A to not be of type %A" actual expectedType)
+            (expectedType.IsInstanceOfType(actual) |> IsMatch)
+            (sprintf "expected %A to be of type %A" actual expectedType |> ShouldMessage)
+            (sprintf "expected %A to not be of type %A" actual expectedType |> ShouldNotMessage)
         |> verifyResult
 
 let matchRegex verifyResult pattern =
     fun actual ->
         let regex = System.Text.RegularExpressions.Regex pattern
         MatchResult.build
-            (regex.IsMatch actual)
-            (sprintf "expected %A to match regex pattern %A" actual pattern)
-            (sprintf "expected %A to not match regex pattern %A" actual pattern)
+            (regex.IsMatch actual |> IsMatch)
+            (sprintf "expected %A to match regex pattern %A" actual pattern |> ShouldMessage)
+            (sprintf "expected %A to not match regex pattern %A" actual pattern |> ShouldNotMessage)
         |> verifyResult
 
 let fail verifyResult actual =
     let isMatch =
         try
             actual ()
-            false
+            IsMatch false
         with
-            | _ -> true
+            | _ -> IsMatch true
     MatchResult.build
-        isMatch 
-        "expected exception to be thrown, but none was thrown"
-        "exception was thrown when none was expected"
+        isMatch
+        ("expected exception to be thrown, but none was thrown" |> ShouldMessage)
+        ("exception was thrown when none was expected" |> ShouldNotMessage)
     |> verifyResult    
 
 module be =
     let greaterThan verifyResult expected actual =
         MatchResult.build 
-            (actual > expected)
-            (sprintf "expected %A to be greater than %A" actual expected)
-            (sprintf "expected %A to not be greater than %A" actual expected)
+            (actual > expected |> IsMatch)
+            (sprintf "expected %A to be greater than %A" actual expected |> ShouldMessage)
+            (sprintf "expected %A to not be greater than %A" actual expected |> ShouldNotMessage)
         |> verifyResult
 
 let toBe matcher =
@@ -90,9 +97,9 @@ module have =
         result |> should equal no
 
     let element verifyResult matcher actual =
-        let result = actual |> Seq.exists matcher
+        let result = actual |> Seq.exists matcher |> IsMatch
         MatchResult.build
             result
-            ""
-            ""
+            (ShouldMessage "")
+            (ShouldNotMessage "")
         |> verifyResult
