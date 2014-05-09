@@ -159,12 +159,17 @@ let specs =
 
             context "With two errors reported" [
                 setupReport (fun r ->
-                    r.ReportExample anExample aFailure
-                    >> r.ReportExample anExample aFailure)
+                    r.ReportExample (anExampleNamed "x1") aFailure
+                    >> r.ReportExample (anExampleNamed "x2") aFailure)
 
-                it "Does print errors" (fun c ->
+                it "Does print errors" <| fun c ->
                     c?builder.ToString() |> should matchRegex "2 failed"
-                )
+
+                it "Prints example 1 failed" <| fun c ->
+                    c.ShouldHaveLineMatching "x1"
+
+                it "Prints example 2 failed" <| fun c ->
+                    c.ShouldHaveLineMatching "x2"
             ]
 
             context "with two examples, one fails" [
