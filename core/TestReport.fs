@@ -20,12 +20,12 @@ module TreeReporter =
         ContainingGroups: ExampleGroup.T List }
 
     type T = {
-        FailedTests: ExecutedExample list
+        ExecutedExamples: ExecutedExample list
         Groups: ExampleGroup.T list
         Indentation: string list }
     let Zero = { 
         Groups = []
-        FailedTests = []
+        ExecutedExamples = []
         Indentation = [] }
     
     let printIndentation printer report =
@@ -34,7 +34,7 @@ module TreeReporter =
     let exampleName x = x.Example |> Example.name
     let result ex = ex.Result
 
-    let printFailedExample printer executedExample =
+    let printFailedExamples printer executedExamples =
         let rec print indentation executedExample = 
             match executedExample.ContainingGroups with
             | head::tail ->
@@ -48,9 +48,12 @@ module TreeReporter =
                     sprintf "%A\n" executedExample.Result |> printer Default
                 | Pending -> "PENDING\n" |> printer Yellow
                 | _ -> ()
-        match result executedExample with
-        | Success -> ()
-        | _ -> print "" { executedExample with ContainingGroups = executedExample.ContainingGroups |> List.rev }
+        let failed executedExample = 
+            match result executedExample with
+            | Success -> false
+            | _ -> true
+        executedExamples |> List.filter failed |> List.iter (print "")
+
 
     let beginGroup printer exampleGroup report =
         printIndentation printer report
@@ -69,7 +72,7 @@ module TreeReporter =
             | Failure _ | Error _ -> (success,pending,fail+1)
             | Pending -> (success,pending+1,fail)
             | Success -> (success+1,pending,fail)
-        report.FailedTests |> 
+        report.ExecutedExamples |> 
         List.map result |> 
         List.fold folder (0,0,0)
 
@@ -79,7 +82,7 @@ module TreeReporter =
         | (0,0) -> ()
         | (0,_) -> "There are pending examples: \n" |> printer Yellow
         | _ -> "There are filed examples: \n" |> printer Red
-        report.FailedTests |> List.iter (printFailedExample printer)
+        report.ExecutedExamples |> (printFailedExamples printer)
         sprintf "%d success, %d pending, %d failed\n" success pending failed |> printer Default
         report
 
@@ -94,7 +97,7 @@ module TreeReporter =
         | Failure e -> sprintf "%A" e.Message |> printer Red
         | Error(_) -> sprintf "%A" result |> printer Red
         "\n" |> printer Default
-        { report with FailedTests = executedExample :: report.FailedTests }
+        { report with ExecutedExamples = executedExample :: report.ExecutedExamples }
     let success report = 
         let (_,_,failed) =  getSummary report
         failed = 0
