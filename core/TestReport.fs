@@ -45,27 +45,33 @@ module TreeReporter =
     let result ex = ex.Result
 
     let printFailedExamples printer executedExamples =
-        let rec print indentation executedExample = 
-            match executedExample.ContainingGroups with
-            | head::tail ->
-                head |> ExampleGroup.name |> (sprintf "%s%s\n" indentation) |> printer Default
-                print (indentation + "  ") { executedExample with ContainingGroups = executedExample.ContainingGroups.Tail }
-            | [] -> 
-                sprintf "%s- %s - " indentation (executedExample |> exampleName) |> printer Default
-                match result executedExample with
-                | Failure _ | Error _ -> 
-                    "FAILED\n" |> printer Red
-                    sprintf "%A\n" executedExample.Result |> printer Default
-                | Pending -> "PENDING\n" |> printer Yellow
-                | _ -> ()
+        let rec print indentation executedExamples = 
+            match executedExamples with
+            | [] -> ()
+            | x::xs ->
+                match x.ContainingGroups with
+                | head::tail ->
+                    head |> ExampleGroup.name |> (sprintf "%s%s\n" indentation) |> printer Default
+                    print (indentation + "  ") [{ x with ContainingGroups = x.ContainingGroups.Tail }]
+                | [] -> 
+                    sprintf "%s- %s - " indentation (x |> exampleName) |> printer Default
+                    match result x with
+                    | Failure _ | Error _ -> 
+                        "FAILED\n" |> printer Red
+                        sprintf "%A\n" x.Result |> printer Default
+                    | Pending -> "PENDING\n" |> printer Yellow
+                    | _ -> ()
+                print indentation xs     
+
         let failed executedExample = 
             match result executedExample with
             | Success -> false
             | _ -> true
+
         executedExamples |> List.filter failed 
         |> List.rev
         |> List.map (fun x -> {x with ContainingGroups = x.ContainingGroups |> List.rev })
-        |> List.iter (print "")
+        |> (print "")
 
 
     let beginGroup printer exampleGroup report =
