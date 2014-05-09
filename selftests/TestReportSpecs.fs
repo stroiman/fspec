@@ -28,6 +28,11 @@ type TestContext with
         let report = r.Zero |> (f r)
         ctx.Builder.Clear() |> ignore
         report |> r.EndTestRun |> ignore
+    member ctx.ShouldNotHaveLineMatching pattern =
+        ctx.Lines |> shouldNot have.element (toBe matchRegex pattern)
+    
+    member ctx.ShouldHaveLineMatching pattern =
+        ctx.Lines |> should have.element (toBe matchRegex pattern)
 
 let setupReport f = before (fun c -> c.Report f)
 
@@ -93,7 +98,7 @@ let specs =
                 )
 
                 it "prints '1 success'" (fun c ->
-                    c.Lines |> should have.element (toBe matchRegex "1 success"))
+                    c.ShouldHaveLineMatching "1 success")
 
                 it "prints '0 failed'" (fun c ->
                     c?builder.ToString() |> should matchRegex "0 failed"
@@ -104,8 +109,8 @@ let specs =
                 setupReport (fun r -> 
                     r.ReportExample (anExampleNamed "Example") Pending)
 
-                it "prints '1 pending'" (fun c ->
-                    c.Lines |> should have.element (toBe matchRegex "1 pending"))
+                it "prints '1 pending'" <| fun c ->
+                    c.ShouldHaveLineMatching "1 pending"
             ]
 
             context "With failure 'Failure msg' reported" [
@@ -121,13 +126,13 @@ let specs =
                     c?builder.ToString() |> should matchRegex "1 failed" )
 
                 it "Prints the example name" (fun c ->
-                    c.Lines |> should have.element (toBe matchRegex "Test1"))
+                    c.ShouldHaveLineMatching "Test1")
 
                 it "Prints the example group name" (fun c ->
-                    c.Lines |> should have.element (toBe matchRegex "Group"))
+                    c.ShouldHaveLineMatching "Group")
 
                 it "Prints 'Failure msg'" (fun c ->
-                    c.Lines |> should have.element (toBe matchRegex "Failure msg"))
+                    c.ShouldHaveLineMatching "Failure msg")
             ]
 
             context "With two errors reported" [
@@ -146,10 +151,10 @@ let specs =
                     >> r.ReportExample (anExampleNamed "Test2") aFailure)
 
                 it "does not print 'Test1'" <| fun c ->
-                    c.Lines |> shouldNot have.element (toBe matchRegex "Test1")
+                    c.ShouldNotHaveLineMatching "Test1"
 
                 it "prints 'Test2'" <| fun c ->
-                    c.Lines |> should have.element (toBe matchRegex "Test2")
+                    c.ShouldHaveLineMatching "Test2"
             ]
         ]
     ]
