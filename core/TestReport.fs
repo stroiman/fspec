@@ -31,16 +31,11 @@ module TreeReporter =
 
     type T = {
         ExecutedExamples: ExecutedExample list
-        Groups: ExampleGroup.T list
-        Indentation: string list }
+        Groups: ExampleGroup.T list }
     let Zero = { 
         Groups = []
-        ExecutedExamples = []
-        Indentation = [] }
+        ExecutedExamples = [] }
     
-    let printIndentation printer report =
-        report.Indentation |> List.rev |> List.iter (printer Default)
-
     let exampleName x = x.Example |> Example.name
     let result ex = ex.Result
 
@@ -79,16 +74,9 @@ module TreeReporter =
 
 
     let beginGroup printer exampleGroup report =
-        printIndentation printer report
-        sprintf "%s\n" (exampleGroup |> ExampleGroup.name) |> printer Color.Default
-        { report with 
-            Indentation = "  " :: report.Indentation
-            Groups = exampleGroup :: report.Groups }
+        { report with Groups = exampleGroup :: report.Groups }
 
-    let endGroup report = 
-        { report with 
-            Indentation = report.Indentation.Tail
-            Groups = report.Groups.Tail }
+    let endGroup report = { report with Groups = report.Groups.Tail }
     
     let getSummary report =
         let folder (success,pending,fail) = function
@@ -110,16 +98,8 @@ module TreeReporter =
         report
 
     let reportExample printer example result report =
-        printIndentation printer report
-        sprintf "- %s - " (example |> Example.name) |> printer Default
         let executedExample = 
             { Example = example; ContainingGroups = report.Groups; Result = result }
-        match result with
-        | Success -> sprintf "%s" "Success" |> printer Green
-        | Pending -> sprintf "%s" "Pending" |> printer Yellow
-        | Failure e -> sprintf "%A" e.Message |> printer Red
-        | Error(_) -> sprintf "%A" result |> printer Red
-        "\n" |> printer Default
         { report with ExecutedExamples = executedExample :: report.ExecutedExamples }
     let success report = 
         let (_,_,failed) =  getSummary report
