@@ -45,34 +45,37 @@ module TreeReporter =
     let result ex = ex.Result
 
     let printFailedExamples printer executedExamples =
-        let rec print indent executedExamples = 
-            let indentation = indent |> List.fold (+) ""
+        let rec print indent prevGroups executedExamples = 
             match executedExamples with
             | [] -> ()
             | x::xs ->
-                match x.ContainingGroups with
-                | head::tail ->
-                    head |> ExampleGroup.name |> (sprintf "%s%s\n" indentation) |> printer Default
-                    print ("  " :: indent) [{ x with ContainingGroups = x.ContainingGroups.Tail }]
-                | [] -> 
+                let (pop,push) = Helper.diff prevGroups (x.ContainingGroups |> List.map ExampleGroup.name)
+                let indent = pop |> List.fold (fun (i:string list) y -> i.Tail) indent
+                let indentation = indent |> List.fold (+) ""
+                let prevGroups = pop |> List.fold (fun (i:string list) y -> i.Tail) prevGroups
+                match push |> List.rev with
+                | y::ys ->  
+                    sprintf "%s%s\n" indentation y |> printer Default
+                    print ("  "::indent) (y::prevGroups) executedExamples
+                | _ ->
                     sprintf "%s- %s - " indentation (x |> exampleName) |> printer Default
                     match result x with
                     | Failure _ | Error _ -> 
                         "FAILED\n" |> printer Red
                         sprintf "%A\n" x.Result |> printer Default
                     | Pending -> "PENDING\n" |> printer Yellow
-                    | _ -> ()
-                print indent xs     
+                    | Success -> "SUCCESS\n" |> printer Green
+                    print indent prevGroups xs     
 
         let failed executedExample = 
             match result executedExample with
             | Success -> false
             | _ -> true
 
-        executedExamples |> List.filter failed 
+        executedExamples 
+        |> List.filter failed 
         |> List.rev
-        |> List.map (fun x -> {x with ContainingGroups = x.ContainingGroups |> List.rev })
-        |> (print [])
+        |> (print [] [])
 
 
     let beginGroup printer exampleGroup report =

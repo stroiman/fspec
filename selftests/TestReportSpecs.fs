@@ -183,5 +183,15 @@ let specs =
                 it "prints 'Test2'" <| fun c ->
                     c.ShouldHaveLineMatching "Test2"
             ]
+
+            context "One example group with two failing tests" [
+                setupReport (fun r ->
+                    r.BeginGroup (anExampleGroupNamed "group")
+                    >> r.ReportExample anExample aFailure
+                    >> r.ReportExample anExample aFailure)
+                
+                it "displays the group name only once" <| fun c ->
+                    c.Lines |> should have.exactly 1 (toBe matchRegex "group")
+            ]
         ]
     ]
