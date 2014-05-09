@@ -28,28 +28,47 @@ let shouldFail test = getErrorMsg test |> ignore
 
 let specs = [
     describe "Collection matcher" [
-        context "when used with 'should'" [
-            it "succeeds when collection contains element matching" <| fun _ ->
-                let col = [1;2;3]
-                let test () = col |> should have.element (toBe equal 2)
-                test |> shouldPass
+        describe "have.element" [
+            context "when used with 'should'" [
+                it "succeeds when collection contains element matching" <| fun _ ->
+                    let col = [1;2;3]
+                    let test () = col |> should have.element (toBe equal 2)
+                    test |> shouldPass
 
-            it "fails when collection doesn't contain element matching" <| fun _ ->
-                let col = [1;2;3]
-                let test () = col |> should have.element (toBe equal 4)
-                test |> shouldFail
+                it "fails when collection doesn't contain element matching" <| fun _ ->
+                    let col = [1;2;3]
+                    let test () = col |> should have.element (toBe equal 4)
+                    test |> shouldFail
 
-            it "works with sequences" <| fun _ ->
-                let s = seq {
-                    yield 1;
-                    yield 2; }
-                let test () = s |> should have.element (toBe equal 2)
-                test |> shouldPass
+                it "works with sequences" <| fun _ ->
+                    let s = seq {
+                        yield 1;
+                        yield 2; }
+                    let test () = s |> should have.element (toBe equal 2)
+                    test |> shouldPass
 
-            it "fails with the right error message" pending
+                it "fails with the right error message" pending
+            ]
+            context "when used with 'shouldNot'" [
+                it "fails with the right error message" pending
+            ]
         ]
-        context "when used with 'shouldNot'" [
-            it "fails with the right error message" pending
+        describe "have.exactly(.)" [
+            context "when used with 'should'" [
+                it "succeeds when there is the right no of elements" <| fun _ ->
+                    let col = [1;2;2]
+                    let test () = col |> should have.exactly 2 (toBe equal 2)
+                    test |> shouldPass
+
+                it "fails when there is not the right no of elements" <| fun _ ->
+                    let col = [1;2;2]
+                    let test () = col |> should have.exactly 3 (toBe equal 1)
+                    test |> shouldFail
+                it "fails with the right error message" pending
+            ]
+            context "when used with 'shouldNot'" [
+                it "fails with the right error message" pending
+            ]
         ]
     ]
     describe "GreaterThan matcher" [

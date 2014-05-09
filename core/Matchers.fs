@@ -85,6 +85,10 @@ let toBe matcher =
     matcher MatchResult.success
 
 module have =
+    let exactly verifyResult no matcher actual =
+        let result = actual |> Seq.filter matcher |> Seq.length
+        result |> should equal no
+
     let element verifyResult matcher actual =
         let result = actual |> Seq.exists matcher
         MatchResult.build
