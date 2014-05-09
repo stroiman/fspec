@@ -4,10 +4,7 @@ open System.Reflection
 open FSpec.Core.Dsl
 
 module Seq =
-    let mapMany x y =
-        seq { for item in y do
-                yield! x item
-        }
+    let mapMany f x = seq { for y in x do yield! f y }
 
 let getSpecsFromAssembly (assembly : Assembly) =
     let toExampleGroup (value : obj) =
