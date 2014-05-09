@@ -75,6 +75,28 @@ let itBehavesLikeATestReporter<'T> () =
     
 let specs =
     describe "TestReport" [
+        describe "ListHelper" [
+            describe "diff" [
+                it "reports extra elements in x" <| fun _ ->
+                    Helper.diff [1;2;3] []
+                    |> should equal ([1;2;3],[])
+                it "reports one extra element in x" <| fun _ ->
+                    Helper.diff [1;2;3] [2;3]
+                    |> should equal ([1],[])
+
+                it "reports all diffs, when partial match" <| fun _ ->
+                    Helper.diff ["a";"b";"x";"y"] ["1";"2";"3";"x";"y"]
+                    |> should equal (["a";"b"],["1";"2";"3"])
+                    
+                it "reports all diffs, when no match" <| fun _ ->
+                    Helper.diff ["a";"b"] ["1";"2";"3";]
+                    |> should equal (["a";"b"],["1";"2";"3"])
+
+                it "returns empty lists, when both input empty" <| fun _ ->
+                    Helper.diff [] []
+                    |> should equal ([],[])
+            ]
+        ]
 
         context "Classic reporter" [
             subject <| fun _ -> ClassicReporter().createReporter()

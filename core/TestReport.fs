@@ -4,6 +4,16 @@ open System
 /// Represenations of the colors used to print to the console
 type Color =
     | Red | Yellow | Green | Default
+            
+module Helper =
+    let rec diffRev x y =
+        match x, y with
+        | x::xs, y::ys when x = y -> diffRev xs ys
+        | _ -> (x,y)
+
+    let diff x y = 
+        let (x,y) = diffRev (x |> List.rev) (y |> List.rev)
+        (x |> List.rev, y |> List.rev)
 
 type Reporter<'T> = {
     BeginGroup : ExampleGroup.T -> 'T -> 'T
@@ -52,7 +62,10 @@ module TreeReporter =
             match result executedExample with
             | Success -> false
             | _ -> true
-        executedExamples |> List.filter failed |> List.iter (print "")
+        executedExamples |> List.filter failed 
+        |> List.rev
+        |> List.map (fun x -> {x with ContainingGroups = x.ContainingGroups |> List.rev })
+        |> List.iter (print "")
 
 
     let beginGroup printer exampleGroup report =
