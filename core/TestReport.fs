@@ -92,7 +92,7 @@ module TreeReporter =
         match (failed,pending) with
         | (0,0) -> ()
         | (0,_) -> "There are pending examples: \n" |> printer Yellow
-        | _ -> "There are filed examples: \n" |> printer Red
+        | _ -> "There are failed examples: \n" |> printer Red
         report.ExecutedExamples |> (printFailedExamples printer)
         sprintf "%d success, %d pending, %d failed\n" success pending failed |> printer Default
         report
