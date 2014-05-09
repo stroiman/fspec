@@ -32,6 +32,7 @@ module TreeReporter =
         report.Indentation |> List.rev |> List.iter (printer Default)
 
     let exampleName x = x.Example |> Example.name
+    let result ex = ex.Result
 
     let printFailedExample printer executedExample =
         let rec print indentation executedExample = 
@@ -41,9 +42,15 @@ module TreeReporter =
                 print (indentation + "  ") { executedExample with ContainingGroups = executedExample.ContainingGroups.Tail }
             | [] -> 
                 sprintf "%s- %s - " indentation (executedExample |> exampleName) |> printer Default
-                "FAILED\n" |> printer Red
-                sprintf "%A\n" executedExample.Result |> printer Default
-        print "" { executedExample with ContainingGroups = executedExample.ContainingGroups |> List.rev }
+                match result executedExample with
+                | Failure _ | Error _ -> 
+                    "FAILED\n" |> printer Red
+                    sprintf "%A\n" executedExample.Result |> printer Default
+                | Pending -> "PENDING\n" |> printer Yellow
+                | _ -> ()
+        match result executedExample with
+        | Success -> ()
+        | _ -> print "" { executedExample with ContainingGroups = executedExample.ContainingGroups |> List.rev }
 
     let beginGroup printer exampleGroup report =
         printIndentation printer report
@@ -57,13 +64,23 @@ module TreeReporter =
             Indentation = report.Indentation.Tail
             Groups = report.Groups.Tail }
     
+    let getSummary report =
+        let folder (success,pending,fail) = function
+            | Failure _ | Error _ -> (success,pending,fail+1)
+            | Pending -> (success,pending+1,fail)
+            | Success -> (success+1,pending,fail)
+        report.FailedTests |> 
+        List.map result |> 
+        List.fold folder (0,0,0)
+
     let printSummary printer report =
-        match report.FailedTests with
-        | [] -> "0 failed\n" |> printer Default
-        | x -> 
-            "The following tests failed: \n" |> printer Red
-            report.FailedTests |> List.iter (printFailedExample printer)
-            sprintf "%d failed\n" x.Length |> printer Default
+        let (success,pending,failed) =  getSummary report
+        match (failed,pending) with
+        | (0,0) -> ()
+        | (0,_) -> "There are pending examples: \n" |> printer Yellow
+        | _ -> "There are filed examples: \n" |> printer Red
+        report.FailedTests |> List.iter (printFailedExample printer)
+        sprintf "%d success, %d pending, %d failed\n" success pending failed |> printer Default
         report
 
     let reportExample printer example result report =
@@ -71,23 +88,16 @@ module TreeReporter =
         sprintf "- %s - " (example |> Example.name) |> printer Default
         let executedExample = 
             { Example = example; ContainingGroups = report.Groups; Result = result }
-        let success = 
-            match result with
-            | Success -> 
-                sprintf "%s" "Success" |> printer Green
-                report.FailedTests
-            | Pending -> 
-                sprintf "%s" "Pending" |> printer Yellow
-                report.FailedTests
-            | Failure e -> 
-                sprintf "%A" e.Message |> printer Red
-                executedExample :: report.FailedTests
-            | Error(_) -> 
-                sprintf "%A" result |> printer Red
-                executedExample :: report.FailedTests
+        match result with
+        | Success -> sprintf "%s" "Success" |> printer Green
+        | Pending -> sprintf "%s" "Pending" |> printer Yellow
+        | Failure e -> sprintf "%A" e.Message |> printer Red
+        | Error(_) -> sprintf "%A" result |> printer Red
         "\n" |> printer Default
-        { report with FailedTests = success }
-    let success report = report.FailedTests.Length = 0
+        { report with FailedTests = executedExample :: report.FailedTests }
+    let success report = 
+        let (_,_,failed) =  getSummary report
+        failed = 0
 
     let consolePrinter color (msg:string) =
         let old = System.Console.ForegroundColor 

@@ -92,11 +92,20 @@ let specs =
                     c.Lines.Length |> should equal 1
                 )
 
-                it "prints '1 success'" pending
+                it "prints '1 success'" (fun c ->
+                    c.Lines |> should have.element (toBe matchRegex "1 success"))
 
                 it "prints '0 failed'" (fun c ->
                     c?builder.ToString() |> should matchRegex "0 failed"
                 )
+            ]
+
+            context "With pending tests reported" [
+                setupReport (fun r -> 
+                    r.ReportExample (anExampleNamed "Example") Pending)
+
+                it "prints '1 pending'" (fun c ->
+                    c.Lines |> should have.element (toBe matchRegex "1 pending"))
             ]
 
             context "With failure 'Failure msg' reported" [
