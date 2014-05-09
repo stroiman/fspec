@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>fspec</id>
+    <version>0.0.1</version>
+    <authors>Peter Stroiman</authors>
+    <owners>Peter Stroiman</owners>
+    <!--<licenseUrl>http://LICENSE_URL_HERE_OR_DELETE_THIS_LINE</licenseUrl>-->
+    <projectUrl>https://github.com/PeteProgrammer/fspec</projectUrl>
+    <iconUrl>https://github.com/PeteProgrammer/fspec/blob/master/FSpec_logo_med.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <summary>A context/specification test framework</summary>
+    <description>
+      A context/specification test framework, heavily inspired by RSpec
+    </description>
+    <!--<releaseNotes>Summary of changes made in this release of the package.</releaseNotes>-->
+    <copyright>Copyright 2014</copyright>
+    <tags>tdd unittesting bdd</tags>
+    <references>
+      <reference file="fspec.core.dll" />
+    </references>
+  </metadata>
+  <files>
+    <file src="output\fspec.core.dll" target="lib\net40\fspec.core.dll" />
+    <file src="output\fspec.exe" target="tools\fspec.exe" />
+  </files>
+</package>
