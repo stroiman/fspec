@@ -31,6 +31,22 @@ Ideas for future improvements (prioritized list)
 
 The framework is self testing, i.e. the framework is used to test itself.
 
+## Possible Future Changes ##
+
+As the FSpec tool is still quite new and haven't really been used in many
+projects (only a few of my own), there is a risk that the API could change. 
+
+The DSL for building examples and example groups have already undergone a big
+change, but I'm quite happy with the way it looks now. I don't expect any major
+changes to this, only minor additions, or possibly modifications to how meta
+data is applied to examples and example groups.
+
+I'm not currently happy with the matcher API, and I am experimenting with a new
+API that allows better support for composition, and custom matchers. So this
+could change.
+
+But you can use any assertion framework, e.g. unqoute, for matchers.
+
 ## General syntax ##
 
 Create an assembly containing your specs. Place your specs in a module, and
