@@ -10,11 +10,7 @@ let extractGroup = applyGroup id (fun _ -> failwith "error")
 let setGroup x =
     subject (fun _ -> x |> extractGroup)
 
-let createMatcher<'T> (f:'T->bool)=
-    { new Matcher<'T> () with
-        member __.ApplyActual g actual = f actual |> g
-        member __.FailureMsgForShould = "FAIL"
-        member __.FailureMsgForShouldNot = "FAIL" }
+let createMatcher = createSimpleMatcher
 
 let haveChildGroups expected =
     createMatcher (fun actual ->

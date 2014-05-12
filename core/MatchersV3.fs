@@ -7,33 +7,42 @@ type Matcher<'TActual> () =
     abstract member FailureMsgForShouldNot : string
     default this.FailureMsgForShouldNot : string = sprintf "not %s" this.FailureMsgForShould
 
+let applyMatcher<'T> (matcher: Matcher<'T>) f (a : 'T) =
+    matcher.ApplyActual f a
+
+let createFullMatcher<'T> 
+        (f : 'T -> bool) 
+        (shouldMsg : string) 
+        (shouldNotMsg : string) =
+    { new Matcher<'T> () with
+        member __.ApplyActual g actual = f actual |> g
+        member __.FailureMsgForShould = shouldMsg
+        member __.FailureMsgForShouldNot = shouldNotMsg
+    }
+let createMatcher<'T> (f : 'T -> bool) (shouldMsg : string) =
+    { new Matcher<'T> () with
+        member __.ApplyActual g actual = f actual |> g
+        member __.FailureMsgForShould = shouldMsg
+    }
+
+let createSimpleMatcher f = createMatcher f "FAIL"
+        
 module be =
-    let equalTo<'T when 'T : equality> (expected:'T) =
-        { new Matcher<'T> () with
-            member __.ApplyActual f (actual) = f (expected.Equals(actual))
-            member __.FailureMsgForShould = sprintf "be equal to %A" expected
-        }
+    let equalTo expected =
+        let f a = a = expected
+        createMatcher f (sprintf "be equal to %A" expected)
 
 module have =
-    let atLeastOneElement<'T,'U when 'T :> seq<'U>> (matcher : Matcher<'U>) =
-        { new Matcher<'T> () with
-            member __.ApplyActual f (actual) =
-                let success = actual |> Seq.exists (matcher.ApplyActual id)
-                f success
-            member __.FailureMsgForShould = 
-                sprintf "contain at least one element to %s" matcher.FailureMsgForShould
-            member __.FailureMsgForShouldNot =
-                sprintf "contain no elements to %s" matcher.FailureMsgForShould
-        }
+    let atLeastOneElement matcher =
+        let f a = a |> Seq.exists (applyMatcher matcher id)
+        let msg = sprintf "contain at least one element to %s" matcher.FailureMsgForShould
+        let notMsg = sprintf "contain no elements to %s" matcher.FailureMsgForShould
+        createFullMatcher f msg notMsg
     
-    let length (matcher : Matcher<int>) =
-        { new Matcher<'T> () with
-            member __.ApplyActual f (actual) =
-                let length = actual |> Seq.length
-                matcher.ApplyActual f length
-            member __.FailureMsgForShould = 
-                sprintf "have length to %s" matcher.FailureMsgForShould
-        }
+    let length matcher =
+        let f a = a |> Seq.length |> applyMatcher matcher id
+        let msg = sprintf "have length to %s" matcher.FailureMsgForShould
+        createMatcher f msg
     
 let shouldNot<'T> (matcher:Matcher<'T>) (actual:'T) =
     let continuation = function
