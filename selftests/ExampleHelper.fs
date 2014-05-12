@@ -4,8 +4,7 @@ open Matchers
 open Dsl
 
 let pass = fun _ -> ()
-let fail = fun _ -> failwithf "Test failure"
-
+let fail = fun _ -> raise (AssertionError { Message = "failed" })
 let anExampleGroupNamed = ExampleGroup.create
 let anExampleGroup = anExampleGroupNamed "dummy"
 
@@ -24,6 +23,7 @@ let anExample = Example.create "dummy"
 let aPassingExample = anExample pass
 let aFailingExample = anExample fail
 let aPendingExample = anExample pending
+let anErrorExample = anExample (fun _ -> failwith "unexpected")
 
 let createAnExampleWithMetaData metaData f =
     let metaData' = MetaData.create [metaData]
@@ -41,6 +41,7 @@ let withAnExampleWithMetaData metaData =
 let withExampleCode f = Example.create "dummy" f |> ExampleGroup.addExample
 let withAnExample = aPassingExample |> ExampleGroup.addExample
 let withAnExampleNamed name = anExampleNamed name |> ExampleGroup.addExample
+let withAPendingExample = aPendingExample |> ExampleGroup.addExample
 
 let shouldPass group =
     let report' = Runner.run group (Report.create())
