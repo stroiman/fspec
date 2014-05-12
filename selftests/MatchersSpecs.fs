@@ -2,29 +2,11 @@ module FSpec.SelfTests.MatcherSpecs
 open FSpec.Core
 open Dsl
 open Matchers
+open Helpers
 
 type A() = class end
 type B() = class end
 type A'() = inherit A()
-
-let tryExecute test =
-    try
-        test ()
-        None
-    with
-        | AssertionError(info) -> Some(info)
-
-let shouldPass test =
-    match tryExecute test with
-    | None -> ()
-    | Some(x) -> failwithf "Test failed with %A" x
-
-let getErrorMsg test =
-    match tryExecute test with
-    | None -> failwith "Expected test failure"
-    | Some(x) -> x.Message
-    
-let shouldFail test = getErrorMsg test |> ignore
 
 let specs = [
     describe "Collection matcher" [
@@ -47,8 +29,15 @@ let specs = [
                     let test () = s |> should have.element (toBe equal 2)
                     test |> shouldPass
 
-                it "fails with the right error message" pending
+                it "fails with the right error message" <| fun _ ->
+                    let col = [1;2;3]
+                    let test () = col |> should have.element (toBe equal 4)
+                    let expected = "expected [1; 2; 3] to have an element to equal 4"
+                    (*test |> getErrorMsg |> should equal expected*)
+                    pending ()
+
             ]
+
             context "when used with 'shouldNot'" [
                 it "fails with the right error message" pending
             ]
