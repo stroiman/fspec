@@ -18,14 +18,22 @@ module have =
     let atLeastOneElement<'T,'U when 'T :> seq<'U>> (matcher : Matcher<'U>) =
         { new Matcher<'T> () with
             member __.ApplyActual f (actual) =
-                let success = actual |> Seq.exists (fun x -> matcher.ApplyActual id x)
+                let success = actual |> Seq.exists (matcher.ApplyActual id)
                 f success
             member __.FailureMsgForShould = 
                 sprintf "contain at least one element to %s" matcher.FailureMsgForShould
             member __.FailureMsgForShouldNot =
                 sprintf "contain no elements to %s" matcher.FailureMsgForShould
         }
-
+    
+    let length (matcher : Matcher<int>) =
+        { new Matcher<'T> () with
+            member __.ApplyActual f (actual) =
+                let length = actual |> Seq.length
+                matcher.ApplyActual f length
+            member __.FailureMsgForShould = 
+                sprintf "have length to %s" matcher.FailureMsgForShould
+        }
     
 let shouldNot<'T> (matcher:Matcher<'T>) (actual:'T) =
     let continuation = function

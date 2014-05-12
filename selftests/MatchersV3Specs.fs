@@ -29,6 +29,12 @@ let specs = [
     ]
     
     describe "Collection matchers" [
+        describe "should have.length" [
+            it "succeeds when length is expected" <| fun _ ->
+                let test () = [1;2;3] |> should (have.length (be.equalTo 3))
+                test |> shouldPass
+        ]
+
         describe "should have.atLeastOneElement" [
             it "succeeds when collection has one element" <| fun _ ->
                 let test () = [1;2;3] |> should (have.atLeastOneElement (be.equalTo 3))
