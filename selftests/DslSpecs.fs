@@ -7,76 +7,113 @@ open TestContextOperations
 
 let pass = fun _ -> ()
 let extractGroup = applyGroup id (fun _ -> failwith "error")
+let setGroup x =
+    subject (fun _ -> x |> extractGroup)
+
+let itBehavesLikeAGroupWithChildGroup name =
+    MultipleOperations [
+        it "should have exactly one child group" <| fun c ->
+            c |> getSubject
+            |> ExampleGroup.childGroups
+            |> List.length |> should equal 1
+        
+        it "should have a group with the right name" <| fun c ->
+            c |> getSubject
+            |> ExampleGroup.childGroups
+            |> List.map ExampleGroup.name
+            |> should have.element (toBe equal name)
+    ]
 
 let specs =
     describe "Example building DSL" [
         context "an example group initialized with one example" [
-            subject <| fun _ ->
+            setGroup <|
                 describe "Group" [
                     it "Test" pass
-                ] |> extractGroup
+                ]
 
             it "should have no child groups" <| fun ctx ->
                 ctx |> getSubject
                 |> ExampleGroup.childGroups
                 |> List.length |> should equal 0
 
+            it "should have exactly one example" <| fun ctx ->
+                ctx |> getSubject
+                |> ExampleGroup.examples
+                |> List.length |> should equal 1
+
             it "should have one example named 'Test'" <| fun ctx ->
-                match ctx |> getSubject |> ExampleGroup.examples with
-                | [ex] -> ex.Name |> should equal "Test"
-                | _ -> failwith "Example count mismatch"
+                ctx |> getSubject
+                |> ExampleGroup.examples
+                |> List.map Example.name
+                |> should have.element (toBe equal "Test")
         ]
 
-        it "builds dsl with nested example group" <| fun _ ->
-            let group =
+        context "a 'Describe' statement inside a 'Describe' statement" [
+            setGroup <|
                 describe "Group" [
-                    describe "Context" [
+                    describe "ChildGroup" [
                         it "Test" pass
-                ]] |> extractGroup
-            match group.ChildGroups with
-            | [grp] -> 
-                match grp.Examples with
-                | [ex] -> ex.Name |> should equal "Test"
-                | _ -> failwith "Bad examples"
-            | _ -> failwith "Bad groups"
+                    ]
+                ]
 
-        it "builds dsl with nested context" <| fun _ ->
-            let group =
-                describe "Group" [
-                    context "Context" [
-                        it "Test" pass
-                ]] |> extractGroup
-            match group.ChildGroups with
-            | [grp] -> 
-                match grp.Examples with
-                | [ex] -> ex.Name |> should equal "Test"
-                | _ -> failwith "Bad examples"
-            | _ -> failwith "Bad groups"
+            itBehavesLikeAGroupWithChildGroup "ChildGroup"
+        ]
 
-        it "builds examplegroup with setup" <| fun _ ->
-            let group =
+        context "a 'context' statement inside a 'describe' statement" [
+            setGroup <|
                 describe "Group" [
+                    context "child context" [
+                        it "test" pass
+                    ]
+                ]
+
+            itBehavesLikeAGroupWithChildGroup "child context"
+        ]
+
+        context "example group initialized with two 'before' and one 'after" [
+            setGroup <|
+                describe "group" [
                     before <| fun _ -> ()
                     before <| fun _ -> ()
-                    it "Test" pass
-                ] |> extractGroup
-            group.Setups.Length |> should equal 2
+                    after <| fun _ -> ()
+                ]
 
-        it "builds example group with metadata" <| fun _ ->
-            let group =
-                describe "grp" [
-                    ("answer" ++ 42) ==>
-                    context "child" []] |> extractGroup
-            group.ChildGroups.Head.MetaData.Get "answer" |> should equal 42
+            it "contains two setups" <| fun c ->
+                c |> getSubject
+                |> ExampleGroup.setups
+                |> List.length |> should equal 2
 
-        it "builds example with metadata" <| fun _ ->
-            let group =
-                describe "grp" [
-                    ("answer" ++ 42 |||
-                     "question" ++ "universe" |||
-                     "More" ++ Some "blah") ==>
-                    it "Test" pass
-                ] |> extractGroup
-            group.Examples.Head.MetaData.Get "answer" |> should equal 42
-            group.Examples.Head.MetaData.Get "question" |> should equal "universe"
+            it "contains one teardown" <| fun c ->
+                c |> getSubject
+                |> ExampleGroup.tearDowns
+                |> List.length |> should equal 1
+        ]
+
+        describe "metadata initialization" [
+            context "example group has meta data applied" [
+                setGroup <|
+                    (("answer" ++ 42) ==>
+                     describe "group" [])
+
+                it "should store the meta data on the example group" <| fun c ->
+                    let grp = c |> getSubject<ExampleGroup.T>
+                    grp.MetaData?answer |> should equal 42
+            ]
+
+            context "example has meta data applied" [
+                setGroup <|
+                    describe "group" [
+                        ("answer" ++ 42) ==>
+                        it "has metadata" pass
+                    ]
+
+                it "should store the meta data on the example" <| fun c ->
+                    let example =
+                        c |> getSubject
+                        |> ExampleGroup.examples
+                        |> List.head
+                    example.MetaData?answer |> should equal 42
+            ]
+        ]
     ]
