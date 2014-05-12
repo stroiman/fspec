@@ -1,7 +1,7 @@
 ﻿module FSpec.SelfTests.DslV2Specs
 open FSpec.Core
 open Dsl
-open Matchers
+open MatchersV3
 open MetaData
 open TestContextOperations
 
@@ -10,18 +10,40 @@ let extractGroup = applyGroup id (fun _ -> failwith "error")
 let setGroup x =
     subject (fun _ -> x |> extractGroup)
 
+let createMatcher<'T> (f:'T->bool)=
+    { new Matcher<'T> () with
+        member __.ApplyActual g actual = f actual |> g
+        member __.FailureMsgForShould = "FAIL"
+        member __.FailureMsgForShouldNot = "FAIL" }
+
+let haveChildGroups expected =
+    createMatcher (fun actual ->
+        actual |> ExampleGroup.childGroups |> Seq.length = expected)
+
+let haveNoOfExampleExamples expected =
+    createMatcher (fun actual ->
+        actual
+        |> ExampleGroup.examples
+        |> Seq.length = expected)
+
+let haveExampleName expected =
+    (fun actual -> actual |> Example.name = expected)
+    |> createMatcher
+
+let haveGroupName expected =
+    (fun a -> a |> ExampleGroup.name = expected)
+    |> createMatcher
+
 let itBehavesLikeAGroupWithChildGroup name =
     MultipleOperations [
         it "should have exactly one child group" <| fun c ->
             c |> getSubject
-            |> ExampleGroup.childGroups
-            |> List.length |> should equal 1
+            |> should (haveChildGroups 1)
         
         it "should have a group with the right name" <| fun c ->
             c |> getSubject
             |> ExampleGroup.childGroups
-            |> List.map ExampleGroup.name
-            |> should have.element (toBe equal name)
+            |> should (have.atLeastOneElement (haveGroupName name))
     ]
 
 let specs =
@@ -34,19 +56,16 @@ let specs =
 
             it "should have no child groups" <| fun ctx ->
                 ctx |> getSubject
-                |> ExampleGroup.childGroups
-                |> List.length |> should equal 0
+                |> should (haveChildGroups 0)
 
             it "should have exactly one example" <| fun ctx ->
                 ctx |> getSubject
-                |> ExampleGroup.examples
-                |> List.length |> should equal 1
+                |> should (haveNoOfExampleExamples 1)
 
             it "should have one example named 'Test'" <| fun ctx ->
                 ctx |> getSubject
                 |> ExampleGroup.examples
-                |> List.map Example.name
-                |> should have.element (toBe equal "Test")
+                |> should (have.atLeastOneElement (haveExampleName "Test"))
         ]
 
         context "a 'Describe' statement inside a 'Describe' statement" [
@@ -82,12 +101,12 @@ let specs =
             it "contains two setups" <| fun c ->
                 c |> getSubject
                 |> ExampleGroup.setups
-                |> List.length |> should equal 2
+                |> should (have.length (be.equalTo 2))
 
             it "contains one teardown" <| fun c ->
                 c |> getSubject
                 |> ExampleGroup.tearDowns
-                |> List.length |> should equal 1
+                |> should (have.length (be.equalTo 1))
         ]
 
         describe "metadata initialization" [
@@ -98,7 +117,7 @@ let specs =
 
                 it "should store the meta data on the example group" <| fun c ->
                     let grp = c |> getSubject<ExampleGroup.T>
-                    grp.MetaData?answer |> should equal 42
+                    grp.MetaData?answer |> should (be.equalTo 42)
             ]
 
             context "example has meta data applied" [
@@ -113,7 +132,7 @@ let specs =
                         c |> getSubject
                         |> ExampleGroup.examples
                         |> List.head
-                    example.MetaData?answer |> should equal 42
+                    example.MetaData?answer |> should (be.equalTo 42)
             ]
         ]
     ]
