@@ -51,6 +51,7 @@
     <Compile Include="Helpers.fs" />
     <Compile Include="ExampleHelper.fs" />
     <Compile Include="MatchersSpecs.fs" />
+    <Compile Include="MatchersV3Specs.fs" />
     <Compile Include="RunnerSpecs.fs" />
     <Compile Include="TestRunnerSpecs.fs" />
     <Compile Include="Selftests.fs" />

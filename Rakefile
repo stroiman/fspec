@@ -25,6 +25,7 @@ file 'output/FSpec.Core.dll' => [
     'core/TestReport.fs', 
     'core/Runner.fs',
     'core/Matchers.fs', 
+    'core/MatchersV3.fs',
     'core/Dsl.fs',
     'core/TestDiscovery.fs'
     ] do |t|
@@ -38,6 +39,7 @@ file 'output/FSpec.SelfTests.dll' => [
     'selftests/TestRunnerSpecs.fs',
     'selftests/Selftests.fs', 
     'selftests/MatchersSpecs.fs', 
+    'selftests/MatchersV3Specs.fs',
     'selftests/TestReportSpecs.fs',
     'selftests/MetaDataSpecs.fs',
     'selftests/DslSpecs.fs',

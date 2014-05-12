@@ -28,18 +28,6 @@ let specs = [
                         yield 2; }
                     let test () = s |> should have.element (toBe equal 2)
                     test |> shouldPass
-
-                it "fails with the right error message" <| fun _ ->
-                    let col = [1;2;3]
-                    let test () = col |> should have.element (toBe equal 4)
-                    let expected = "expected [1; 2; 3] to have an element to equal 4"
-                    (*test |> getErrorMsg |> should equal expected*)
-                    pending ()
-
-            ]
-
-            context "when used with 'shouldNot'" [
-                it "fails with the right error message" pending
             ]
         ]
         describe "have.exactly(.)" [
@@ -53,10 +41,6 @@ let specs = [
                     let col = [1;2;2]
                     let test () = col |> should have.exactly 3 (toBe equal 1)
                     test |> shouldFail
-                it "fails with the right error message" pending
-            ]
-            context "when used with 'shouldNot'" [
-                it "fails with the right error message" pending
             ]
         ]
     ]
