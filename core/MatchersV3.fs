@@ -43,6 +43,13 @@ module have =
         let f a = a |> Seq.length |> applyMatcher matcher id
         let msg = sprintf "have length to %s" matcher.FailureMsgForShould
         createMatcher f msg
+
+    let exactly no matcher =
+        let f a = a |> Seq.filter (applyMatcher matcher id) |> Seq.length = no
+        let msg = 
+            sprintf "contain exactly %d element to %s" no 
+                matcher.FailureMsgForShould
+        createMatcher f msg
     
 let shouldNot<'T> (matcher:Matcher<'T>) (actual:'T) =
     let continuation = function

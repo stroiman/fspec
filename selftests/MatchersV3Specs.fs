@@ -35,6 +35,12 @@ let specs = [
                 test |> shouldPass
         ]
 
+        describe "should have.exactly" [
+            it "succeeds when correct no of elements match" <| fun _ ->
+                let test () = [1;2;2;3] |> should (have.exactly 2 (be.equalTo 2))
+                test |> shouldPass
+        ]
+
         describe "should have.atLeastOneElement" [
             it "succeeds when collection has one element" <| fun _ ->
                 let test () = [1;2;3] |> should (have.atLeastOneElement (be.equalTo 3))
