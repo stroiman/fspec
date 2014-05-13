@@ -4,25 +4,8 @@ open Dsl
 open MatchersV3
 open ExampleHelper
 open TestContextOperations
-
-let getFailed (report : Report.T) = report.failed |> List.reduce (+)
-
-type ReportType =
-    | BeginGroup of string
-    | EndGroup
-    | Example of string * TestResultType
-
-type reporterData = { CallStack: ReportType list }
-let appendToReport n r = { r with CallStack = n::r.CallStack }
-
-let reporter = {
-        BeginGroup = fun grp -> grp |> ExampleGroup.name |> BeginGroup |> appendToReport
-        ReportExample = fun ex res -> (ex |> Example.name, res) |> Example |> appendToReport
-        EndTestRun = fun r -> r
-        EndGroup = EndGroup |> appendToReport
-        Success = fun _ -> true
-        Zero = { CallStack = [] } 
-    }
+open FSpec.SelfTests.Helpers
+open TestReporter
 
 let beExampleWithResult f =
     function
@@ -44,6 +27,7 @@ let bePending = beExampleWithResult (fun r -> r = Pending)
 let beSuccess = beExampleWithResult (fun r -> r = Success)
 
 let doRun grp =
+    let reporter = TestReporter.instance
     let data = Runner.doRun grp reporter (reporter.Zero)
     data.CallStack |> List.rev
     
