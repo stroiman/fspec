@@ -37,7 +37,6 @@ file 'output/FSpec.SelfTests.dll' => [
     'selftests/ExampleHelper.fs',
     'selftests/RunnerSpecs.fs', 
     'selftests/TestRunnerSpecs.fs',
-    'selftests/Selftests.fs', 
     'selftests/MatchersSpecs.fs', 
     'selftests/MatchersV3Specs.fs',
     'selftests/TestReportSpecs.fs',
