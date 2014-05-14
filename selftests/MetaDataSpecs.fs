@@ -6,20 +6,22 @@ open TestContextOperations
 
 type TestContext with
     member self.data with get () = self |> getSubject<TestDataMap.T>
+let createMap = TestDataMap.create
+let mergeMap = TestDataMap.merge
 
 let specs =
     describe "MetaData" [
-        context "Dynamic operator" [
-            it "can retrieve data" (fun _ ->
-                let md = TestDataMap.create [("data",1)]
+        describe "dynamic get operator" [
+            it "can retrieve data" <| fun _ ->
+                let md = createMap [("data",1)]
                 md?data |> should equal 1
-            )
         ]
-        context "Merge" [
+
+        describe "merge" [
             context "When two metadata sets have different objects" [
                 subject <| fun _ ->
-                    let a = TestDataMap.create [("a",1)]
-                    let b = TestDataMap.create [("b",2)]
+                    let a = createMap [("a",1)]
+                    let b = createMap [("b",2)]
                     a |> TestDataMap.merge b
                     
                 it "contains two elements" <| fun ctx ->
@@ -33,9 +35,9 @@ let specs =
 
             context "when two metadata sets have same objects" [
                 subject <| fun _ ->
-                    let a = TestDataMap.create [("a",1)]
-                    let b = TestDataMap.create [("a",2)]
-                    a |> TestDataMap.merge b
+                    let a = createMap [("a",1)]
+                    let b = createMap [("a",2)]
+                    a |> mergeMap b
                     
                 it "should have one element" <| fun ctx ->
                     ctx.data.Count |> should equal 1
