@@ -16,13 +16,12 @@ let specs =
         before <| clearCallList
 
         context "test execution order" [
-            it "tests execute in the order they appear" (fun _ ->
+            it "tests execute in the order they appear" <| fun _ ->
                 anExampleGroup
                 |> withExampleCode (recordFunctionCall "test 1")
                 |> withExampleCode (recordFunctionCall "test 2")
                 |> run |> ignore
                 actualCallList() |> should equal ["test 1"; "test 2"]
-            )
 
             it "child contexts execute in the order they appear" (fun _ ->
                 anExampleGroup
@@ -112,5 +111,54 @@ let specs =
                 actualCallList() |> should equal 
                     ["outer test"; "outer tearDown";
                      "inner test"; "inner tearDown"; "outer tearDown"]
+        ]
+
+        describe "context cleanup" [
+            context "context contains an IDisposable instance" [
+                it "is disposed after test run" <| fun _ ->
+                    let disposed = ref false
+                    let disposable =
+                        { new System.IDisposable with
+                            member __.Dispose () = disposed := true }
+                    anExampleGroup
+                    |> withExampleCode (fun c -> c?dummy <- disposable)
+                    |> run |> ignore
+                    !disposed |> should equal true
+
+                it "is disposed if test fails" <| fun ctx ->
+                    let disposed = ref false
+                    let disposable =
+                        { new System.IDisposable with
+                            member __.Dispose () = disposed := true }
+                    anExampleGroup
+                    |> withSetupCode (fun c -> c?dummy <- disposable)
+                    |> withExampleCode (fun _ -> failwith "dummy")
+                    |> run |> ignore
+                    !disposed |> should equal true
+
+                it "is disposed if teardown fails" <| fun ctx ->
+                    let disposed = ref false
+                    let disposable =
+                        { new System.IDisposable with
+                            member __.Dispose () = disposed := true }
+                    anExampleGroup
+                    |> withSetupCode (fun c -> c?dummy <- disposable)
+                    |> withTearDownCode (fun _ -> failwith "dummy")
+                    |> withAnExample
+                    |> run |> ignore
+                    !disposed |> should equal true
+
+                it "is not disposed in teardown code" <| fun ctx ->
+                    let disposed = ref false
+                    let disposable =
+                        { new System.IDisposable with
+                            member __.Dispose () = disposed := true }
+                    anExampleGroup
+                    |> withSetupCode (fun c -> c?dummy <- disposable)
+                    |> withTearDownCode (fun _ -> ctx?disposedDuringTearDown <- !disposed)
+                    |> withAnExample
+                    |> run |> ignore
+                    ctx?disposedDuringTearDown |> should equal false
+            ]
         ]
     ]
