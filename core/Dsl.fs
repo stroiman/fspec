@@ -1,6 +1,7 @@
 ﻿module FSpec.Core.Dsl
 
 let pending = fun _ -> raise PendingError
+
 type Operation =
     | AddExampleOperation of Example.T
     | AddExampleGroupOperation of ExampleGroup.T
@@ -22,24 +23,21 @@ let applyGroup s f = function
 
 let it name func = AddExampleOperation <| Example.create name func
 
-let rec applyOperation grp op =
-    match op with
-    | AddExampleOperation example -> grp |> ExampleGroup.addExample example
-    | AddExampleGroupOperation childGrp -> grp |> ExampleGroup.addChildGroup childGrp
-    | AddSetupOperation f -> grp |> ExampleGroup.addSetup f
-    | AddTearDownOperation f -> grp |> ExampleGroup.addTearDown f
-    | MultipleOperations o -> o |> List.fold applyOperation grp
-
 let describe name operations =
+    let rec applyOperation grp op =
+        match op with
+        | AddExampleOperation example -> grp |> ExampleGroup.addExample example
+        | AddExampleGroupOperation childGrp -> grp |> ExampleGroup.addChildGroup childGrp
+        | AddSetupOperation f -> grp |> ExampleGroup.addSetup f
+        | AddTearDownOperation f -> grp |> ExampleGroup.addTearDown f
+        | MultipleOperations o -> o |> List.fold applyOperation grp
+
     let grp = ExampleGroup.create name
     operations |> List.fold applyOperation grp
     |> AddExampleGroupOperation
     
 let context = describe
-    
 let before f = AddSetupOperation f
-
 let after f = AddTearDownOperation f
-
 let subject f = before (fun ctx -> ctx.SetSubject (f ctx))
 let (++) = MetaData.(++)
