@@ -26,7 +26,7 @@ let aPendingExample = anExample pending
 let anErrorExample = anExample (fun _ -> failwith "unexpected")
 
 let createAnExampleWithMetaData metaData f =
-    let metaData' = MetaData.create [metaData]
+    let metaData' = TestDataMap.create [metaData]
     anExample f |> Example.addMetaData metaData'
 
 let run exampleGroup = 
@@ -47,4 +47,4 @@ let shouldPass group =
     let report' = Runner.run group (Report.create())
     report' |> Report.success |> should equal true
 
-let withMetaData data = MetaData.create [data] |> ExampleGroup.addMetaData
+let withMetaData data = TestDataMap.create [data] |> ExampleGroup.addMetaData

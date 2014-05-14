@@ -40,4 +40,4 @@ let context = describe
 let before f = AddSetupOperation f
 let after f = AddTearDownOperation f
 let subject f = before (fun ctx -> ctx.SetSubject (f ctx))
-let (++) = MetaData.(++)
+let (++) = TestDataMap.(++)

@@ -25,11 +25,11 @@ let doRun exampleGroup reporter report =
     let rec run exampleGroups report =
         let exampleGroup = exampleGroups |> List.head
         let report = reporter.BeginGroup exampleGroup report
-        let metaData = exampleGroups |> List.map ExampleGroup.getMetaData |> List.fold (fun state x -> x |> MetaData.merge state) MetaData.Zero
+        let metaData = exampleGroups |> List.map ExampleGroup.getMetaData |> List.fold (fun state x -> x |> TestDataMap.merge state) TestDataMap.Zero
 
         let execExample (example:Example.T) =
             let metaDataStack = example.MetaData :: (exampleGroups |> List.map ExampleGroup.getMetaData)
-            let metaData = metaDataStack |> List.fold MetaData.merge MetaData.Zero
+            let metaData = metaDataStack |> List.fold TestDataMap.merge TestDataMap.Zero
             try
                 let context = metaData |> TestContext.create
                 try
