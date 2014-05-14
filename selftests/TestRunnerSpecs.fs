@@ -28,7 +28,7 @@ let beSuccess = beExampleWithResult (fun r -> r = Success)
 
 let doRun grp =
     let reporter = TestReporter.instance
-    let data = Runner.doRun grp reporter (reporter.Zero)
+    let data = Runner.doRun grp reporter (reporter.BeginTestRun())
     data.CallStack |> List.rev
     
 let itReportsExactlyOneExample f = 

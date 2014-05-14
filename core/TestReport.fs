@@ -21,7 +21,7 @@ type Reporter<'T> = {
     EndTestRun: 'T -> 'T
     EndGroup: 'T -> 'T
     Success: 'T -> bool
-    Zero: 'T }
+    BeginTestRun: unit -> 'T }
 
 module TreeReporter =
     type ExecutedExample = {
@@ -124,7 +124,8 @@ module TreeReporter =
         ReportExample = reportExample printer;
         Success = success;
         EndTestRun = printSummary printer;
-        Zero = Zero }
+        BeginTestRun = fun () -> Zero 
+    }
     let createReporter = createReporterWithPrinter consolePrinter
     
 module Report =

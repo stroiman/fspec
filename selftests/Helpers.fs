@@ -40,5 +40,5 @@ module TestReporter =
         EndTestRun = fun r -> r
         EndGroup = EndGroup |> appendToReport
         Success = fun _ -> true
-        Zero = { CallStack = [] } 
+        BeginTestRun = fun _ -> { CallStack = [] } 
     }

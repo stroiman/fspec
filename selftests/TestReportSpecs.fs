@@ -25,7 +25,7 @@ type TestContext with
        
     member ctx.Report f =
         let r = getSubject<TreeReporter.T> ctx
-        let report = r.Zero |> (f r)
+        let report = r.BeginTestRun() |> (f r)
         ctx.Builder.Clear() |> ignore
         report |> r.EndTestRun |> ignore
     member ctx.ShouldNotHaveLineMatching pattern =
@@ -43,7 +43,7 @@ let itBehavesLikeATestReporter<'T> () =
         context "With success reported" [
             it "Is a success" <| fun c ->
                 let r = getSubject c
-                r.Zero
+                r.BeginTestRun()
                 |> r.ReportExample anExample Success
                 |> r.Success |> should equal true
         ]
@@ -51,7 +51,7 @@ let itBehavesLikeATestReporter<'T> () =
         context "With pendings reported" [
             it "Is not a failure" <| fun c ->
                 let r = getSubject c
-                r.Zero
+                r.BeginTestRun()
                 |> r.ReportExample anExample Pending
                 |> r.Success |> should equal true
         ]
@@ -59,7 +59,7 @@ let itBehavesLikeATestReporter<'T> () =
         context "With errors reported" [
             it "Is a failure" <| fun c ->
                 let r = getSubject c
-                r.Zero
+                r.BeginTestRun()
                 |> r.ReportExample anExample (Error(System.Exception()))
                 |> r.Success |> should equal false
         ]
@@ -67,7 +67,7 @@ let itBehavesLikeATestReporter<'T> () =
         context "With failures reported" [
             it "Is a failure" <| fun c ->
                 let r = getSubject c
-                r.Zero
+                r.BeginTestRun()
                 |> r.ReportExample anExample (aFailure)
                 |> r.Success |> should equal false
         ]

@@ -30,7 +30,7 @@ let createAnExampleWithMetaData metaData f =
 
 let run exampleGroup = 
     let reporter = Helpers.TestReporter.instance
-    Runner.doRun exampleGroup reporter reporter.Zero
+    Runner.doRun exampleGroup reporter (reporter.BeginTestRun())
 
 let runSingleExample example =
     anExampleGroup |> withExamples [example] |> run
