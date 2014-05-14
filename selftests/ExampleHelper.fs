@@ -23,7 +23,6 @@ let anExample = Example.create "dummy"
 let aPassingExample = anExample pass
 let aFailingExample = anExample fail
 let aPendingExample = anExample pending
-let anErrorExample = anExample (fun _ -> failwith "unexpected")
 
 let createAnExampleWithMetaData metaData f =
     let metaData' = TestDataMap.create [metaData]
@@ -41,10 +40,5 @@ let withAnExampleWithMetaData metaData =
 let withExampleCode f = Example.create "dummy" f |> ExampleGroup.addExample
 let withAnExample = aPassingExample |> ExampleGroup.addExample
 let withAnExampleNamed name = anExampleNamed name |> ExampleGroup.addExample
-let withAPendingExample = aPendingExample |> ExampleGroup.addExample
-
-let shouldPass group =
-    let report' = Runner.run group (Report.create())
-    report' |> Report.success |> should equal true
 
 let withMetaData data = TestDataMap.create [data] |> ExampleGroup.addMetaData
