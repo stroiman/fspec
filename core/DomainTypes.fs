@@ -1,13 +1,16 @@
 ﻿namespace FSpec.Core
 
-type AssertionErrorInfo = { 
-    Message: string
-} with
-    static member create = { Message = "" }
+/// Contains error information when an assertion failed
+type AssertionErrorInfo = { Message: string } 
+    with static member create = { Message = "" }
 
+/// Thrown when an assertion failed
 exception AssertionError of AssertionErrorInfo
+
+/// Thrown when an example has yet to be implemented
 exception PendingError
 
+/// The different outcomes for an example
 type TestResultType =
     | Success
     | Pending

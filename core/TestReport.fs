@@ -169,36 +169,3 @@ module Report =
         else
             sprintf "%d run, %d failed" noOfRuns noOfFails
 
-type ClassicReporter() = 
-    // Not that classic - just mimcs the way the system worked during
-    // the first iterations. This class serves mostly to keep unit
-    // tests running until they have been rewritten to support the
-    // separation of runner and reporter
-    let mutable (names : string list) = []
-    let beginGroup group (report : Report.T) =
-        names <- (group |> ExampleGroup.name) :: names
-        report
-
-    let reportExample example result (report : Report.T) =
-        names <- (example |> Example.name) :: names
-        let rec printNameStack(stack) : string =
-            match stack with
-            | []    -> ""
-            | head::[] -> head
-            | head::tail ->sprintf "%s %s" (printNameStack(tail)) head
-        let (name : string) = printNameStack names
-        names <- names.Tail
-        report |> Report.reportTestName name result
-
-    let endGroup (report : Report.T) = 
-        names <- names.Tail
-        report
-
-    member self.createReporter () = {
-        BeginGroup = beginGroup;
-        EndGroup = endGroup;
-        ReportExample = reportExample;
-        EndTestRun = id
-        Success = Report.success;
-        Zero = Report.create () }
-

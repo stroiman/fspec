@@ -118,11 +118,12 @@ let specs =
         
         context "metadata handling" [
             context "test contains metadata" [
-                it "passes the metadata to the test" <| fun _ ->
-                    createAnExampleWithMetaData ("answer", 42) <| fun ctx ->
-                        ctx.metadata?answer |> should (be.equalTo 42)
-                    |> runSingleExample
-                    |> Report.success |> should (be.equalTo true)
+                it "passes the metadata to the test" <| fun c ->
+                    createAnExampleWithMetaData ("answer", 42) (fun ctx ->
+                        let tmp : int = ctx.metadata?answer
+                        c?answer <- tmp)
+                    |> runSingleExample |> ignore
+                    c?answer |> should (be.equalTo 42)
 
                 it "passes the metadata to the setup" <| fun _ ->
                     let actual = ref 0

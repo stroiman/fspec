@@ -54,8 +54,3 @@ let doRun exampleGroup reporter report =
         let report''' = exampleGroup |> ExampleGroup.foldChildGroups (fun rep grp -> run (grp::exampleGroups) rep) report''
         reporter.EndGroup report'''
     run [exampleGroup] report
-
-let run exampleGroup report =
-    let classicReporter = ClassicReporter()
-    let reporter = classicReporter.createReporter ()
-    doRun exampleGroup reporter report

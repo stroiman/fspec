@@ -98,12 +98,6 @@ let specs =
             ]
         ]
 
-        context "Classic reporter" [
-            subject <| fun _ -> ClassicReporter().createReporter()
-            
-            itBehavesLikeATestReporter<Report.T>()
-        ]
-
         context "Tree reporter" [
             subject <| fun ctx -> 
                 let builder = StringBuilder()
