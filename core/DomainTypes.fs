@@ -44,6 +44,8 @@ type TestContext =
         MetaData: MetaData.T;
         mutable Subject: obj;
         mutable Data: MetaData.T }
+    with
+        static member getSubject<'T> context = context.Subject :?> 'T
 
 module TestContextOperations =
     let getSubject<'T> (context : TestContext) = context.Subject :?> 'T

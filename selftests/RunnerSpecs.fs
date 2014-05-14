@@ -114,48 +114,39 @@ let specs =
         ]
 
         describe "context cleanup" [
-            context "context contains an IDisposable instance" [
-                it "is disposed after test run" <| fun _ ->
-                    let disposed = ref false
+            context "setup code initializes an IDisposable" [
+                subject <| fun ctx ->
+                    ctx?disposed <- false
                     let disposable =
                         { new System.IDisposable with
-                            member __.Dispose () = disposed := true }
+                            member __.Dispose () = ctx?disposed <- true }
                     anExampleGroup
-                    |> withExampleCode (fun c -> c?dummy <- disposable)
+                    |> withSetupCode (fun c -> c?dummy <- disposable)
+
+                it "is disposed after test run" <| fun ctx ->
+                    ctx |> TestContext.getSubject
+                    |> withAnExample
                     |> run |> ignore
-                    !disposed |> should equal true
+                    ctx?disposed |> should equal true
 
                 it "is disposed if test fails" <| fun ctx ->
-                    let disposed = ref false
-                    let disposable =
-                        { new System.IDisposable with
-                            member __.Dispose () = disposed := true }
-                    anExampleGroup
-                    |> withSetupCode (fun c -> c?dummy <- disposable)
+                    ctx |> TestContext.getSubject
                     |> withExampleCode (fun _ -> failwith "dummy")
                     |> run |> ignore
-                    !disposed |> should equal true
+                    ctx?disposed |> should equal true
 
                 it "is disposed if teardown fails" <| fun ctx ->
-                    let disposed = ref false
-                    let disposable =
-                        { new System.IDisposable with
-                            member __.Dispose () = disposed := true }
-                    anExampleGroup
-                    |> withSetupCode (fun c -> c?dummy <- disposable)
+                    ctx |> TestContext.getSubject
                     |> withTearDownCode (fun _ -> failwith "dummy")
                     |> withAnExample
                     |> run |> ignore
-                    !disposed |> should equal true
+                    ctx?disposed |> should equal true
 
                 it "is not disposed in teardown code" <| fun ctx ->
-                    let disposed = ref false
-                    let disposable =
-                        { new System.IDisposable with
-                            member __.Dispose () = disposed := true }
-                    anExampleGroup
-                    |> withSetupCode (fun c -> c?dummy <- disposable)
-                    |> withTearDownCode (fun _ -> ctx?disposedDuringTearDown <- !disposed)
+                    ctx |> TestContext.getSubject
+                    |> withTearDownCode (fun _ -> 
+                        let disposed : bool = ctx?disposed
+                        ctx?disposedDuringTearDown <- disposed)
                     |> withAnExample
                     |> run |> ignore
                     ctx?disposedDuringTearDown |> should equal false
