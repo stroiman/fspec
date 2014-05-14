@@ -151,5 +151,9 @@ let specs =
                     |> run |> ignore
                     ctx?disposedDuringTearDown |> should equal false
             ]
+
+            context "subject is an IDisposable" [
+                it "is disposed automatically" pending
+            ]
         ]
     ]
