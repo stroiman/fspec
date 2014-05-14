@@ -120,6 +120,7 @@ let specs =
                     let disposable =
                         { new System.IDisposable with
                             member __.Dispose () = ctx?disposed <- true }
+
                     anExampleGroup
                     |> withSetupCode (fun c -> c?dummy <- disposable)
 

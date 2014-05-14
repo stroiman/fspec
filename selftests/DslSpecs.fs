@@ -116,10 +116,25 @@ let specs =
                     grp.MetaData?answer |> should (be.equalTo 42)
             ]
 
+            context "child group has meta data applied" [
+                setGroup <|
+                    describe "grp" [
+                        ("answer" <<- 42)
+                        context "child" []
+                    ]
+
+                it "should store the meta data on the child group" <| fun c ->
+                    let child =
+                        c |> getSubject 
+                        |> ExampleGroup.childGroups
+                        |> List.head
+                    child.MetaData?answer |> should (be.equalTo 42)
+            ]
+
             context "example has meta data applied" [
                 setGroup <|
                     describe "group" [
-                        ("answer" ++ 42) ==>
+                        ("answer" <<- 42)
                         it "has metadata" pass
                     ]
 

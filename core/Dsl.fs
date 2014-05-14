@@ -8,6 +8,7 @@ type Operation =
     | AddSetupOperation of ExampleGroup.TestFunc
     | AddTearDownOperation of ExampleGroup.TestFunc
     | MultipleOperations of Operation list
+    | AddMetaDataOperation of string*obj
     static member ApplyMetaData metaData op =
         match op with
         | AddExampleOperation e ->
@@ -24,16 +25,32 @@ let applyGroup s f = function
 let it name func = AddExampleOperation <| Example.create name func
 
 let describe name operations =
-    let rec applyOperation grp op =
+    let rec applyOperation (grp,md) op =
         match op with
-        | AddExampleOperation example -> grp |> ExampleGroup.addExample example
-        | AddExampleGroupOperation childGrp -> grp |> ExampleGroup.addChildGroup childGrp
-        | AddSetupOperation f -> grp |> ExampleGroup.addSetup f
-        | AddTearDownOperation f -> grp |> ExampleGroup.addTearDown f
-        | MultipleOperations o -> o |> List.fold applyOperation grp
+        | AddExampleOperation example -> 
+            let example = example |> Example.addMetaData (TestDataMap.create md)
+            let grp = grp |> ExampleGroup.addExample example
+            (grp,[])
+        | AddExampleGroupOperation childGrp -> 
+            let cg = 
+                match md with
+                | [] -> childGrp
+                | _ -> childGrp |> ExampleGroup.addMetaData (TestDataMap.create md)
+            let grp = grp |> ExampleGroup.addChildGroup cg
+            (grp,[])
+        | AddSetupOperation f -> 
+            let grp = grp |> ExampleGroup.addSetup f
+            (grp,md)
+        | AddTearDownOperation f -> 
+            let grp = grp |> ExampleGroup.addTearDown f
+            (grp,md)
+        | MultipleOperations o -> 
+            o |> List.fold applyOperation (grp,md)
+        | AddMetaDataOperation (k,v) -> (grp, (k,v)::md)
 
     let grp = ExampleGroup.create name
-    operations |> List.fold applyOperation grp
+    operations |> List.fold applyOperation (grp,[])
+    |> fun (grp,_) -> grp
     |> AddExampleGroupOperation
     
 let context = describe
@@ -41,3 +58,4 @@ let before f = AddSetupOperation f
 let after f = AddTearDownOperation f
 let subject f = before (fun ctx -> ctx.SetSubject (f ctx))
 let (++) = TestDataMap.(++)
+let (<<-) a b = AddMetaDataOperation(a,b)
