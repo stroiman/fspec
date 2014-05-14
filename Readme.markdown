@@ -16,6 +16,7 @@ Currently the following features are supported
  * Metadata on individual examples or example groups (accessible from setup)
  * Assertion framework
  * Implicit subject
+ * Automatically disposing _IDisposable_ instances
 
 Ideas for future improvements (prioritized list)
 
@@ -123,7 +124,7 @@ let specs =
 
 ## Test Context ##
 
-Setup, teardown, and test functions all receive aa _TestContext_ parameter. Test
+Setup, teardown, and test functions all receive a _TestContext_ parameter. Test
 metadata can be received from this context, and specific test data can be
 stored in the context. The latter is useful if the test needs to use data
 created in the setup.
@@ -134,7 +135,7 @@ The context data is accessible using the ? operator.
 let specs =
     describe "createUser function" [
         before <| fun _ ->
-            ctx?user = createUser "John" "Doe"
+            ctx?user <- createUser "John" "Doe"
         it "sets the first name" <| fun ctx ->
             ctx?user |> User.firstName |> should equal "John"
         it "sets the last name" <| fun ctx ->
@@ -148,6 +149,22 @@ store it in FSpec.
 
 If you get a compiler error saying that the it cannot infer the type, use
 the generic _Get<'T>_ function instead.
+
+### Automatically Disposal ###
+
+If you add an object that implements _IDisposable_ to the test context, the
+object will automatically be disposed when the test run has finished. 
+
+```fsharp
+let specs =
+    describe "The data access layer" [
+        before (fun ctx -> ctx?connection <- craeteDatabaseConnection () )
+
+        it "uses the connection" ...
+    ]
+```
+
+The database connection will in this case automatically be disposed.
 
 ```fsharp
 let specs =
