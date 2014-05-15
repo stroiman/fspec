@@ -32,6 +32,14 @@ Ideas for future improvements (prioritized list)
 
 The framework is self testing, i.e. the framework is used to test itself.
 
+## Want to contribute? ##
+
+Awesome. By using FSpec and giving feedback on what could be improved, what
+works, and what doesn't, you have already contributed greatly.
+
+Feel like actually adding code? Hack away. One thing that could be really nice
+would be IDE integration, NCrunch in particular.
+
 ## Possible Future Changes ##
 
 As the FSpec tool is still quite new and haven't really been used in many
