@@ -2,10 +2,9 @@
 open FSpec.Core
 open Dsl
 open Matchers
-open TestContextOperations
 
 type TestContext with
-    member self.data with get () = self |> getSubject<TestDataMap.T>
+    member self.data with get() = self.GetSubject<TestDataMap.T> ()
 let createMap = TestDataMap.create
 let mergeMap = TestDataMap.merge
 

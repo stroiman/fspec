@@ -77,6 +77,7 @@ type TestContext
         member ctx.Set name value = ctx.Data <- ctx.Data.Add name value
         member ctx.Get<'T> name = ctx.Data.Get<'T> name
         member ctx.TryGet<'T> name = ctx.Data |> TestDataMap.tryGet<'T> name
+        member ctx.GetSubject<'T> () = TestContext.getSubject<'T> ctx
         member ctx.SetSubject s = ctx.Subject <- s :> obj
         static member (?) (self:TestContext,name) = self.Get name 
         static member (?<-) (self:TestContext,name,value) = self.Set name value 
