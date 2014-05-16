@@ -5,7 +5,7 @@
     <version>0.0.3</version>
     <authors>Peter Stroiman</authors>
     <owners>Peter Stroiman</owners>
-    <!--<licenseUrl>http://LICENSE_URL_HERE_OR_DELETE_THIS_LINE</licenseUrl>-->
+    <licenseUrl>https://github.com/PeteProgrammer/fspec/blob/master/LICENSE</licenseUrl>
     <projectUrl>https://github.com/PeteProgrammer/fspec</projectUrl>
     <iconUrl>https://github.com/PeteProgrammer/fspec/blob/master/FSpec_logo_med.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
