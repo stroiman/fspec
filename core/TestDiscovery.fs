@@ -45,3 +45,9 @@ let toExitCode result =
     match result with
     | true -> 0
     | false -> 1
+
+let runSingleAssembly assembly = 
+    assembly 
+    |> getSpecsFromAssembly 
+    |> runSpecs 
+    |> toExitCode
