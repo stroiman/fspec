@@ -67,6 +67,12 @@ type TestContext =
         mutable Data: TestDataMap.T }
     with
         static member getSubject<'T> context = context.Subject :?> 'T
+        static member cleanup ctx =
+            let tryDispose (x:obj) = 
+                match x with
+                | :? System.IDisposable as d -> d.Dispose ()
+                | _ -> ()
+            ctx.Data.Data |> Map.iter (fun _ x -> tryDispose x)
 
 module TestContextOperations =
     let getSubject<'T> (context : TestContext) = context.Subject :?> 'T

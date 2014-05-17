@@ -15,13 +15,6 @@ let rec performTearDown exampleGroups ctx =
             performTearDown tail ctx
 
 let doRun exampleGroup reporter report =
-    let cleanupContext (ctx : TestContext) =
-        let tryDispose (x:obj) = 
-            match x with
-            | :? System.IDisposable as d -> d.Dispose ()
-            | _ -> ()
-        ctx.Data.Data |> Map.iter (fun _ x -> tryDispose x)
-
     let rec run exampleGroups report =
         let exampleGroup = exampleGroups |> List.head
         let report = reporter.BeginGroup exampleGroup report
@@ -39,7 +32,7 @@ let doRun exampleGroup reporter report =
                     finally
                         performTearDown exampleGroups context
                 finally
-                    context |> cleanupContext
+                    TestContext.cleanup context
                 Success
             with
             | PendingError -> Pending
