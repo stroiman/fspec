@@ -62,17 +62,19 @@ module TestDataMap =
 
 type TestContext =
     { 
-        MetaData: TestDataMap.T;
-        mutable Subject: obj;
+        MetaData: TestDataMap.T
+        mutable Disposables: System.IDisposable list
+        mutable Subject: obj
         mutable Data: TestDataMap.T }
     with
         static member getSubject<'T> context = context.Subject :?> 'T
+        static member registerDisposable (x:obj) ctx =
+            match x with
+            | :? System.IDisposable as d -> ctx.Disposables <- d::ctx.Disposables
+            | _ -> ()
+            
         static member cleanup ctx =
-            let tryDispose (x:obj) = 
-                match x with
-                | :? System.IDisposable as d -> d.Dispose ()
-                | _ -> ()
-            ctx.Data.Data |> Map.iter (fun _ x -> tryDispose x)
+            ctx.Disposables |> List.iter (fun x -> x.Dispose())
 
 module TestContextOperations =
     let getSubject<'T> (context : TestContext) = context.Subject :?> 'T
@@ -80,14 +82,24 @@ module TestContextOperations =
 type TestContext
     with
         member self.metadata = self.MetaData
-        member ctx.Set name value = ctx.Data <- ctx.Data.Add name value
+        member ctx.Set name value =
+            ctx.Data <- ctx.Data.Add name value
+            ctx |> TestContext.registerDisposable value
+
         member ctx.Get<'T> name = ctx.Data.Get<'T> name
         member ctx.TryGet<'T> name = ctx.Data |> TestDataMap.tryGet<'T> name
         member ctx.GetSubject<'T> () = TestContext.getSubject<'T> ctx
-        member ctx.SetSubject s = ctx.Subject <- s :> obj
+        member ctx.SetSubject s = 
+            ctx.Subject <- s :> obj
+            ctx |> TestContext.registerDisposable s
+
         static member (?) (self:TestContext,name) = self.Get name 
         static member (?<-) (self:TestContext,name,value) = self.Set name value 
-        static member create metaData = { MetaData = metaData; Data = TestDataMap.Zero; Subject = null }
+        static member create metaData = { 
+            MetaData = metaData
+            Data = TestDataMap.Zero
+            Disposables = []
+            Subject = null }
 
 module Example =
     type T = {

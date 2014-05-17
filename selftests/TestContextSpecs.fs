@@ -13,6 +13,12 @@ let itCanLookupTheData =
             c?answer |> should equal 42
     ]
 
+type DisposeSpy () =
+    member val Disposed = false with get, set
+    interface System.IDisposable with
+        member self.Dispose () = self.Disposed <- true
+let createContext = TestDataMap.Zero |> TestContext.create
+        
 let specs =
     describe "TestContext" [
         context "data initialized with dynamic operator" [
@@ -52,5 +58,32 @@ let specs =
                 it "is evaluated when a matcher expects a function" <| fun ctx ->
                     ctx |> getSubject |> shouldNot fail
             ]
+        ]
+
+        describe "cleanup" [
+            it "calls dispose on objects" <| fun _ ->
+                let x = new DisposeSpy()
+                let ctx = createContext
+                ctx?x <- x
+                ctx |> TestContext.cleanup
+                x.Disposed |> should equal true
+
+            it "disposes instances, that are no longer present" <| fun _ ->
+                let x = new DisposeSpy()
+                let y = new DisposeSpy()
+                let ctx = createContext
+                ctx?x <- x
+                ctx?x <- y
+                ctx |> TestContext.cleanup
+                x.Disposed |> should equal true
+
+            it "calls dispose on Subject" (fun _ ->
+                let x = new DisposeSpy()
+                let ctx = createContext
+                ctx.SetSubject x
+                ctx |> TestContext.cleanup
+                x.Disposed |> should equal true
+
+            )
         ]
     ]
