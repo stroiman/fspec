@@ -28,17 +28,11 @@ let describe name operations =
     let rec applyOperation (grp,md) op =
         match op with
         | AddExampleOperation example -> 
-            let example = 
-                match md with 
-                | [] -> example 
-                | _ -> example |> Example.addMetaData (TestDataMap.create md)
+            let example = example |> Example.addMetaData (TestDataMap.create md)
             let grp = grp |> ExampleGroup.addExample example
             (grp,[])
         | AddExampleGroupOperation childGrp -> 
-            let cg = 
-                match md with
-                | [] -> childGrp
-                | _ -> childGrp |> ExampleGroup.addMetaData (TestDataMap.create md)
+            let cg = childGrp |> ExampleGroup.addMetaData (TestDataMap.create md)
             let grp = grp |> ExampleGroup.addChildGroup cg
             (grp,[])
         | AddSetupOperation f -> 
