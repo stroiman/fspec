@@ -131,34 +131,32 @@ let specs =
                     child.MetaData?answer |> should (be.equalTo 42)
             ]
 
-            context "example has meta data applied - old syntax" [
-                setGroup <|
-                    describe "group" [
-                        ("answer" ++ 42) ==>
-                        it "has metadata" pass
-                    ]
-
-                it "should store the meta data on the example" <| fun c ->
-                    let example =
-                        c |> getSubject
-                        |> ExampleGroup.examples
-                        |> List.head
-                    example.MetaData?answer |> should (be.equalTo 42)
-            ]
-
             context "example has meta data applied" [
-                setGroup <|
-                    describe "group" [
-                        ("answer" <<- 42)
-                        it "has metadata" pass
-                    ]
+                let itStoresMeaDataOnTheExample = 
+                    it "should store the meta data on the example" <| fun c ->
+                        let example =
+                            c |> getSubject
+                            |> ExampleGroup.examples
+                            |> List.head
+                        example.MetaData?answer |> should (be.equalTo 42)
 
-                it "should store the meta data on the example" <| fun c ->
-                    let example =
-                        c |> getSubject
-                        |> ExampleGroup.examples
-                        |> List.head
-                    example.MetaData?answer |> should (be.equalTo 42)
+                yield context "using ++ and ==> operators" [
+                    setGroup <|
+                        describe "group" [
+                            ("answer" ++ 42) ==>
+                            it "has metadata" pass
+                        ]
+                    itStoresMeaDataOnTheExample
+                ]
+
+                yield context "using <<- operator" [
+                    setGroup <|
+                        describe "group" [
+                            ("answer" <<- 42)
+                            it "has metadata" pass
+                        ]
+                    itStoresMeaDataOnTheExample
+                ]
             ]
         ]
     ]
