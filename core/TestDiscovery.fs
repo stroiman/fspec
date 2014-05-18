@@ -41,7 +41,7 @@ let runSpecsWithReporter reporter specs =
     report |> reporter.Success
 
 let runSpecs specs = 
-    let reporter = TreeReporter.create DefaultOptions
+    let reporter = TreeReporter.create TreeReporterOptions.Default
     runSpecsWithReporter reporter specs
 
 let toExitCode result =
@@ -50,7 +50,7 @@ let toExitCode result =
     | false -> 1
 
 let runSingleAssembly assembly = 
-    let reporter = TreeReporter.create DefaultOptions
+    let reporter = TreeReporter.create TreeReporterOptions.Default
     assembly 
     |> getSpecsFromAssembly 
     |> runSpecsWithReporter reporter

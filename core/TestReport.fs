@@ -37,9 +37,15 @@ type Reporter<'T> = {
     Success: 'T -> bool
     BeginTestRun: unit -> 'T }
 
-type TreeReporterOptions =
-    | DefaultOptions
-    | WithPrinter of (Color->string->unit)
+module TreeReporterOptions =
+    type T = {
+        Printer: Color->string->unit
+        PrintSuccess: bool
+    }
+    let Default = {
+        Printer = Helper.consolePrinter
+        PrintSuccess = true
+    }
 
 module TreeReporter =
     type ExecutedExample = {
@@ -54,11 +60,8 @@ module TreeReporter =
         Groups = []
         ExecutedExamples = [] }
 
-    let create options =
-        let printer =
-            match options with
-            | DefaultOptions -> Helper.consolePrinter
-            | WithPrinter x -> x
+    let create (options : TreeReporterOptions.T) =
+        let printer = options.Printer
         let exampleName x = x.Example |> Example.name
         let result ex = ex.Result
 
@@ -85,13 +88,22 @@ module TreeReporter =
                         | Success -> "SUCCESS\n" |> printer Green
                         print indent prevGroups xs     
 
+            let filter =
+                match options.PrintSuccess with
+                | true -> fun _ -> true
+                | _ -> 
+                    fun ex -> 
+                        match result ex with
+                        | Success -> false
+                        | _ -> true
+
             let failed executedExample = 
                 match result executedExample with
                 | Success -> false
                 | _ -> true
 
             executedExamples 
-            |> List.filter failed 
+            |> List.filter filter
             |> List.rev
             |> (print [] [])
 

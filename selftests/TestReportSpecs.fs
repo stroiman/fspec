@@ -103,7 +103,11 @@ let specs =
                 let builder = StringBuilder()
                 ctx?builder <- builder
                 let printer = stringBuilderPrinter builder
-                TreeReporter.create (WithPrinter printer)
+                let options = 
+                    { TreeReporterOptions.Default with 
+                          Printer = printer
+                          PrintSuccess = false}
+                TreeReporter.create options
 
             itBehavesLikeATestReporter<TreeReporter.T>()
 
