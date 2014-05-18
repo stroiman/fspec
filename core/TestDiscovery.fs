@@ -32,14 +32,17 @@ let getSpecsFromAssembly (assembly : Assembly) =
         |> List.ofSeq
     specs
 
-let runSpecs specs =
+let runSpecsWithReporter reporter specs =
     let emptyReport = TreeReporter.Zero
-    let reporter = TreeReporter.create DefaultOptions
     let report = 
         specs 
         |> Seq.fold (fun rep grp -> Runner.doRun grp reporter rep) emptyReport
         |> reporter.EndTestRun
     report |> reporter.Success
+
+let runSpecs specs = 
+    let reporter = TreeReporter.create DefaultOptions
+    runSpecsWithReporter reporter specs
 
 let toExitCode result =
     match result with
@@ -47,7 +50,8 @@ let toExitCode result =
     | false -> 1
 
 let runSingleAssembly assembly = 
+    let reporter = TreeReporter.create DefaultOptions
     assembly 
     |> getSpecsFromAssembly 
-    |> runSpecs 
+    |> runSpecsWithReporter reporter
     |> toExitCode
