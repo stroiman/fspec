@@ -20,14 +20,15 @@ let applyNestedContext f grp = grp |> f |> ExampleGroup.addChildGroup
 let withNestedGroupNamed name f = anExampleGroupNamed name |> applyNestedContext f
 let withNestedGroup f = anExampleGroup |> applyNestedContext f
 let anExampleNamed name = Example.create name pass
-let anExample = Example.create "dummy"
-let aPassingExample = anExample pass
-let aFailingExample = anExample fail
-let aPendingExample = anExample pending
+let anExampleWithCode = Example.create "dummy"
+let aPassingExample = anExampleWithCode pass
+let aFailingExample = anExampleWithCode fail
+let aPendingExample = anExampleWithCode pending
+let anExceptionThrowingExample = anExampleWithCode (fun _ -> raise (new System.Exception()))
 
 let createAnExampleWithMetaData metaData f =
     let metaData' = TestDataMap.create [metaData]
-    anExample f |> Example.addMetaData metaData'
+    anExampleWithCode f |> Example.addMetaData metaData'
 
 let run exampleGroup = 
     let reporter = Helpers.TestReporter.instance
@@ -41,7 +42,7 @@ let withAnExampleWithMetaData metaData =
     |> ExampleGroup.addExample
 
 let withExampleMetaData md = TestDataMap.create [md] |> Example.addMetaData
-let withExampleCode f = Example.create "dummy" f |> ExampleGroup.addExample
+let withExampleCode f = anExampleWithCode f |> ExampleGroup.addExample
 let withAnExample = aPassingExample |> ExampleGroup.addExample
 let withAnExampleNamed name = anExampleNamed name |> ExampleGroup.addExample
 

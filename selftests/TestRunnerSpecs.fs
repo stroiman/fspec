@@ -64,7 +64,7 @@ let specs =
                     itReportsExactlyOneExample (itIsFailure)
                 ]
 
-                ("example" ++ (anExample (itRaisesException))) ==>
+                ("example" ++ anExceptionThrowingExample) ==>
                 context "example throw exception" [
                     itReportsExactlyOneExample (itIsError)
                 ]
@@ -142,8 +142,7 @@ let specs =
                 context "test contains no metadata" [
                     subject <| fun ctx ->
                         ctx |> getSubject
-                        |> ExampleGroup.addExample (
-                            anExample <| fun testCtx ->
+                        |> withExampleCode (fun testCtx ->
                                 ctx.Set "source" (testCtx.metadata?source))
                                 
                     it "uses metadata from setup" <| fun ctx ->
@@ -167,9 +166,8 @@ let specs =
                         |> ExampleGroup.addChildGroup(
                             anExampleGroup
                             |> withMetaData ("source", "child context")
-                            |> ExampleGroup.addExample (
-                                anExample <| fun testCtx ->
-                                    ctx.Set "source" (testCtx.metadata?source)))
+                            |> withExampleCode (fun testCtx ->
+                                ctx.Set "source" (testCtx.metadata?source)))
 
                     it "uses the metadata from the child group" <| fun ctx ->
                         ctx |> getSubject |> run |> ignore
