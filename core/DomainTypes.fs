@@ -54,6 +54,7 @@ module TestDataMap =
     type T with
         member self.Get<'T> name = get<'T> name self
         member self.Add name value = { self with Data = self.Data |> Map.add name (value :> obj) }
+        member self.Merge other = merge other self
         member self.Count with get() = self.Data.Count
         static member (?) (self,name) = get name self
 
@@ -109,7 +110,7 @@ module Example =
     }
     let create name test = { Name = name; Test = test; MetaData = TestDataMap.Zero }
     let name example = example.Name
-    let addMetaData metaData example = { example with Name = example.Name; MetaData = metaData }
+    let addMetaData data ex = { ex with Name = ex.Name; MetaData = ex.MetaData.Merge data }
 
 module ExampleGroup =
     type TestFunc = TestContext -> unit
@@ -137,7 +138,7 @@ module ExampleGroup =
     let addSetup setup grp = { grp with Setups = setup::grp.Setups }
     let addTearDown tearDown grp = { grp with TearDowns = tearDown::grp.TearDowns }
     let addChildGroup child grp = { grp with ChildGroups = child::grp.ChildGroups }
-    let addMetaData data grp = { grp with Name = grp.Name; MetaData = data }
+    let addMetaData data grp = { grp with Name = grp.Name; MetaData = grp.MetaData.Merge data }
     let getMetaData grp = grp.MetaData
     let childGroups grp = grp.ChildGroups |> List.rev
     let examples grp = grp.Examples 
