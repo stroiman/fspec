@@ -12,6 +12,7 @@ let withExamples examples exampleGroup =
     let folder grp ex = ExampleGroup.addExample ex grp
     examples |> List.fold folder exampleGroup
 
+let withMetaData data = TestDataMap.create [data] |> ExampleGroup.addMetaData
 let withSetupCode = ExampleGroup.addSetup
 let withTearDownCode = ExampleGroup.addTearDown
 
@@ -38,8 +39,10 @@ let runSingleExample example =
 let withAnExampleWithMetaData metaData =
     createAnExampleWithMetaData metaData (fun _ -> ())
     |> ExampleGroup.addExample
+
+let withExampleMetaData md = TestDataMap.create [md] |> Example.addMetaData
 let withExampleCode f = Example.create "dummy" f |> ExampleGroup.addExample
 let withAnExample = aPassingExample |> ExampleGroup.addExample
 let withAnExampleNamed name = anExampleNamed name |> ExampleGroup.addExample
 
-let withMetaData data = TestDataMap.create [data] |> ExampleGroup.addMetaData
+let anExampleWithMetaData data = aPassingExample |> withExampleMetaData data

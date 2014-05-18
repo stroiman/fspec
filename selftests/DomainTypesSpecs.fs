@@ -9,9 +9,8 @@ let specs =
         describe "ExampleGroup" [
             context "with existing metadata" [
                 subject (fun _ -> 
-                    let md = TestDataMap.create [("a",42)]
-                    ExampleGroup.create "dummy"
-                    |> ExampleGroup.addMetaData md)
+                    anExampleGroup 
+                    |> withMetaData ("a", 42))
                     
                 describe "addMetaData" [
                     it "does not clear existing metadata" <| fun c ->
@@ -31,10 +30,7 @@ let specs =
 
         describe "Example" [
             context "with existing metadata" [
-                subject (fun _ -> 
-                    let md = TestDataMap.create [("a",42)]
-                    Example.create "dummy" pass
-                    |> Example.addMetaData md)
+                subject (fun _ -> anExampleWithMetaData ("a", 42))
                     
                 describe "addMetaData" [
                     it "does not clear existing metadata" <| fun c ->
