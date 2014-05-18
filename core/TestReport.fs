@@ -3,7 +3,7 @@ open System
 
 /// Represenations of the colors used to print to the console
 type Color =
-    | Red | Yellow | Green | Default
+    | Red | Yellow | Green | DefaultColor
             
 module Helper =
     let rec diffRev x y =
@@ -15,6 +15,20 @@ module Helper =
         let (x,y) = diffRev (x |> List.rev) (y |> List.rev)
         (x |> List.rev, y |> List.rev)
 
+    let consolePrinter color (msg:string) =
+        let old = System.Console.ForegroundColor 
+        let consoleColor = 
+            match color with
+            | Red -> System.Console.ForegroundColor <- ConsoleColor.Red
+            | Yellow -> System.Console.ForegroundColor <- ConsoleColor.Yellow
+            | Green -> System.Console.ForegroundColor <- ConsoleColor.Green
+            | DefaultColor -> ()
+        try 
+            System.Console.Write msg
+        finally
+            System.Console.ForegroundColor <- old
+
+
 type Reporter<'T> = {
     BeginGroup : ExampleGroup.T -> 'T -> 'T
     ReportExample: Example.T -> TestResultType -> 'T -> 'T
@@ -22,6 +36,10 @@ type Reporter<'T> = {
     EndGroup: 'T -> 'T
     Success: 'T -> bool
     BeginTestRun: unit -> 'T }
+
+type TreeReporterOptions =
+    | DefaultOptions
+    | WithPrinter of (Color->string->unit)
 
 module TreeReporter =
     type ExecutedExample = {
@@ -35,94 +53,86 @@ module TreeReporter =
     let Zero = { 
         Groups = []
         ExecutedExamples = [] }
-    
-    let exampleName x = x.Example |> Example.name
-    let result ex = ex.Result
 
-    let printFailedExamples printer executedExamples =
-        let rec print indent prevGroups executedExamples = 
-            match executedExamples with
-            | [] -> ()
-            | x::xs ->
-                let (pop,push) = Helper.diff prevGroups (x.ContainingGroups |> List.map ExampleGroup.name)
-                let indent = pop |> List.fold (fun (i:string list) y -> i.Tail) indent
-                let indentation = indent |> List.fold (+) ""
-                let prevGroups = pop |> List.fold (fun (i:string list) y -> i.Tail) prevGroups
-                match push |> List.rev with
-                | y::ys ->  
-                    sprintf "%s%s\n" indentation y |> printer Default
-                    print ("  "::indent) (y::prevGroups) executedExamples
-                | _ ->
-                    sprintf "%s- %s - " indentation (x |> exampleName) |> printer Default
-                    match result x with
-                    | Failure _ | Error _ -> 
-                        "FAILED\n" |> printer Red
-                        sprintf "%A\n" x.Result |> printer Default
-                    | Pending -> "PENDING\n" |> printer Yellow
-                    | Success -> "SUCCESS\n" |> printer Green
-                    print indent prevGroups xs     
+    let create options =
+        let printer =
+            match options with
+            | DefaultOptions -> Helper.consolePrinter
+            | WithPrinter x -> x
+        let exampleName x = x.Example |> Example.name
+        let result ex = ex.Result
 
-        let failed executedExample = 
-            match result executedExample with
-            | Success -> false
-            | _ -> true
+        let printFailedExamples executedExamples =
+            let rec print indent prevGroups executedExamples = 
+                match executedExamples with
+                | [] -> ()
+                | x::xs ->
+                    let (pop,push) = Helper.diff prevGroups (x.ContainingGroups |> List.map ExampleGroup.name)
+                    let indent = pop |> List.fold (fun (i:string list) y -> i.Tail) indent
+                    let indentation = indent |> List.fold (+) ""
+                    let prevGroups = pop |> List.fold (fun (i:string list) y -> i.Tail) prevGroups
+                    match push |> List.rev with
+                    | y::ys ->  
+                        sprintf "%s%s\n" indentation y |> printer DefaultColor
+                        print ("  "::indent) (y::prevGroups) executedExamples
+                    | _ ->
+                        sprintf "%s- %s - " indentation (x |> exampleName) |> printer DefaultColor
+                        match result x with
+                        | Failure _ | Error _ -> 
+                            "FAILED\n" |> printer Red
+                            sprintf "%A\n" x.Result |> printer DefaultColor
+                        | Pending -> "PENDING\n" |> printer Yellow
+                        | Success -> "SUCCESS\n" |> printer Green
+                        print indent prevGroups xs     
 
-        executedExamples 
-        |> List.filter failed 
-        |> List.rev
-        |> (print [] [])
+            let failed executedExample = 
+                match result executedExample with
+                | Success -> false
+                | _ -> true
 
-    let beginGroup printer exampleGroup report =
-        { report with Groups = exampleGroup :: report.Groups }
+            executedExamples 
+            |> List.filter failed 
+            |> List.rev
+            |> (print [] [])
 
-    let endGroup report = { report with Groups = report.Groups.Tail }
-    
-    let getSummary report =
-        let folder (success,pending,fail) = function
-            | Failure _ | Error _ -> (success,pending,fail+1)
-            | Pending -> (success,pending+1,fail)
-            | Success -> (success+1,pending,fail)
-        report.ExecutedExamples |> 
-        List.map result |> 
-        List.fold folder (0,0,0)
+        let beginGroup exampleGroup report =
+            { report with Groups = exampleGroup :: report.Groups }
 
-    let printSummary printer report =
-        let (success,pending,failed) =  getSummary report
-        match (failed,pending) with
-        | (0,0) -> ()
-        | (0,_) -> "There are pending examples: \n" |> printer Yellow
-        | _ -> "There are failed examples: \n" |> printer Red
-        report.ExecutedExamples |> (printFailedExamples printer)
-        sprintf "%d success, %d pending, %d failed\n" success pending failed |> printer Default
-        report
+        let endGroup report = { report with Groups = report.Groups.Tail }
+        
+        let getSummary report =
+            let folder (success,pending,fail) = function
+                | Failure _ | Error _ -> (success,pending,fail+1)
+                | Pending -> (success,pending+1,fail)
+                | Success -> (success+1,pending,fail)
+            report.ExecutedExamples |> 
+            List.map result |> 
+            List.fold folder (0,0,0)
 
-    let reportExample printer example result report =
-        let executedExample = 
-            { Example = example; ContainingGroups = report.Groups; Result = result }
-        { report with ExecutedExamples = executedExample :: report.ExecutedExamples }
-    let success report = 
-        let (_,_,failed) =  getSummary report
-        failed = 0
+        let printSummary report =
+            let (success,pending,failed) =  getSummary report
+            match (failed,pending) with
+            | (0,0) -> ()
+            | (0,_) -> "There are pending examples: \n" |> printer Yellow
+            | _ -> "There are failed examples: \n" |> printer Red
+            report.ExecutedExamples |> printFailedExamples
+            sprintf "%d success, %d pending, %d failed\n" success pending failed |> printer DefaultColor
+            report
 
-    let consolePrinter color (msg:string) =
-        let old = System.Console.ForegroundColor 
-        let consoleColor = 
-            match color with
-            | Red -> System.Console.ForegroundColor <- ConsoleColor.Red
-            | Yellow -> System.Console.ForegroundColor <- ConsoleColor.Yellow
-            | Green -> System.Console.ForegroundColor <- ConsoleColor.Green
-            | Default -> ()
-        try 
-            System.Console.Write msg
-        finally
-            System.Console.ForegroundColor <- old
+        let reportExample example result report =
+            let executedExample = 
+                { Example = example; ContainingGroups = report.Groups; Result = result }
+            { report with ExecutedExamples = executedExample :: report.ExecutedExamples }
+        let success report = 
+            let (_,_,failed) =  getSummary report
+            failed = 0
 
-    let createReporterWithPrinter printer = {
-        BeginGroup  = beginGroup printer;
-        EndGroup = endGroup;
-        ReportExample = reportExample printer;
-        Success = success;
-        EndTestRun = printSummary printer;
-        BeginTestRun = fun () -> Zero 
-    }
-    let createReporter = createReporterWithPrinter consolePrinter
+        {
+            BeginGroup  = beginGroup 
+            EndGroup = endGroup;
+            ReportExample = reportExample 
+            Success = success;
+            EndTestRun = printSummary 
+            BeginTestRun = fun () -> Zero 
+        }
+

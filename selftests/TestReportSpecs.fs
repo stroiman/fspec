@@ -102,7 +102,8 @@ let specs =
             subject <| fun ctx -> 
                 let builder = StringBuilder()
                 ctx?builder <- builder
-                TreeReporter.createReporterWithPrinter (stringBuilderPrinter builder)
+                let printer = stringBuilderPrinter builder
+                TreeReporter.create (WithPrinter printer)
 
             itBehavesLikeATestReporter<TreeReporter.T>()
 
