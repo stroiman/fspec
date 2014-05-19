@@ -4,14 +4,6 @@ open Dsl
 open Matchers
 open TestContextOperations
 
-let itCanLookupTheData =
-    MultipleOperations [
-        it "can be retrieved using 'get'" <| fun c ->
-            c.Get "answer" |> should equal 42
-        
-        it "can be retrieved using dynamic operator" <| fun c ->
-            c?answer |> should equal 42
-    ]
 
 type DisposeSpy () =
     member val Disposed = false with get, set
@@ -21,14 +13,25 @@ let createContext = TestDataMap.Zero |> TestContext.create
         
 let specs =
     describe "TestContext" [
-        context "data initialized with dynamic operator" [
-            before (fun c -> c?answer <- 42)
-            itCanLookupTheData
-        ]
+        describe "set and get data" [
+            let itCanLookupTheData =
+                MultipleOperations [
+                    it "can be retrieved using 'get'" 
+                        (fun c -> c.Get "answer" |> should equal 42)
+                    
+                    it "can be retrieved using dynamic operator" 
+                        (fun c -> c?answer |> should equal 42)
+                ]
+                
+            yield context "data initialized with dynamic operator" [
+                before (fun c -> c?answer <- 42)
+                itCanLookupTheData
+            ]
 
-        context "data initialized with 'set'" [
-            before (fun c -> c.Set "answer" 42)
-            itCanLookupTheData
+            yield context "data initialized with 'set' function" [
+                before (fun c -> c.Set "answer" 42)
+                itCanLookupTheData
+            ]
         ]
 
         describe "tryGet" [
