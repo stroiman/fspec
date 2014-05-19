@@ -66,6 +66,14 @@ let containing expected =
         (fun (a:string) -> a.Contains(expected))
         (sprintf "contain %s" expected)
 
+let fail =
+    let f a =
+        try
+            a (); false
+        with
+        | _ -> true
+    createMatcher f "fail"
+
 module throwException =
     let withMessage matcher =
         let f a = 

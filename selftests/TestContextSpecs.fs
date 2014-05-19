@@ -1,7 +1,7 @@
 ﻿module FSpec.SelfTests.TestContextSpecs
 open FSpec.Core
 open Dsl
-open Matchers
+open MatchersV3
 open TestContextOperations
 
 
@@ -17,10 +17,10 @@ let specs =
             let itCanLookupTheData =
                 examples [
                     it "can be retrieved using 'get'" 
-                        (fun ctx -> ctx.Get "answer" |> should equal 42)
+                        (fun ctx -> ctx.Get "answer" |> should (be.equalTo 42))
                     
                     it "can be retrieved using dynamic operator" 
-                        (fun ctx -> ctx?answer |> should equal 42)
+                        (fun ctx -> ctx?answer |> should (be.equalTo 42))
                 ]
                 
             yield context "data initialized with dynamic operator" [
@@ -40,7 +40,7 @@ let specs =
                 
                 it "retrieves the expected data" (fun c ->
                     match c.TryGet "data" with
-                    | Some x -> x |> should equal 42
+                    | Some x -> x |> should (be.equalTo 42)
                     | None -> failwith "Data not found"
                 )
             ]
@@ -59,7 +59,7 @@ let specs =
                 subject <| fun _ ->
                     (fun () -> ())
                 it "is evaluated when a matcher expects a function" <| fun ctx ->
-                    ctx |> getSubject |> shouldNot fail
+                    ctx.Subject.ShouldNot fail
             ]
         ]
 
@@ -69,7 +69,7 @@ let specs =
                 let ctx = createContext
                 ctx?x <- x
                 ctx |> TestContext.cleanup
-                x.Disposed |> should equal true
+                x.Disposed |> should be.True
 
             it "disposes instances, that are no longer present" <| fun _ ->
                 let x = new DisposeSpy()
@@ -78,15 +78,14 @@ let specs =
                 ctx?x <- x
                 ctx?x <- y
                 ctx |> TestContext.cleanup
-                x.Disposed |> should equal true
+                x.Disposed |> should be.True
 
             it "calls dispose on Subject" (fun _ ->
                 let x = new DisposeSpy()
                 let ctx = createContext
                 ctx.SetSubject x
                 ctx |> TestContext.cleanup
-                x.Disposed |> should equal true
-
+                x.Disposed |> should be.True
             )
         ]
     ]
