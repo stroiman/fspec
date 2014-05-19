@@ -15,21 +15,21 @@ let specs =
     describe "TestContext" [
         describe "set and get data" [
             let itCanLookupTheData =
-                MultipleOperations [
+                examples [
                     it "can be retrieved using 'get'" 
-                        (fun c -> c.Get "answer" |> should equal 42)
+                        (fun ctx -> ctx.Get "answer" |> should equal 42)
                     
                     it "can be retrieved using dynamic operator" 
-                        (fun c -> c?answer |> should equal 42)
+                        (fun ctx -> ctx?answer |> should equal 42)
                 ]
                 
             yield context "data initialized with dynamic operator" [
-                before (fun c -> c?answer <- 42)
+                before (fun ctx -> ctx?answer <- 42)
                 itCanLookupTheData
             ]
 
             yield context "data initialized with 'set' function" [
-                before (fun c -> c.Set "answer" 42)
+                before (fun ctx -> ctx.Set "answer" 42)
                 itCanLookupTheData
             ]
         ]
