@@ -68,3 +68,6 @@ let should<'T> (matcher:Matcher<'T>) (actual:'T) =
     matcher.ApplyActual continuation actual
 
 
+type System.Object with
+    member self.Should<'T> (matcher : Matcher<'T>) =
+        self :?> 'T |> should matcher

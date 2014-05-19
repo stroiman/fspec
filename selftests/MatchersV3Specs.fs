@@ -5,6 +5,12 @@ open MatchersV3
 open Helpers
 
 let specs = [
+    describe ".Should extension" [
+        it "works correctly on objects of type 'obj'" (fun _ ->
+            (1).Should (be.equalTo 1)
+        )
+    ]
+
     describe "equalTo matcher" [
         describe "should be.EqualTo" [
             it "succeeds when equal" <| fun _ ->
