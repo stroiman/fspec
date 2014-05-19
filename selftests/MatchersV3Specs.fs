@@ -42,6 +42,27 @@ let specs = [
                 |> should (be.equalTo "Expected 5 to not be equal to 5")
         ]
     ]
+
+    describe "True/False matchers" [
+        describe "should be.True" [
+            it "succeeds for true values" <| fun _ ->
+                let test () = true |> should be.True
+                test |> shouldPass
+
+            it "fail for false values" <| fun _ ->
+                let test () = false |> should be.True
+                test |> shouldFail
+        ]
+        describe "should be.False" [
+            it "fail for true values" <| fun _ ->
+                let test () = true |> should be.False
+                test |> shouldFail
+
+            it "succeed for false values" <| fun _ ->
+                let test () = false |> should be.False
+                test |> shouldPass
+        ]
+    ]
     
     describe "Collection matchers" [
         describe "should have.length" [

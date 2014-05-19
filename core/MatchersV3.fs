@@ -32,6 +32,16 @@ module be =
         let f a = a = expected
         createMatcher f (sprintf "be equal to %A" expected)
 
+    let True =
+        createMatcher 
+            (fun actual -> actual = true) 
+            (sprintf "be true")
+
+    let False =
+        createMatcher 
+            (fun actual -> actual = false)
+            (sprintf "be false")
+
 module have =
     let atLeastOneElement matcher =
         let f a = a |> Seq.exists (applyMatcher matcher id)
