@@ -34,10 +34,10 @@ let doRun grp =
 let itReportsExactlyOneExample f = 
     MultipleOperations [
         it "should report exactly one example" <| fun c ->
-            c |> getSubject |> should (have.exactly 1 (beExample))
+            c.Subject.Should (have.exactly 1 (beExample))
 
         it "should report correct result" <| fun c ->
-            c |> getSubject |> should (have.exactly 1 (beExampleWithResult f))
+            c.Subject.Should (have.exactly 1 (beExampleWithResult f))
     ]
 
 let specs =
