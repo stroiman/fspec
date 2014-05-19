@@ -119,10 +119,13 @@ let specs =
         context "metadata handling" [
             context "test contains metadata" [
                 it "passes the metadata to the test" <| fun c ->
-                    createAnExampleWithMetaData ("answer", 42) (fun ctx ->
-                        let tmp : int = ctx.metadata?answer
-                        c?answer <- tmp)
-                    |> runSingleExample |> ignore
+                    anExampleGroup
+                    |> withExamples [
+                        anExampleWithCode (fun ctx ->
+                            let tmp : int = ctx.metadata?answer
+                            c?answer <- tmp)
+                        |> withExampleMetaData ("answer", 42) ]
+                    |> run |> ignore
                     c?answer |> should (be.equalTo 42)
 
                 it "passes the metadata to the setup" <| fun _ ->
@@ -152,9 +155,10 @@ let specs =
                 context "test overrides same metadata" [
                     subject <| fun ctx ->
                         ctx |> getSubject
-                        |> ExampleGroup.addExample (
-                            createAnExampleWithMetaData ("source", "example") <| fun testCtx ->
-                                ctx.Set "source" (testCtx.metadata?source))
+                        |> withExamples [
+                            anExampleWithCode <| fun testCtx ->
+                                ctx.Set "source" (testCtx.metadata?source)
+                            |> withExampleMetaData("source", "example")]
 
                     it "uses the metadata specified in test" <| fun ctx ->
                         ctx |> getSubject |> run |> ignore
