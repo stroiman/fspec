@@ -67,7 +67,12 @@ let should<'T> (matcher:Matcher<'T>) (actual:'T) =
             raise (AssertionError { Message = msg })
     matcher.ApplyActual continuation actual
 
-
+/// Extension methods for System.Object to aid in assertions
 type System.Object with
+    /// Allows the use of testContext.Subject.Should (matcher)
     member self.Should<'T> (matcher : Matcher<'T>) =
         self :?> 'T |> should matcher
+
+    /// Allows the use of testContext.Subject.ShouldNot (matcher)
+    member self.ShouldNot<'T> (matcher : Matcher<'T>) =
+        self :?> 'T |> shouldNot matcher

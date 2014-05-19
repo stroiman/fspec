@@ -5,10 +5,19 @@ open MatchersV3
 open Helpers
 
 let specs = [
-    describe ".Should extension" [
-        it "works correctly on objects of type 'obj'" (fun _ ->
-            (1).Should (be.equalTo 1)
-        )
+    describe "System.Object extesions" [
+        describe ".Should" [
+            it "works correctly on objects of type 'obj'" (fun _ ->
+                (1).Should (be.equalTo 1)
+            )
+        ]
+
+        describe ".ShouldNot" [
+            it "works correctly on objects of type 'obj'" (fun _ ->
+                let test = fun _ -> (1).ShouldNot (be.equalTo 1)
+                test |> shouldFail
+            )
+        ]
     ]
 
     describe "equalTo matcher" [
