@@ -60,6 +60,18 @@ module have =
             sprintf "contain exactly %d element to %s" no 
                 matcher.FailureMsgForShould
         createMatcher f msg
+
+module throwException =
+    let withMessageContaining msg =
+        let f a =
+            try
+                a ()
+                false
+            with
+            | e -> e.Message.Contains(msg)
+        createMatcher f 
+            (sprintf "throw exception with message containing %s" msg)
+            
     
 let shouldNot<'T> (matcher:Matcher<'T>) (actual:'T) =
     let continuation = function

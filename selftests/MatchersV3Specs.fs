@@ -99,4 +99,23 @@ let specs = [
                 |> should (be.equalTo "Expected [1; 2; 3] to contain no elements to be equal to 2")
         ]
     ]
+
+    describe "exception matchers" [
+        describe "failWithMsg" [
+            it "succeeds when exception thrown with specified message" <| fun _ ->
+                let f () = raise (new System.Exception("custom msg"))
+                let test () = f |> should (throwException.withMessageContaining "custom msg")
+                test |> shouldPass
+
+            it "fails when no exception is thrown" <| fun _ ->
+                let f () = ()
+                let test () = f |> should (throwException.withMessageContaining "dummy")
+                test |> shouldFail
+
+            it "fails when exception thrown with different message" <| fun _ ->
+                let f () = raise (new System.Exception("custom msg"))
+                let test () = f |> should (throwException.withMessageContaining "wrong msg")
+                test |> shouldFail
+        ]
+    ]
 ]
