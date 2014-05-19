@@ -61,17 +61,24 @@ module have =
                 matcher.FailureMsgForShould
         createMatcher f msg
 
+let containing expected =
+    createMatcher
+        (fun (a:string) -> a.Contains(expected))
+        (sprintf "contain %s" expected)
+
 module throwException =
-    let withMessageContaining msg =
-        let f a =
+    let withMessage matcher =
+        let f a = 
             try
                 a ()
                 false
             with
-            | e -> e.Message.Contains(msg)
-        createMatcher f 
-            (sprintf "throw exception with message containing %s" msg)
+            | e -> e.Message |> applyMatcher matcher id
+        createMatcher f
+            (sprintf "throw exception with message %s" matcher.FailureMsgForShould)
             
+    let withMessageContaining msg =
+        withMessage (containing msg)
     
 let shouldNot<'T> (matcher:Matcher<'T>) (actual:'T) =
     let continuation = function
