@@ -25,6 +25,7 @@ let itRaisesException = fun _ -> raise (new System.NotImplementedException())
 let beExample = beExampleWithResult (fun _ -> true)
 let bePending = beExampleWithResult (fun r -> r = Pending)
 let beSuccess = beExampleWithResult (fun r -> r = Success)
+let runExamples grp = grp |> run |> ignore
 
 let doRun grp =
     let reporter = TestReporter.instance
@@ -89,8 +90,7 @@ let specs =
                         Example ("test2", Success)
                         EndGroup
                         EndGroup ]
-                    c |> getSubject
-                    |> should (be.equalTo expected)
+                    c.Subject.Should (be.equalTo expected)
             ]
         ]
 
@@ -116,66 +116,68 @@ let specs =
             ]
         ]
         
-        context "metadata handling" [
+        describe "metadata handling" [
             context "test contains metadata" [
-                it "passes the metadata to the test" <| fun c ->
+                before <| fun ctx ->
+                    ctx?testFunc <- (fun (c:TestContext) -> ctx?answer <- c.metadata.Get<int> "answer")
+
+                it "passes the metadata to the test" <| fun ctx ->
                     anExampleGroup
                     |> withExamples [
-                        anExampleWithCode (fun ctx ->
-                            let tmp : int = ctx.metadata?answer
-                            c?answer <- tmp)
+                        anExampleWithCode ctx?testFunc
                         |> withExampleMetaData ("answer", 42) ]
-                    |> run |> ignore
-                    c?answer |> should (be.equalTo 42)
+                    |> runExamples
+                    ctx?answer |> should (be.equalTo 42)
 
-                it "passes the metadata to the setup" <| fun _ ->
-                    let actual = ref 0
+                it "passes the metadata to the setup" <| fun c ->
                     anExampleGroup
-                    |> withSetupCode (fun ctx -> actual := ctx.metadata?answer)
+                    |> withSetupCode c?testFunc
                     |> withAnExampleWithMetaData ("answer", 42)
-                    |> run |> ignore
-                    !actual |> should (be.equalTo 42)
+                    |> runExamples
+                    c?answer |> should (be.equalTo 42)
             ]
 
             context "example group contains metadata" [
-                subject <| fun _ ->
+                before <| fun ctx ->
+                    let withExampleMetaData =
+                        match ctx.metadata?addExampleMetaData with
+                        | false -> id
+                        | true -> withExampleMetaData ("source", "example")
+                    let withChildGroupMetaData =
+                        match ctx.metadata?addChildGroupMetaData with
+                        | false -> id
+                        | true -> withMetaData ("source", "child group")
+
                     anExampleGroup
-                    |> withMetaData ("source", "example group")
-
-                context "test contains no metadata" [
-                    subject <| fun ctx ->
-                        ctx |> getSubject
-                        |> withExampleCode (fun testCtx ->
+                    |> withMetaData ("source", "parent group")
+                    |> withNestedGroup (
+                        withChildGroupMetaData
+                        >> withExamples [
+                            anExampleWithCode (fun testCtx ->
                                 ctx.Set "source" (testCtx.metadata?source))
-                                
+                            |> withExampleMetaData
+                        ])
+                    |> runExamples
+
+                ("addChildGroupMetaData" ++ false |||
+                 "addExampleMetaData" ++ false) ==>
+                context "test contains no metadata" [
                     it "uses metadata from setup" <| fun ctx ->
-                        ctx |> getSubject |> run |> ignore
-                        ctx.Get "source" |> should (be.equalTo "example group")
+                        ctx.Get "source" |> should (be.equalTo "parent group")
                 ]   
+
+                ("addChildGroupMetaData" ++ false |||
+                 "addExampleMetaData" ++ true) ==>
                 context "test overrides same metadata" [
-                    subject <| fun ctx ->
-                        ctx |> getSubject
-                        |> withExamples [
-                            anExampleWithCode <| fun testCtx ->
-                                ctx.Set "source" (testCtx.metadata?source)
-                            |> withExampleMetaData("source", "example")]
-
                     it "uses the metadata specified in test" <| fun ctx ->
-                        ctx |> getSubject |> run |> ignore
-                        ctx.Get "source" |> should (be.equalTo "example")
+                        ctx?source.Should (be.equalTo "example")
                 ]
-                context "nested example group overrides metadata" [
-                    subject <| fun ctx ->
-                        ctx |> getSubject
-                        |> ExampleGroup.addChildGroup(
-                            anExampleGroup
-                            |> withMetaData ("source", "child context")
-                            |> withExampleCode (fun testCtx ->
-                                ctx.Set "source" (testCtx.metadata?source)))
 
+                ("addChildGroupMetaData" ++ true |||
+                 "addExampleMetaData" ++ false) ==>
+                context "nested example group overrides metadata" [
                     it "uses the metadata from the child group" <| fun ctx ->
-                        ctx |> getSubject |> run |> ignore
-                        ctx.Get "source" |> should (be.equalTo "child context")
+                        ctx?source.Should (be.equalTo "child group")
                 ]
             ]
         ]
