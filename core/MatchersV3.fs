@@ -66,6 +66,9 @@ let containing expected =
         (fun (a:string) -> a.Contains(expected))
         (sprintf "contain %s" expected)
 
+// TODO: Delete
+let contain = containing
+
 let fail =
     let f a =
         try

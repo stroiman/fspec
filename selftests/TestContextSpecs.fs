@@ -34,6 +34,14 @@ let specs =
             ]
         ]
 
+        describe "Get" [
+            context "when data not initialized" [
+                it "throws descriptive message" <| fun ctx ->
+                    let test () = ctx.Get "dummy"
+                    test |> should (throwException.withMessageContaining "\"dummy\" not found")
+            ]
+        ]
+
         describe "tryGet" [
             context "data initialized in the context" [
                 before (fun c -> c?data <- 42)

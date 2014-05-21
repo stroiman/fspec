@@ -42,7 +42,10 @@ module TestDataMap =
 
     /// Retrieves a piece of data with the specified key. 
     /// Throws an exception of the data is not found.
-    let get<'T> name metaData = metaData.Data.Item name :?> 'T
+    let get<'T> name metaData = 
+        match tryGet<'T> name metaData with
+        | Some x -> x
+        | None -> failwithf "Test data with key \"%s\" not found" name
         
     /// Merges two TestDataMap instances. In case the same key
     /// exists in both data maps, the value from 'a' will win.
