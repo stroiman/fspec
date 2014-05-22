@@ -17,13 +17,13 @@ let specs =
                         let grp = 
                             c |> TestContext.getSubject
                             |> ExampleGroup.addMetaData ("b" ++ 43)
-                        grp.MetaData?a |> should (be.equalTo 42)
+                        grp.Should (haveMetaData "a" 42)
 
                     it "'wins' if name is the same as existing metadata" <| fun c ->
                         let grp = 
                             c |> TestContext.getSubject
                             |> ExampleGroup.addMetaData ("a" ++ 43)
-                        grp.MetaData?a |> should (be.equalTo 43)
+                        grp.Should (haveMetaData "a" 43)
                 ]
             ]
         ]

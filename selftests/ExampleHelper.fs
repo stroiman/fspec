@@ -2,6 +2,7 @@
 open FSpec.Core
 open Matchers
 open Dsl
+open MatchersV3
 
 // Example building helpers
 let pass = fun _ -> ()
@@ -48,3 +49,13 @@ let run exampleGroup =
     let reporter = Helpers.TestReporter.instance
     Runner.doRun exampleGroup reporter (reporter.BeginTestRun())
 
+// ---- Custom matchers ----
+
+let haveMetaData k v =
+    let f a =
+        let x =
+            a |> ExampleGroup.getMetaData |> TestDataMap.tryGet k
+        match x with
+        | Some y -> y = v
+        | None -> false
+    createSimpleMatcher f

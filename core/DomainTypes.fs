@@ -147,4 +147,3 @@ module ExampleGroup =
     let examples grp = grp.Examples 
     let foldExamples folder state grp = grp.Examples |> List.rev |> List.fold folder state
     let foldChildGroups folder state grp = grp.ChildGroups |> List.rev |> List.fold folder state
-
