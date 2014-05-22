@@ -43,10 +43,13 @@ let createMatcher<'T> (f : 'T -> bool) (shouldMsg : string) =
 
 let createSimpleMatcher f = createMatcher f "FAIL"
         
+let equal expected =
+    createMatcher
+        (fun a -> a = expected)
+        (sprintf "equal %A" expected)
+
 module be =
-    let equalTo expected =
-        let f a = a = expected
-        createMatcher f (sprintf "be equal to %A" expected)
+    let equalTo = equal
 
     let True =
         createMatcher 
