@@ -42,6 +42,13 @@ module be =
             (fun actual -> actual = false)
             (sprintf "be false")
 
+    module string =
+        let matching pattern =
+            let regex = System.Text.RegularExpressions.Regex pattern
+            createMatcher
+                (fun actual -> regex.IsMatch actual)
+                (sprintf "match regex pattern %A" pattern)
+
 module have =
     let atLeastOneElement matcher =
         let f a = a |> Seq.exists (applyMatcher matcher id)

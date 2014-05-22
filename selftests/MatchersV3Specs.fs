@@ -43,6 +43,12 @@ let specs = [
         ]
     ]
 
+    describe "Regex matcher" [
+        it "succeeds when regular expression is a match" <| fun _ ->
+            let test () = "abcd" |> should (be.string.matching "bcd")
+            test |> shouldPass
+    ]
+
     describe "True/False matchers" [
         describe "should be.True" [
             it "succeeds for true values" <| fun _ ->
