@@ -30,6 +30,13 @@ let createFullMatcher<'T>
         member __.FailureMsgForShould = shouldMsg
         member __.FailureMsgForShouldNot = shouldNotMsg
     }
+
+let newCreateMatcher<'T> (f : 'T -> MatchResult) (shouldMsg : string) =
+    { new Matcher<'T> () with
+        member __.ApplyActual g actual = f actual |> g
+        member __.FailureMsgForShould = shouldMsg
+    }
+
 let createMatcher<'T> (f : 'T -> bool) (shouldMsg : string) =
     let wrapF = fun a -> 
         match f a with
@@ -39,6 +46,7 @@ let createMatcher<'T> (f : 'T -> bool) (shouldMsg : string) =
         member __.ApplyActual g actual = wrapF actual |> g
         member __.FailureMsgForShould = shouldMsg
     }
+
 
 let createSimpleMatcher f = createMatcher f "FAIL"
         
@@ -101,10 +109,12 @@ module throwException =
         let f a = 
             try
                 a ()
-                false
+                MatchFail "No exception thrown"
             with
-            | e -> e.Message |> applyMatcher matcher (MatchResult.apply id)
-        createMatcher f
+            | e -> match e.Message |> applyMatcher matcher (MatchResult.apply id) with
+                   | true -> MatchSuccess e.Message
+                   | false -> MatchFail e.Message
+        newCreateMatcher f
             (sprintf "throw exception with message %s" matcher.FailureMsgForShould)
             
     let withMessageContaining msg =
@@ -114,7 +124,7 @@ let shouldNot<'T> (matcher:Matcher<'T>) (actual:'T) =
     let continuation = function
         | MatchFail _ -> ()
         | MatchSuccess a ->
-            let msg = sprintf "Expected %A to %s" a matcher.FailureMsgForShouldNot
+            let msg = sprintf "%A was expected to %s" a matcher.FailureMsgForShouldNot
             raise (AssertionError { Message = msg })
     matcher.ApplyActual continuation actual
     
@@ -122,7 +132,7 @@ let should<'T> (matcher:Matcher<'T>) (actual:'T) =
     let continuation = function
         | MatchSuccess _ -> ()
         | MatchFail a -> 
-            let msg = sprintf "Expected %A to %s" a matcher.FailureMsgForShould
+            let msg = sprintf "%A was expected to %s but was %A" actual matcher.FailureMsgForShould a
             raise (AssertionError { Message = msg })
     matcher.ApplyActual continuation actual
 
