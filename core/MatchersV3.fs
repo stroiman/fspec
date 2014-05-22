@@ -43,6 +43,11 @@ module be =
             (sprintf "be false")
 
     module string =
+        let containing expected =
+            createMatcher
+                (fun (a:string) -> a.Contains(expected))
+                (sprintf "contain %s" expected)
+
         let matching pattern =
             let regex = System.Text.RegularExpressions.Regex pattern
             createMatcher
@@ -68,14 +73,6 @@ module have =
                 matcher.FailureMsgForShould
         createMatcher f msg
 
-let containing expected =
-    createMatcher
-        (fun (a:string) -> a.Contains(expected))
-        (sprintf "contain %s" expected)
-
-// TODO: Delete
-let contain = containing
-
 let fail =
     let f a =
         try
@@ -96,7 +93,7 @@ module throwException =
             (sprintf "throw exception with message %s" matcher.FailureMsgForShould)
             
     let withMessageContaining msg =
-        withMessage (containing msg)
+        withMessage (be.string.containing msg)
     
 let shouldNot<'T> (matcher:Matcher<'T>) (actual:'T) =
     let continuation = function
