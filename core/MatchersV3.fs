@@ -1,8 +1,15 @@
 module FSpec.Core.MatchersV3
 
+type MatchResult =
+    | MatchSuccess of obj
+    | MatchFail of obj
+    with static member apply f = function
+                                    | MatchSuccess _ -> f true
+                                    | _ -> f false
+
 [<AbstractClass>]
 type Matcher<'TActual> () = 
-    abstract member ApplyActual<'TResult> : (bool -> 'TResult) -> 'TActual -> 'TResult
+    abstract member ApplyActual<'TResult> : (MatchResult -> 'TResult) -> 'TActual -> 'TResult
     abstract member FailureMsgForShould : string
     abstract member FailureMsgForShouldNot : string
     default this.FailureMsgForShouldNot : string = sprintf "not %s" this.FailureMsgForShould
@@ -14,14 +21,22 @@ let createFullMatcher<'T>
         (f : 'T -> bool) 
         (shouldMsg : string) 
         (shouldNotMsg : string) =
+    let wrapF = fun a -> 
+        match f a with
+        | true -> MatchSuccess (a :> obj)
+        | false -> MatchFail (a :> obj)
     { new Matcher<'T> () with
-        member __.ApplyActual g actual = f actual |> g
+        member __.ApplyActual g actual = wrapF actual |> g
         member __.FailureMsgForShould = shouldMsg
         member __.FailureMsgForShouldNot = shouldNotMsg
     }
 let createMatcher<'T> (f : 'T -> bool) (shouldMsg : string) =
+    let wrapF = fun a -> 
+        match f a with
+        | true -> MatchSuccess (a :> obj)
+        | false -> MatchFail (a :> obj)
     { new Matcher<'T> () with
-        member __.ApplyActual g actual = f actual |> g
+        member __.ApplyActual g actual = wrapF actual |> g
         member __.FailureMsgForShould = shouldMsg
     }
 
@@ -56,18 +71,18 @@ module be =
 
 module have =
     let atLeastOneElement matcher =
-        let f a = a |> Seq.exists (applyMatcher matcher id)
+        let f a = a |> Seq.exists (applyMatcher matcher (MatchResult.apply id))
         let msg = sprintf "contain at least one element to %s" matcher.FailureMsgForShould
         let notMsg = sprintf "contain no elements to %s" matcher.FailureMsgForShould
         createFullMatcher f msg notMsg
     
     let length matcher =
-        let f a = a |> Seq.length |> applyMatcher matcher id
+        let f a = a |> Seq.length |> applyMatcher matcher (MatchResult.apply id)
         let msg = sprintf "have length to %s" matcher.FailureMsgForShould
         createMatcher f msg
 
     let exactly no matcher =
-        let f a = a |> Seq.filter (applyMatcher matcher id) |> Seq.length = no
+        let f a = a |> Seq.filter (applyMatcher matcher (MatchResult.apply id)) |> Seq.length = no
         let msg = 
             sprintf "contain exactly %d element to %s" no 
                 matcher.FailureMsgForShould
@@ -88,7 +103,7 @@ module throwException =
                 a ()
                 false
             with
-            | e -> e.Message |> applyMatcher matcher id
+            | e -> e.Message |> applyMatcher matcher (MatchResult.apply id)
         createMatcher f
             (sprintf "throw exception with message %s" matcher.FailureMsgForShould)
             
@@ -97,17 +112,17 @@ module throwException =
     
 let shouldNot<'T> (matcher:Matcher<'T>) (actual:'T) =
     let continuation = function
-        | false -> ()
-        | true -> 
-            let msg = sprintf "Expected %A to %s" actual matcher.FailureMsgForShouldNot
+        | MatchFail _ -> ()
+        | MatchSuccess a ->
+            let msg = sprintf "Expected %A to %s" a matcher.FailureMsgForShouldNot
             raise (AssertionError { Message = msg })
     matcher.ApplyActual continuation actual
     
 let should<'T> (matcher:Matcher<'T>) (actual:'T) =
     let continuation = function
-        | true -> ()
-        | false -> 
-            let msg = sprintf "Expected %A to %s" actual matcher.FailureMsgForShould
+        | MatchSuccess _ -> ()
+        | MatchFail a -> 
+            let msg = sprintf "Expected %A to %s" a matcher.FailureMsgForShould
             raise (AssertionError { Message = msg })
     matcher.ApplyActual continuation actual
 
