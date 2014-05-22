@@ -3,19 +3,30 @@ module FSpec.Core.MatchersV3
 type MatchResult =
     | MatchSuccess of obj
     | MatchFail of obj
-    with static member apply f = function
-                                    | MatchSuccess _ -> f true
-                                    | _ -> f false
+    with 
+        static member apply f = 
+            function
+                | MatchSuccess _ -> f true
+                | _ -> f false
 
 [<AbstractClass>]
 type Matcher<'TActual> () = 
     abstract member ApplyActual<'TResult> : (MatchResult -> 'TResult) -> 'TActual -> 'TResult
     abstract member FailureMsgForShould : string
     abstract member FailureMsgForShouldNot : string
-    default this.FailureMsgForShouldNot : string = sprintf "not %s" this.FailureMsgForShould
 
 let applyMatcher<'T> (matcher: Matcher<'T>) f (a : 'T) =
     matcher.ApplyActual f a
+
+let newCreateFullMatcher<'T> (f : 'T -> MatchResult) (shouldMsg : string) (shouldNotMsg : string) =
+    { new Matcher<'T> () with
+        member __.ApplyActual g actual = f actual |> g
+        member __.FailureMsgForShould = shouldMsg
+        member __.FailureMsgForShouldNot = shouldNotMsg
+    }
+
+let newCreateMatcher<'T> (f : 'T -> MatchResult) (shouldMsg : string) =
+    newCreateFullMatcher f shouldMsg (sprintf "not %s" shouldMsg)
 
 let createFullMatcher<'T> 
         (f : 'T -> bool) 
@@ -25,28 +36,10 @@ let createFullMatcher<'T>
         match f a with
         | true -> MatchSuccess (a :> obj)
         | false -> MatchFail (a :> obj)
-    { new Matcher<'T> () with
-        member __.ApplyActual g actual = wrapF actual |> g
-        member __.FailureMsgForShould = shouldMsg
-        member __.FailureMsgForShouldNot = shouldNotMsg
-    }
-
-let newCreateMatcher<'T> (f : 'T -> MatchResult) (shouldMsg : string) =
-    { new Matcher<'T> () with
-        member __.ApplyActual g actual = f actual |> g
-        member __.FailureMsgForShould = shouldMsg
-    }
+    newCreateFullMatcher wrapF shouldMsg shouldNotMsg
 
 let createMatcher<'T> (f : 'T -> bool) (shouldMsg : string) =
-    let wrapF = fun a -> 
-        match f a with
-        | true -> MatchSuccess (a :> obj)
-        | false -> MatchFail (a :> obj)
-    { new Matcher<'T> () with
-        member __.ApplyActual g actual = wrapF actual |> g
-        member __.FailureMsgForShould = shouldMsg
-    }
-
+    createFullMatcher f shouldMsg (sprintf "not %s" shouldMsg)
 
 let createSimpleMatcher f = createMatcher f "FAIL"
         
