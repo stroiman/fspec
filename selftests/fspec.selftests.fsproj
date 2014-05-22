@@ -50,6 +50,7 @@
   <ItemGroup>
     <Compile Include="Helpers.fs" />
     <Compile Include="ExampleHelper.fs" />
+    <Compile Include="DomainTypesSpecs.fs" />
     <Compile Include="MatchersSpecs.fs" />
     <Compile Include="MatchersV3Specs.fs" />
     <Compile Include="RunnerSpecs.fs" />

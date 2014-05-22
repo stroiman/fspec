@@ -5,11 +5,15 @@ open Matchers
 open ExampleHelper
 
 let callList = ref []
-let addToCallList x = callList := x::!callList
 let actualCallList () = !callList |> List.rev
 let clearCallList _ = callList := []
 
-let recordFunctionCall name = fun _ -> addToCallList name
+let record name = 
+    fun _ -> callList := name::!callList
+
+let shouldRecord expected grp =
+    grp |> run |> ignore
+    actualCallList() |> should equal expected
 
 let specs =
     describe "Test runner" [
@@ -18,75 +22,65 @@ let specs =
         context "test execution order" [
             it "tests execute in the order they appear" <| fun _ ->
                 anExampleGroup
-                |> withExampleCode (recordFunctionCall "test 1")
-                |> withExampleCode (recordFunctionCall "test 2")
-                |> run |> ignore
-                actualCallList() |> should equal ["test 1"; "test 2"]
+                |> withExampleCode (record "test 1")
+                |> withExampleCode (record "test 2")
+                |> shouldRecord ["test 1"; "test 2"]
 
             it "child contexts execute in the order they appear" (fun _ ->
                 anExampleGroup
                 |> withNestedGroup (
-                    withExampleCode (recordFunctionCall "test 1"))
+                    withExampleCode (record "test 1"))
                 |> withNestedGroup (
-                    withExampleCode (recordFunctionCall "test 2"))
-                |> run |> ignore
-                actualCallList() |> should equal ["test 1"; "test 2"]
+                    withExampleCode (record "test 2"))
+                |> shouldRecord ["test 1"; "test 2"]
             )
         ]
 
         context "General setup/test/teardown handling" [
             it "runs the sequence before, spec, teardown" <| fun _ ->
                 anExampleGroup
-                |> withSetupCode (recordFunctionCall "setup")
-                |> withTearDownCode (recordFunctionCall "tearDown")
-                |> withExampleCode (recordFunctionCall "test")
-                |> run |> ignore
-                actualCallList() |> should equal ["setup"; "test"; "tearDown"]
+                |> withSetupCode (record "setup")
+                |> withTearDownCode (record "tearDown")
+                |> withExampleCode (record "test")
+                |> shouldRecord ["setup"; "test"; "tearDown"]
 
             it "runs outer setup before inner setup" <| fun _ ->
                 anExampleGroup
-                |> withSetupCode (recordFunctionCall "outer setup")
+                |> withSetupCode (record "outer setup")
                 |> withNestedGroup (
-                    withSetupCode (recordFunctionCall "inner setup")
-                    >> withExampleCode (recordFunctionCall "test"))
-                |> run |> ignore
-                let expected = [ "outer setup"; "inner setup"; "test" ]
-                actualCallList() |> should equal expected
+                    withSetupCode (record "inner setup")
+                    >> withExampleCode (record "test"))
+                |> shouldRecord [ "outer setup"; "inner setup"; "test" ]
 
             it "runs inner tear down before outer tear down" <| fun _ ->
                 anExampleGroup
-                |> withTearDownCode (recordFunctionCall "outer tear down")
+                |> withTearDownCode (record "outer tear down")
                 |> withNestedGroup (
-                    withTearDownCode (recordFunctionCall "inner tear down")
-                    >> withExampleCode (recordFunctionCall "test"))
-                |> run |> ignore
-                let expected = ["test"; "inner tear down"; "outer tear down"]
-                actualCallList() |> should equal expected
+                    withTearDownCode (record "inner tear down")
+                    >> withExampleCode (record "test"))
+                |> shouldRecord ["test"; "inner tear down"; "outer tear down"]
 
             it "runs setup/teardown once for each test" <| fun _ ->
                 anExampleGroup
-                |> withSetupCode (recordFunctionCall "setup")
-                |> withTearDownCode (recordFunctionCall "tear down")
-                |> withExampleCode (recordFunctionCall "test 1")
-                |> withExampleCode (recordFunctionCall "test 2")
-                |> run |> ignore
-                let expected = [
-                    "setup"; "test 1"; "tear down";
-                    "setup"; "test 2"; "tear down"]
-                actualCallList() |> should equal expected
+                |> withSetupCode (record "setup")
+                |> withTearDownCode (record "tear down")
+                |> withExampleCode (record "test 1")
+                |> withExampleCode (record "test 2")
+                |> shouldRecord
+                    [ "setup"; "test 1"; "tear down";
+                      "setup"; "test 2"; "tear down"]
         ]
             
         context "setup" [
             it "is only run in same context, or nested context" <| fun _ ->
                 anExampleGroup
-                |> withSetupCode (recordFunctionCall "outer setup")
-                |> withExampleCode (recordFunctionCall "outer test")
+                |> withSetupCode (record "outer setup")
+                |> withExampleCode (record "outer test")
                 |> withNestedGroup (
-                    withSetupCode (recordFunctionCall "inner setup")
-                    >> withExampleCode (recordFunctionCall "inner test 1")
-                    >> withExampleCode (recordFunctionCall "inner test 2"))
-                |> run |> ignore
-                actualCallList() |> should equal
+                    withSetupCode (record "inner setup")
+                    >> withExampleCode (record "inner test 1")
+                    >> withExampleCode (record "inner test 2"))
+                |> shouldRecord
                     ["outer setup"; "outer test";
                      "outer setup"; "inner setup"; "inner test 1";
                      "outer setup"; "inner setup"; "inner test 2"]
@@ -95,20 +89,18 @@ let specs =
         context "tear down" [
             it "runs if test fail" <| fun _ ->
                 anExampleGroup
-                |> withTearDownCode (fun _ -> addToCallList "tearDown")
+                |> withTearDownCode (record "tearDown")
                 |> withExamples [ aFailingExample ]
-                |> run |> ignore
-                actualCallList() |> should equal ["tearDown"]
+                |> shouldRecord ["tearDown"]
 
             it "runs teardown in the right context" <| fun _ ->
                 anExampleGroup
-                |> withTearDownCode (fun _ -> addToCallList "outer tearDown")
-                |> withExampleCode (fun _ -> addToCallList "outer test")
+                |> withTearDownCode (record "outer tearDown")
+                |> withExampleCode (record "outer test")
                 |> withNestedGroup (
-                    withTearDownCode (recordFunctionCall "inner tearDown")
-                    >> withExampleCode (recordFunctionCall "inner test"))
-                |> run |> ignore
-                actualCallList() |> should equal 
+                    withTearDownCode (record "inner tearDown")
+                    >> withExampleCode (record "inner test"))
+                |> shouldRecord
                     ["outer test"; "outer tearDown";
                      "inner test"; "inner tearDown"; "outer tearDown"]
         ]
