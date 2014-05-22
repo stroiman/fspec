@@ -15,7 +15,7 @@ type Matcher<'TActual> () =
     abstract member FailureMsgForShould : string
     abstract member FailureMsgForShouldNot : string
 
-let applyMatcher<'T> (matcher: Matcher<'T>) f (a : 'T) =
+let applyMatcher<'T,'U> (matcher: Matcher<'T>) f (a : 'T) : 'U =
     matcher.ApplyActual f a
 
 let newCreateFullMatcher<'T> (f : 'T -> MatchResult) (shouldMsg : string) (shouldNotMsg : string) =
@@ -78,9 +78,9 @@ module have =
         createFullMatcher f msg notMsg
     
     let length matcher =
-        let f a = a |> Seq.length |> applyMatcher matcher (MatchResult.apply id)
-        let msg = sprintf "have length to %s" matcher.FailureMsgForShould
-        createMatcher f msg
+        newCreateMatcher 
+            (fun a -> a |> Seq.length |> applyMatcher matcher id)
+            (sprintf "have length to %s" matcher.FailureMsgForShould) 
 
     let exactly no matcher =
         let f a = a |> Seq.filter (applyMatcher matcher (MatchResult.apply id)) |> Seq.length = no
@@ -104,9 +104,7 @@ module throwException =
                 a ()
                 MatchFail "No exception thrown"
             with
-            | e -> match e.Message |> applyMatcher matcher (MatchResult.apply id) with
-                   | true -> MatchSuccess e.Message
-                   | false -> MatchFail e.Message
+            | e -> e.Message |> applyMatcher matcher id 
         newCreateMatcher f
             (sprintf "throw exception with message %s" matcher.FailureMsgForShould)
             
