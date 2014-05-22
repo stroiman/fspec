@@ -4,33 +4,39 @@ open Dsl
 open MatchersV3
 open ExampleHelper
 
+let change f = fun c -> c |> TestContext.getSubject |> f
+
 let specs =
     [
-        describe "ExampleGroup" [
+        describe "An example group" [
+            subject (fun _ -> anExampleGroup)
+
             context "with existing metadata" [
-                subject (fun _ -> 
-                    anExampleGroup 
-                    |> withMetaData ("a", 42))
+                subject <| change (withMetaData ("a", 42))
                     
                 describe "addMetaData" [
-                    it "does not clear existing metadata" <| fun c ->
-                        let grp = 
-                            c |> TestContext.getSubject
-                            |> ExampleGroup.addMetaData ("b" ++ 43)
-                        grp.Should (haveMetaData "a" 42)
+                    context "with different key" [
+                        subject <| change (ExampleGroup.addMetaData ("b" ++ 43))
 
-                    it "'wins' if name is the same as existing metadata" <| fun c ->
-                        let grp = 
-                            c |> TestContext.getSubject
-                            |> ExampleGroup.addMetaData ("a" ++ 43)
-                        grp.Should (haveMetaData "a" 43)
+                        it "does not clear existing metadata" <| fun c ->
+                            c.Subject.Should (haveMetaData "a" 42)
+                    ]
+
+                    context "with existing key" [
+                        subject <| change (ExampleGroup.addMetaData ("a" ++ 43))
+
+                        it "overwrites the existing value" <| fun c ->
+                            c.Subject.Should (haveMetaData "a" 43)
+                    ]
                 ]
             ]
         ]
 
-        describe "Example" [
+        describe "An example" [
+            subject (fun _ -> aPassingExample)
+            
             context "with existing metadata" [
-                subject (fun _ -> anExampleWithMetaData ("a", 42))
+                subject <| change (withExampleMetaData ("a", 42))
                     
                 describe "addMetaData" [
                     it "does not clear existing metadata" <| fun c ->
