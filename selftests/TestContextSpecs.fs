@@ -42,6 +42,32 @@ let specs =
             ]
         ]
 
+        describe "getOrDefault" [
+            before (fun c ->
+                c?call_count <- 0
+                c?initializer <- fun (_:TestContext) -> 
+                    c?call_count <- c?call_count + 1
+                    "initialized value")
+                
+            context "when no data has been added" [
+                it "initializes the default value" <| fun c ->
+                    c.GetOrDefault "value" c?initializer
+                    |> should (equal "initialized value")
+
+                it "returns the same value the 2nd time" <| fun c ->
+                    c.GetOrDefault<string> "value" c?initializer |> ignore
+                    c.GetOrDefault<string> "value" c?initializer |> ignore
+                    c?call_count.Should (equal 1)
+            ]
+
+            context "when data has already been added" [
+                it "returns the added data" <| fun c ->
+                    c?value <- "manually set"
+                    c.GetOrDefault "value" c?initializer
+                    |> should (equal "manually set")
+            ]
+        ]
+
         describe "tryGet" [
             context "data initialized in the context" [
                 before (fun c -> c?data <- 42)

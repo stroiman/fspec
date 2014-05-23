@@ -46,7 +46,7 @@ module TestDataMap =
         match tryGet<'T> name metaData with
         | Some x -> x
         | None -> failwithf "Test data with key \"%s\" not found" name
-        
+
     /// Merges two TestDataMap instances. In case the same key
     /// exists in both data maps, the value from 'a' will win.
     let merge a b = { Data = a.Data |> Map.fold (fun s k v -> s |> Map.add k v) b.Data }
@@ -92,6 +92,14 @@ type TestContext
 
         member ctx.Get<'T> name = ctx.Data.Get<'T> name
         member ctx.TryGet<'T> name = ctx.Data |> TestDataMap.tryGet<'T> name
+        member self.GetOrDefault<'T> name (initializer : TestContext -> 'T) =
+            match self.TryGet<'T> name with
+            | Some x -> x
+            | None -> 
+                let result = initializer self
+                self.Set name result
+                result
+        
         member ctx.GetSubject<'T> () = TestContext.getSubject<'T> ctx
         member ctx.SetSubject s = 
             ctx.Subject <- s :> obj
