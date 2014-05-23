@@ -73,6 +73,14 @@ module be =
                 (fun actual -> regex.IsMatch actual)
                 (sprintf "match regex pattern %A" pattern)
 
+/// Helps create a matcher, that uses a child matcher for some verification.
+/// The passed function should extract the value from the actual value, that
+/// the child matcher should match. E.g. for a sequence length matcher, the
+/// f extracts the length of the sequence, and the matcher matches the length.
+let createCompountMatcher matcher f =
+    newCreateMatcher
+        (fun a -> a |> f |> applyMatcher matcher id)
+
 module have =
     let atLeastOneElement matcher =
         let f a = a |> Seq.exists (applyMatcher matcher (MatchResult.apply id))
@@ -80,10 +88,11 @@ module have =
         let notMsg = sprintf "contain no elements to %s" matcher.FailureMsgForShould
         createFullMatcher f msg notMsg
     
-    let length matcher =
-        newCreateMatcher 
-            (fun a -> a |> Seq.length |> applyMatcher matcher id)
-            (sprintf "have length to %s" matcher.FailureMsgForShould) 
+    let length lengthMatcher =
+        createCompountMatcher
+            lengthMatcher
+            (fun a -> a |> Seq.length) 
+            (sprintf "have length to %s" lengthMatcher.FailureMsgForShould) 
 
     let exactly no matcher =
         let f a = a |> Seq.filter (applyMatcher matcher (MatchResult.apply id)) |> Seq.length = no
