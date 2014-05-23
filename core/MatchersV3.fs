@@ -14,6 +14,8 @@ type Matcher<'TActual> () =
     abstract member ApplyActual<'TResult> : (MatchResult -> 'TResult) -> 'TActual -> 'TResult
     abstract member FailureMsgForShould : string
     abstract member FailureMsgForShouldNot : string
+    static member IsMatch (matcher:Matcher<'TActual>) actual =
+        matcher.ApplyActual (MatchResult.apply id) actual
 
 let applyMatcher<'T,'U> (matcher: Matcher<'T>) f (a : 'T) : 'U =
     matcher.ApplyActual f a
@@ -83,7 +85,7 @@ let createCompountMatcher matcher f =
 
 module have =
     let atLeastOneElement matcher =
-        let f a = a |> Seq.exists (applyMatcher matcher (MatchResult.apply id))
+        let f a = a |> Seq.exists (Matcher.IsMatch matcher)
         let msg = sprintf "contain at least one element to %s" matcher.FailureMsgForShould
         let notMsg = sprintf "contain no elements to %s" matcher.FailureMsgForShould
         createFullMatcher f msg notMsg
@@ -95,7 +97,7 @@ module have =
             (sprintf "have length to %s" lengthMatcher.FailureMsgForShould) 
 
     let exactly no matcher =
-        let f a = a |> Seq.filter (applyMatcher matcher (MatchResult.apply id)) |> Seq.length = no
+        let f a = a |> Seq.filter (Matcher.IsMatch matcher) |> Seq.length = no
         let msg = 
             sprintf "contain exactly %d element to %s" no 
                 matcher.FailureMsgForShould
