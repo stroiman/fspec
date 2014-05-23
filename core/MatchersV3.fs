@@ -53,6 +53,11 @@ let equal expected =
 module be =
     let equalTo = equal
 
+    let greaterThan expected =
+        createMatcher
+            (fun a -> a > expected)
+            (sprintf "be greater than %A" expected)
+
     let True =
         createMatcher 
             (fun actual -> actual = true) 

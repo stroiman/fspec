@@ -43,6 +43,16 @@ let specs = [
         ]
     ]
 
+    describe "greaterThan matcher" [
+        it "succeeds when value is greater than expected" <| fun _ ->
+            let test () = 5 |> should (be.greaterThan 4)
+            test |> shouldPass
+
+        it "fails when value is equal to expected" <| fun _ ->
+            let test () = 5 |> should (be.greaterThan 5)
+            test |> shouldFail
+    ]
+
     describe "Regex matcher" [
         it "succeeds when regular expression is a match" <| fun _ ->
             let test () = "abcd" |> should (be.string.matching "bcd")
