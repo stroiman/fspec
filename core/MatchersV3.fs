@@ -94,6 +94,8 @@ module have =
         let msg = sprintf "contain at least one element to %s" matcher.FailureMsgForShould
         let notMsg = sprintf "contain no elements to %s" matcher.FailureMsgForShould
         createFullMatcher f msg notMsg
+
+    let element = atLeastOneElement
     
     let length lengthMatcher =
         createCompountMatcher
