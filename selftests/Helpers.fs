@@ -30,9 +30,9 @@ module TestReporter =
         | EndGroup
         | Example of string * TestResultType
 
-    type T = { CallStack: ReportType list }
+    type T = { CallList: ReportType list }
     
-    let appendToReport n r = { r with CallStack = n::r.CallStack }
+    let appendToReport n r = { r with CallList = n::r.CallList }
 
     let instance = {
         BeginGroup = fun grp -> grp |> ExampleGroup.name |> BeginGroup |> appendToReport
@@ -40,5 +40,5 @@ module TestReporter =
         EndTestRun = fun r -> r
         EndGroup = EndGroup |> appendToReport
         Success = fun _ -> true
-        BeginTestRun = fun _ -> { CallStack = [] } 
+        BeginTestRun = fun _ -> { CallList = [] } 
     }

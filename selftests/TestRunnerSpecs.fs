@@ -13,13 +13,8 @@ let beExampleWithResult f =
     | _ -> false
     |> createSimpleMatcher
 
-let itIsFailure = function
-    | Failure(_) -> true
-    | _ -> false
-
-let itIsError = function
-    | Error(_) -> true
-    | _ -> false
+let itIsFailure = function | Failure _ -> true | _ -> false
+let itIsError = function | Error _ -> true | _ -> false
 
 let itRaisesException = fun _ -> raise (new System.NotImplementedException())
 let beExample = beExampleWithResult (fun _ -> true)
@@ -30,7 +25,7 @@ let runExamples grp = grp |> run |> ignore
 let doRun grp =
     let reporter = TestReporter.instance
     let data = Runner.doRun grp reporter (reporter.BeginTestRun())
-    data.CallStack |> List.rev
+    data.CallList |> List.rev
     
 let itReportsExactlyOneExample f = 
     MultipleOperations [
