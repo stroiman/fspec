@@ -26,9 +26,7 @@ type TestContext with
 
 let setupReport f = before <| fun ctx ->
     let r = getSubject<TreeReporter.T> ctx
-    let report = r.BeginTestRun() |> (f r)
-    ctx.Builder.Clear() |> ignore
-    report |> r.EndTestRun |> ignore
+    r.BeginTestRun() |> (f r) |> r.EndTestRun |> ignore
 
 let itBehavesLikeATestReporter<'T> () =
     let getSubject = getSubject<'T>
