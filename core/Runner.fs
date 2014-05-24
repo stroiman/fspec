@@ -1,36 +1,34 @@
 ﻿module FSpec.Core.Runner
 
-let rec performSetup exampleGroups ctx =
-    match exampleGroups with
+let rec performSetup groupStack ctx =
+    match groupStack with
         | [] -> ()
         | head::tail ->
             performSetup tail ctx
             head |> ExampleGroup.setups |> List.iter (fun y -> y ctx)
 
-let rec performTearDown exampleGroups ctx =
-    match exampleGroups with
+let rec performTearDown groupStack ctx =
+    match groupStack with
         | [] -> ()
         | head::tail ->
             head |> ExampleGroup.tearDowns |> List.iter (fun y -> y ctx)
             performTearDown tail ctx
 
 let doRun exampleGroup reporter report =
-    let rec run exampleGroups report =
-        let exampleGroup = exampleGroups |> List.head
-        let report = reporter.BeginGroup exampleGroup report
-        let metaData = exampleGroups |> List.map ExampleGroup.getMetaData |> List.fold (fun state x -> x |> TestDataMap.merge state) TestDataMap.Zero
+    let rec run groupStack report =
+        let metaData = groupStack |> List.map ExampleGroup.getMetaData |> List.fold (fun state x -> x |> TestDataMap.merge state) TestDataMap.Zero
 
         let execExample (example:Example.T) =
-            let metaDataStack = example.MetaData :: (exampleGroups |> List.map ExampleGroup.getMetaData)
+            let metaDataStack = example.MetaData :: (groupStack |> List.map ExampleGroup.getMetaData)
             let metaData = metaDataStack |> List.fold TestDataMap.merge TestDataMap.Zero
             try
                 let context = metaData |> TestContext.create
                 try
                     try
-                        performSetup exampleGroups context
+                        performSetup groupStack context
                         example.Test context
                     finally
-                        performTearDown exampleGroups context
+                        performTearDown groupStack context
                 finally
                     TestContext.cleanup context
                 Success
@@ -43,7 +41,11 @@ let doRun exampleGroup reporter report =
             let testResult = execExample example
             reporter.ReportExample example testResult report
 
-        let report'' = exampleGroup |> ExampleGroup.foldExamples (fun rep ex -> runExample ex rep) report
-        let report''' = exampleGroup |> ExampleGroup.foldChildGroups (fun rep grp -> run (grp::exampleGroups) rep) report''
-        reporter.EndGroup report'''
+        let grp = groupStack |> List.head
+        report 
+        |> reporter.BeginGroup grp
+        |> ExampleGroup.foldExamples (fun rep ex -> runExample ex rep) grp
+        |> ExampleGroup.foldChildGroups (fun rep grp -> run (grp::groupStack) rep) grp
+        |> reporter.EndGroup 
+
     run [exampleGroup] report

@@ -153,5 +153,5 @@ module ExampleGroup =
     let getMetaData grp = grp.MetaData
     let childGroups grp = grp.ChildGroups |> List.rev
     let examples grp = grp.Examples 
-    let foldExamples folder state grp = grp.Examples |> List.rev |> List.fold folder state
-    let foldChildGroups folder state grp = grp.ChildGroups |> List.rev |> List.fold folder state
+    let foldExamples folder grp state = grp.Examples |> List.rev |> List.fold folder state
+    let foldChildGroups folder grp state = grp.ChildGroups |> List.rev |> List.fold folder state
