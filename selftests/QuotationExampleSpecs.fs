@@ -34,8 +34,23 @@ let specs =
                 c |> testWithSubject (false) 
                 |> shouldPass
 
-            it "should fail when subject is true" <| fun c ->
-                c |> testWithSubject (false) 
-                |> shouldFail
+            it "should fail when subject is true" pending
+//             <| fun c ->
+//                c |> testWithSubject (false) 
+//                |> shouldFail
+        ]
+
+        describe "syntax <@ have.length (equal 1) @>" [
+            subject <| fun _ ->
+                createExampleFromExpression 
+                    <@ have.length (equal 1) @>
+                   
+            it "should have name 'should have length equal 1'" <| fun c ->
+                c.Subject.Should (haveNameTo
+                    (equal "should have length equal 1"))
+
+            it "should pass when given a collection with one element" pending
+            it "should fail when given a collection with two elements" pending
+            it "should fail when subject is not a collection" pending
         ]
     ]
