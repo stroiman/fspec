@@ -40,6 +40,14 @@ let specs =
                     let test () = ctx.Get "dummy"
                     test |> should (throwException.withMessageContaining "\"dummy\" not found")
             ]
+
+            context "when data is of unexpected type" [
+                it "throws a descriptive message" <| fun ctx ->
+                    ctx?answer <- "42"
+                    let test () = ctx.Get<int> "answer" |> ignore
+                    test |> should (throwException.withMessage 
+                        (be.string.matching "Expected.*Int.*was.*String"))
+            ]
         ]
 
         describe "getOrDefault" [

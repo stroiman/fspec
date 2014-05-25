@@ -37,8 +37,15 @@ module TestDataMap =
     /// key. If the element is found, it is cast to 'T and returned,
     /// otherwise None is returned.
     let tryGet<'T> name metaData =
-        metaData.Data.TryFind name 
-        |> Option.bind (fun x -> Some (x :?> 'T))
+        match metaData.Data.TryFind name with
+        | None -> None
+        | Some x ->
+            match x with
+            | :? 'T as y -> Some y
+            | _ -> failwithf "error getting data with key %A. Expected data of type %s but the actual type was %s"
+                                name
+                                typeof<'T>.Name
+                                (x.GetType().Name)
 
     /// Retrieves a piece of data with the specified key. 
     /// Throws an exception of the data is not found.
