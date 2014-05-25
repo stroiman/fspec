@@ -49,3 +49,12 @@ let doRun exampleGroup reporter report =
         |> reporter.EndGroup 
 
     run [exampleGroup] report
+
+/// Runs a collection of top level group specs, using a specific
+/// reporter to report progress. The generated report is returned
+/// to the caller.
+let run reporter topLevelGroups =
+    let fold r = Seq.fold (fun r g -> doRun g reporter r) r topLevelGroups
+    reporter.BeginTestRun ()
+    |> fold
+    |> reporter.EndTestRun

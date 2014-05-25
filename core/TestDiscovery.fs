@@ -33,12 +33,9 @@ let getSpecsFromAssembly (assembly : Assembly) =
     specs
 
 let runSpecsWithReporter reporter specs =
-    let emptyReport = TreeReporter.Zero
-    let report = 
-        specs 
-        |> Seq.fold (fun rep grp -> Runner.doRun grp reporter rep) emptyReport
-        |> reporter.EndTestRun
-    report |> reporter.Success
+    specs
+    |> Runner.run reporter
+    |> reporter.Success
 
 let runSpecs specs = 
     let reporter = TreeReporter.create TreeReporterOptions.Default
