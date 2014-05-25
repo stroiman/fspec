@@ -17,13 +17,13 @@ Currently the following features are supported
  * Assertion framework
  * Implicit subject
  * Automatically disposing _IDisposable_ instances
-
-Ideas for future improvements (prioritized list)
-
  * Support for missing metadata, i.e. test context can try to retrieve meta
    data that may or may not have been initialized.
  * Better error messages when context/meta data does not exist, or is of
    incorrect type.
+
+Ideas for future improvements (prioritized list)
+
  * Better support for batch building examples.
  * One liner verifications using expressions (I want this)
  * Context data and meta data keys can be other types than strings, e.g.
