@@ -26,7 +26,7 @@ let doRun exampleGroup reporter report =
                 try
                     try
                         performSetup groupStack context
-                        example.Test context
+                        example |> Example.run context
                     finally
                         performTearDown groupStack context
                 finally

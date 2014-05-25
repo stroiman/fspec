@@ -122,6 +122,7 @@ module Example =
     let create name test = { Name = name; Test = test; MetaData = TestDataMap.Zero }
     let name example = example.Name
     let addMetaData data ex = { ex with Name = ex.Name; MetaData = ex.MetaData.Merge data }
+    let run context example = example.Test context
 
 module ExampleGroup =
     type TestFunc = TestContext -> unit
