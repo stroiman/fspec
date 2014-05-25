@@ -159,4 +159,15 @@ let specs =
                 ]
             ]
         ]
+
+        describe "example expressions" [
+            setGroup <|
+                describe "group" [
+                    itShould <@ be.False @>
+                ]
+
+            it "should have one example" <| fun ctx ->
+                ctx |> getSubject
+                |> should (haveNoOfExampleExamples 1)
+        ]
     ]

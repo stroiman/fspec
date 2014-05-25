@@ -43,6 +43,7 @@ file 'output/FSpec.SelfTests.dll' => [
     'selftests/TestReportSpecs.fs',
     'selftests/MetaDataSpecs.fs',
     'selftests/DslSpecs.fs',
+    'selftests/QuotationExampleSpecs.fs',
     'selftests/TestContextSpecs.fs',
     'output/FSpec.Core.dll'
     ] do |t|

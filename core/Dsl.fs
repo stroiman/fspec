@@ -1,4 +1,7 @@
 ﻿module FSpec.Core.Dsl
+open Microsoft.FSharp.Quotations
+open Microsoft.FSharp.Quotations.Patterns
+open Microsoft.FSharp.Quotations.DerivedPatterns
 
 let pending = fun _ -> raise PendingError
 
@@ -23,6 +26,19 @@ let applyGroup s f = function
     | _ -> f ()
 
 let it name func = AddExampleOperation <| Example.create name func
+
+let createExampleFromExpression (expr : Expr<MatchersV3.Matcher<_>>) =
+    let name =
+        match expr with
+        | PropertyGet (x,y,z) -> 
+            sprintf "should %s %s" 
+                y.DeclaringType.Name
+                (y.Name.ToLower())
+        | _ -> failwith "Unrecognized pattern"
+    Example.create name (fun _ -> ())
+
+let itShould expr =
+    AddExampleOperation <| createExampleFromExpression expr
 
 let describe name operations =
     let rec applyOperation (grp,md) op =
