@@ -1,6 +1,6 @@
 require 'rake/clean'
 
-CLEAN.include("**/*.dll", "**/*.exe")
+CLEAN.include("output/*.dll", "output/*.exe")
 
 def windows?
   RUBY_PLATFORM =~ /mingw/i 
@@ -11,6 +11,8 @@ def compile(output_file, prerequisites, target)
   Dir.mkdir(dir) unless Dir.exists?(dir)
   fs_files = prerequisites.select {|x| File.extname(x) == '.fs'}
   dll_files = prerequisites.select {|x| File.extname(x) == '.dll'}
+  package_files = dll_files.select {|x| x.start_with? "package"}
+  cp package_files, 'output/'
   reference_args = dll_files.map {|x| "--reference:#{x}" }
   if windows?
     fsc = 'fsc'
@@ -27,7 +29,9 @@ file 'output/FSpec.Core.dll' => [
     'core/Matchers.fs', 
     'core/MatchersV3.fs',
     'core/Dsl.fs',
-    'core/TestDiscovery.fs'
+    'core/TestDiscovery.fs',
+    'packages/FSPowerPack.Linq.Community.3.0.0.0/Lib/Net40/FSharp.PowerPack.Linq.dll',
+    'packages/FSPowerPack.Core.Community.3.0.0.0/Lib/Net40/FSharp.PowerPack.dll'
     ] do |t|
   compile(t.name, t.prerequisites, :library)
 end
