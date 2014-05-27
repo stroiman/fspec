@@ -2,6 +2,7 @@
 open Microsoft.FSharp.Quotations
 open Microsoft.FSharp.Quotations.Patterns
 open Microsoft.FSharp.Quotations.DerivedPatterns
+open Microsoft.FSharp.Linq.QuotationEvaluation
 
 let pending = fun _ -> raise PendingError
 
@@ -27,7 +28,7 @@ let applyGroup s f = function
 
 let it name func = AddExampleOperation <| Example.create name func
 
-let createExampleFromExpression (expr : Expr<MatchersV3.Matcher<_>>) =
+let createExampleFromExpression<'T> (expr : Expr<MatchersV3.Matcher<'T>>) =
     let rec name expr =
         let printMember (m:System.Reflection.MemberInfo) =
             match m.DeclaringType with
@@ -48,7 +49,10 @@ let createExampleFromExpression (expr : Expr<MatchersV3.Matcher<_>>) =
         | _ as x -> failwithf "Unrecognized pattern: %A" x
     Example.create 
         (sprintf "should %s" (name expr))
-        (fun _ -> ())
+        (fun ctx -> 
+            let matcher = expr.Eval()
+            ctx |> TestContext.getSubject |> MatchersV3.should matcher)
+
 
 let itShould expr =
     AddExampleOperation <| createExampleFromExpression expr

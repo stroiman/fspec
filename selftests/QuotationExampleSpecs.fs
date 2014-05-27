@@ -31,13 +31,12 @@ let specs =
                     (equal "should be false"))
 
             it "should succeed when subject is false" <| fun c ->
-                c |> testWithSubject (false) 
+                c |> testWithSubject false
                 |> shouldPass
 
-            it "should fail when subject is true" pending
-//             <| fun c ->
-//                c |> testWithSubject (false) 
-//                |> shouldFail
+            it "should fail when subject is true" <| fun c ->
+                c |> testWithSubject true
+                |> shouldFail
         ]
 
         describe "syntax <@ have.length (equal 1) @>" [
