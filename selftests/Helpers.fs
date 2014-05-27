@@ -22,7 +22,12 @@ let getErrorMsg test : string =
     | None -> failwith "Expected test failure"
     | Some(x) -> x.Message
     
-let shouldFail test = getErrorMsg test |> ignore
+let shouldFail test = 
+    try
+        test ()
+        failwith "Error expected"
+    with
+        | _ -> ()
 
 module TestReporter =
     type ReportType =

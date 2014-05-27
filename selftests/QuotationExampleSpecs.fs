@@ -48,8 +48,16 @@ let specs =
                 c.Subject.Should (haveNameTo
                     (equal "should have length equal 1"))
 
-            it "should pass when given a collection with one element" pending
-            it "should fail when given a collection with two elements" pending
-            it "should fail when subject is not a collection" pending
+            it "should pass when given a collection with one element" <| fun c ->
+                c |> testWithSubject ["dummy"]
+                |> shouldPass
+
+            it "should fail when given a collection with two elements"<| fun c ->
+                c |> testWithSubject ["foo"; "bar"]
+                |> shouldFail
+
+            it "should fail when subject is not a collection" <| fun c ->
+                c |> testWithSubject 42
+                |> shouldFail
         ]
     ]
