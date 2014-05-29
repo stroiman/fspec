@@ -6,9 +6,12 @@ open TestDataMap
 open TestContextOperations
 
 let pass = fun _ -> ()
-let extractGroup = applyGroup id (fun _ -> failwith "error")
+
 let setGroup x =
-    subject (fun _ -> x |> extractGroup)
+    subject <| fun _ -> 
+        match x with
+        | AddExampleGroupOperation g -> g
+        | _ -> failwith "error"
 
 let createMatcher = createSimpleMatcher
 
