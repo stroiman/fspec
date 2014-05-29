@@ -3,11 +3,6 @@ module FSpec.Core.MatchersV3
 type MatchResult =
     | MatchSuccess of obj
     | MatchFail of obj
-    with 
-        static member apply f = 
-            function
-                | MatchSuccess _ -> f true
-                | _ -> f false
 
 [<AbstractClass>]
 type Matcher<'TActual> () = 
@@ -15,7 +10,8 @@ type Matcher<'TActual> () =
     abstract member FailureMsgForShould : string
     abstract member FailureMsgForShouldNot : string
     static member IsMatch (matcher:Matcher<'TActual>) actual =
-        matcher.ApplyActual (MatchResult.apply id) actual
+        let resultToBool = function | MatchSuccess _ -> true | _ -> false
+        actual |> matcher.ApplyActual resultToBool
 
 let applyMatcher<'T,'U> (matcher: Matcher<'T>) f (a : 'T) : 'U =
     matcher.ApplyActual f a
