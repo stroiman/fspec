@@ -29,9 +29,7 @@ file 'output/FSpec.Core.dll' => [
     'core/Matchers.fs', 
     'core/MatchersV3.fs',
     'core/Dsl.fs',
-    'core/TestDiscovery.fs',
-    'packages/FSPowerPack.Linq.Community.3.0.0.0/Lib/Net40/FSharp.PowerPack.Linq.dll',
-    'packages/FSPowerPack.Core.Community.3.0.0.0/Lib/Net40/FSharp.PowerPack.dll'
+    'core/TestDiscovery.fs'
     ] do |t|
   compile(t.name, t.prerequisites, :library)
 end

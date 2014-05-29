@@ -24,8 +24,4 @@
     <file src="output\fspec.core.dll" target="lib\net40\fspec.core.dll" />
     <file src="output\fspec.exe" target="tools\fspec.exe" />
   </files>
-  <dependencies>
-    <dependency id="FSPowerPack.Core.Community" />
-    <dependency id="FSPowerPack.Linq.Community" />
-  </dependencies>
 </package>
