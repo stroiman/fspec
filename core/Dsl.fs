@@ -29,33 +29,17 @@ let applyGroup s f = function
 let it name func = AddExampleOperation <| Example.create name func
 
 let createExampleFromExpression<'T> (expr : Expr<MatchersV3.Matcher<'T>>) =
-    let rec name expr =
-        let printMember (m:System.Reflection.MemberInfo) =
-            match m.DeclaringType with
-            // without this special case 'equal' will output strangely
-            | x when x.Name = "MatchersV3" -> m.Name.ToLower()
-            | _ -> 
-                sprintf "%s %s"
-                    m.DeclaringType.Name
-                    (m.Name.ToLower())
-
-        match expr with
-        | Int32(x) -> x.ToString()
-        | PropertyGet (None,y,z) -> printMember y
-        | Call (None,y,z::[]) ->
-            sprintf "%s %s"
-                (printMember y)
-                (name z)
-        | _ as x -> failwithf "Unrecognized pattern: %A" x
+    let matcher = expr.Eval()
+    
     Example.create 
-        (sprintf "should %s" (name expr))
+        (sprintf "should %s" (matcher.FailureMsgForShould))
         (fun ctx -> 
-            let matcher = expr.Eval()
             ctx |> TestContext.getSubject |> MatchersV3.should matcher)
 
-
 let itShould expr =
-    AddExampleOperation <| createExampleFromExpression expr
+    expr 
+    |> createExampleFromExpression 
+    |> AddExampleOperation
 
 let describe name operations =
     let rec applyOperation (grp,md) op =

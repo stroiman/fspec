@@ -46,7 +46,7 @@ let specs =
                    
             it "should have name 'should have length equal 1'" <| fun c ->
                 c.Subject.Should (haveNameTo
-                    (equal "should have length equal 1"))
+                    (equal "should have length to equal 1"))
 
             it "should pass when given a collection with one element" <| fun c ->
                 c |> testWithSubject ["dummy"]
