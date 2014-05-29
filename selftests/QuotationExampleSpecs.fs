@@ -23,8 +23,7 @@ let specs =
     describe "Quotation building syntax" [
         describe "syntax <@ be.False@>" [
             subject <| fun _ ->
-                createExampleFromExpression 
-                    <@ be.False @>
+                createExampleFromMatcher (be.False)
                 
             it "should be name 'should be false'" <| fun ctx ->
                 ctx.Subject.Should (haveNameTo 
@@ -41,8 +40,7 @@ let specs =
 
         describe "syntax <@ have.length (equal 1) @>" [
             subject <| fun _ ->
-                createExampleFromExpression 
-                    <@ have.length (equal 1) @>
+                createExampleFromMatcher (have.length (equal 1))
                    
             it "should have name 'should have length equal 1'" <| fun c ->
                 c.Subject.Should (haveNameTo

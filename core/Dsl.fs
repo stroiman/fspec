@@ -1,8 +1,4 @@
 ﻿module FSpec.Core.Dsl
-open Microsoft.FSharp.Quotations
-open Microsoft.FSharp.Quotations.Patterns
-open Microsoft.FSharp.Quotations.DerivedPatterns
-open Microsoft.FSharp.Linq.QuotationEvaluation
 
 let pending = fun _ -> raise PendingError
 
@@ -28,9 +24,7 @@ let applyGroup s f = function
 
 let it name func = AddExampleOperation <| Example.create name func
 
-let createExampleFromExpression<'T> (expr : Expr<MatchersV3.Matcher<'T>>) =
-    let matcher = expr.Eval()
-    
+let createExampleFromMatcher<'T> (matcher : MatchersV3.Matcher<'T>) =
     Example.create 
         (sprintf "should %s" (matcher.FailureMsgForShould))
         (fun ctx -> 
@@ -38,7 +32,7 @@ let createExampleFromExpression<'T> (expr : Expr<MatchersV3.Matcher<'T>>) =
 
 let itShould expr =
     expr 
-    |> createExampleFromExpression 
+    |> createExampleFromMatcher
     |> AddExampleOperation
 
 let describe name operations =
