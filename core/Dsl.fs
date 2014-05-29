@@ -26,12 +26,9 @@ let applyGroup s f = function
 let it name func = AddExampleOperation <| Example.create name func
 
 let exampleFromMatcher<'T> matchType (matcher : Matcher<'T>) =
-    let matchOp = match matchType with
-                  | Should -> should
-                  | ShouldNot -> shouldNot
     Example.create 
         (sprintf "should %s" (matcher.MessageFor matchType))
-        (fun ctx -> ctx |> TestContext.getSubject |> matchOp matcher)
+        (fun ctx -> ctx |> TestContext.getSubject |> performMatch matchType matcher)
     |> AddExampleOperation
 
 let itShould<'T> = exampleFromMatcher<'T> Should

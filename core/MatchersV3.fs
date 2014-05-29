@@ -136,21 +136,20 @@ module throwException =
     let withMessageContaining msg =
         withMessage (be.string.containing msg)
     
-let shouldNot<'T> (matcher:Matcher<'T>) (actual:'T) =
-    let continuation = function
-        | MatchFail _ -> ()
-        | MatchSuccess a ->
-            let msg = sprintf "%A was expected to %s" a matcher.FailureMsgForShouldNot
+let performMatch<'T> matchType (matcher:Matcher<'T>) (actual:'T) =
+    let raiseMsg a = 
+            let msg = sprintf "%A was expected to %s but was %A" 
+                        actual (matcher.MessageFor matchType) a
             raise (AssertionError { Message = msg })
+    let continuation result =
+        match (matchType, result) with
+        | (Should, MatchFail x) -> raiseMsg x
+        | (ShouldNot, MatchSuccess x) -> raiseMsg x
+        | _ -> ()
     matcher.ApplyActual continuation actual
     
-let should<'T> (matcher:Matcher<'T>) (actual:'T) =
-    let continuation = function
-        | MatchSuccess _ -> ()
-        | MatchFail a -> 
-            let msg = sprintf "%A was expected to %s but was %A" actual matcher.FailureMsgForShould a
-            raise (AssertionError { Message = msg })
-    matcher.ApplyActual continuation actual
+let should<'T> = performMatch<'T> Should 
+let shouldNot<'T> = performMatch<'T> ShouldNot
 
 /// Extension methods for System.Object to aid in assertions
 type System.Object with
