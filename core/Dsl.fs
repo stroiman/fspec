@@ -25,18 +25,17 @@ let applyGroup s f = function
 
 let it name func = AddExampleOperation <| Example.create name func
 
-let itShould<'T> (matcher : MatchersV3.Matcher<'T>) =
+let exampleFromMatcher<'T> matchType (matcher : Matcher<'T>) =
+    let matchOp = match matchType with
+                  | Should -> should
+                  | ShouldNot -> shouldNot
     Example.create 
-        (sprintf "should %s" (matcher.FailureMsgForShould))
-        (fun ctx -> ctx.Subject.Should matcher)
+        (sprintf "should %s" (matcher.MessageFor matchType))
+        (fun ctx -> ctx |> TestContext.getSubject |> matchOp matcher)
     |> AddExampleOperation
 
-let itShouldNot<'T> (matcher : MatchersV3.Matcher<'T>) =
-    Example.create 
-        (sprintf "should %s" (matcher.FailureMsgForShouldNot))
-        (fun ctx -> ctx.Subject.ShouldNot matcher)
-    |> AddExampleOperation
-
+let itShould<'T> = exampleFromMatcher<'T> Should
+let itShouldNot<'T> = exampleFromMatcher<'T> ShouldNot
 let describe name operations =
     let rec applyOperation (grp,md) op =
         match op with

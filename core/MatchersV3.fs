@@ -4,6 +4,10 @@ type MatchResult =
     | MatchSuccess of obj
     | MatchFail of obj
 
+type MatchType =
+    | Should
+    | ShouldNot
+
 [<AbstractClass>]
 type Matcher<'TActual> () = 
     abstract member ApplyActual<'TResult> : (MatchResult -> 'TResult) -> 'TActual -> 'TResult
@@ -12,6 +16,10 @@ type Matcher<'TActual> () =
     static member IsMatch (matcher:Matcher<'TActual>) actual =
         let resultToBool = function | MatchSuccess _ -> true | _ -> false
         actual |> matcher.ApplyActual resultToBool
+    member self.MessageFor = 
+        function
+            | Should -> self.FailureMsgForShould
+            | ShouldNot -> self.FailureMsgForShouldNot
 
 let applyMatcher<'T,'U> (matcher: Matcher<'T>) f (a : 'T) : 'U =
     matcher.ApplyActual f a
