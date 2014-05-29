@@ -40,7 +40,7 @@ module TestReporter =
     let appendToReport n r = { r with CallList = n::r.CallList }
 
     let instance = {
-        BeginGroup = fun grp -> grp |> ExampleGroup.name |> BeginGroup |> appendToReport
+        BeginGroup = ExampleGroup.name >> BeginGroup >> appendToReport
         ReportExample = fun ex res -> (ex |> Example.name, res) |> Example |> appendToReport
         EndTestRun = fun r -> r
         EndGroup = EndGroup |> appendToReport
