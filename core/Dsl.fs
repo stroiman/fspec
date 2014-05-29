@@ -1,4 +1,5 @@
 ﻿module FSpec.Core.Dsl
+open MatchersV3
 
 let pending = fun _ -> raise PendingError
 
@@ -24,15 +25,16 @@ let applyGroup s f = function
 
 let it name func = AddExampleOperation <| Example.create name func
 
-let createExampleFromMatcher<'T> (matcher : MatchersV3.Matcher<'T>) =
+let itShould<'T> (matcher : MatchersV3.Matcher<'T>) =
     Example.create 
         (sprintf "should %s" (matcher.FailureMsgForShould))
-        (fun ctx -> 
-            ctx |> TestContext.getSubject |> MatchersV3.should matcher)
+        (fun ctx -> ctx.Subject.Should matcher)
+    |> AddExampleOperation
 
-let itShould expr =
-    expr 
-    |> createExampleFromMatcher
+let itShouldNot<'T> (matcher : MatchersV3.Matcher<'T>) =
+    Example.create 
+        (sprintf "should %s" (matcher.FailureMsgForShouldNot))
+        (fun ctx -> ctx.Subject.ShouldNot matcher)
     |> AddExampleOperation
 
 let describe name operations =
