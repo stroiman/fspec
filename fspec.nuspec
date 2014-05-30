@@ -5,9 +5,9 @@
     <version>0.0.5</version>
     <authors>Peter Stroiman</authors>
     <owners>Peter Stroiman</owners>
-    <licenseUrl>https://github.com/PeteProgrammer/fspec/blob/master/LICENSE</licenseUrl>
+    <licenseUrl>https://raw.githubusercontent.com/PeteProgrammer/fspec/master/LICENSE</licenseUrl>
     <projectUrl>https://github.com/PeteProgrammer/fspec</projectUrl>
-    <iconUrl>https://github.com/PeteProgrammer/fspec/blob/master/FSpec_logo_med.png</iconUrl>
+    <iconUrl>https://raw.githubusercontent.com/PeteProgrammer/fspec/master/FSpec_logo_med.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <summary>A context/specification test framework</summary>
     <description>
