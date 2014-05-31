@@ -166,7 +166,7 @@ object will automatically be disposed when the test run has finished.
 ```fsharp
 let specs =
     describe "The data access layer" [
-        before (fun ctx -> ctx?connection <- craeteDatabaseConnection () )
+        before (fun ctx -> ctx?connection <- createDatabaseConnection () )
 
         it "uses the connection" ...
     ]
@@ -308,12 +308,7 @@ open FSpec.Core
 
 type TestContext with
     member self.AutoMocker =
-        match self.TryGet "auto_mocker" with
-        | Some mocker -> mocker
-        | None ->
-              let mocker = AutoMocker()
-              self.Set "auto_mocker" mocker
-              mocker
+	self.GetOrDefault "auto_mocker" (fun _ -> AutoMocker())
     member self.GetMock<'T> () = self.AutoMocker.GetMock<'T> ()
     member self.Get<'T> () = self.AutoMocker.Get<'T> ()
 ```
@@ -321,6 +316,10 @@ type TestContext with
 Open the _TestHelpers_ module from any test module where you need to test a
 component with mocked dependencies, and you will have access to the _Get<'T>()_
 and _GetMock<'T>()_ methods.
+
+The _GetOrDefault<'T>_ calls the function to initialize a value if it hasn't
+already been initialized, otherwise the value stored in the context is 
+returned.
 
 ### Batch building examples ###
 
