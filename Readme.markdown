@@ -357,9 +357,7 @@ the main function
 
 ```fsharp
 [<EntryPoint>]
-let main args =
-    System.Reflection.Assembly.GetExecutingAssembly()
-    |> getSpecsFromAssembly
-    |> runSpecs
-    |> toExitCode
+let main argv = 
+    System.Reflection.Assembly.GetExecutingAssembly ()
+    |> FSpec.Core.TestDiscovery.runSingleAssembly
 ```
