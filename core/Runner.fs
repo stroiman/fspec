@@ -37,9 +37,9 @@ let doRun exampleGroup reporter report =
             | AssertionError(e) -> Failure e
             | ex -> Error ex
 
-        let runExample (example:Example.T) report =
-            let testResult = execExample example
-            reporter.ReportExample example testResult report
+        let runExample (example:Example.T) =
+            execExample example 
+            |> reporter.ReportExample example 
 
         let grp = groupStack |> List.head
         report 
