@@ -1,7 +1,7 @@
 module FSpec.SelfTests.RunnerSpecs
 open FSpec.Core
 open Dsl
-open Matchers
+open MatchersV3
 open ExampleHelper
 
 let callList = ref []
@@ -13,7 +13,7 @@ let record name =
 
 let shouldRecord expected grp =
     grp |> run |> ignore
-    actualCallList() |> should equal expected
+    actualCallList() |> should (equal expected)
 
 let specs =
     describe "Test runner" [
@@ -133,20 +133,20 @@ let specs =
                     ctx |> TestContext.getSubject
                     |> withAnExample
                     |> run |> ignore
-                    ctx?disposed |> should equal true
+                    ctx?disposed |> should be.True
 
                 it "is disposed if test fails" <| fun ctx ->
                     ctx |> TestContext.getSubject
                     |> withExampleCode (fun _ -> failwith "dummy")
                     |> run |> ignore
-                    ctx?disposed |> should equal true
+                    ctx?disposed |> should be.True
 
                 it "is disposed if teardown fails" <| fun ctx ->
                     ctx |> TestContext.getSubject
                     |> withTearDownCode (fun _ -> failwith "dummy")
                     |> withAnExample
                     |> run |> ignore
-                    ctx?disposed |> should equal true
+                    ctx?disposed |> should be.True
 
                 it "is not disposed in teardown code" <| fun ctx ->
                     ctx |> TestContext.getSubject
@@ -155,7 +155,7 @@ let specs =
                         ctx?disposedDuringTearDown <- disposed)
                     |> withAnExample
                     |> run |> ignore
-                    ctx?disposedDuringTearDown |> should equal false
+                    ctx?disposedDuringTearDown |> should be.False
             ]
         ]
     ]
