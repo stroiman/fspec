@@ -1,4 +1,5 @@
 {
   "core/*.fs": { "command": "core", "alternate": "selftests/{}Specs.fs" },
   "selftests/*Specs.fs": { "command": "spec", "alternate": "core/{}.fs" },
+  "selftests/*.fs" : {"command": "spec"}
 }
