@@ -3,6 +3,7 @@ open FSpec.Core
 open Dsl
 open MatchersV3
 open ExampleHelper
+open ExampleGroup
 
 let callList = ref []
 let actualCallList () = !callList |> List.rev
@@ -156,6 +157,71 @@ let specs =
                     |> withAnExample
                     |> run |> ignore
                     ctx?disposedDuringTearDown |> should be.False
+            ]
+        ]
+        
+        describe "example filtering" [
+            let getExampleNames grps =
+                let rec getExamples grps =
+                    [ for grp in grps do
+                        yield! grp.ChildGroups |> getExamples
+                        yield! grp.Examples]
+                getExamples grps
+                |> List.map (fun x -> x.Name)
+
+            let performFilter f ctx =
+                ctx
+                |> TestContext.getSubject
+                |> fun x -> [x]
+                |> Runner.filterExamples f
+                    
+            yield context "an example group with two exampels" [
+                subject <| fun ctx ->
+                    ctx?example1 <- Example.create "ex1" (record "ex1")
+                    ctx?example2 <- Example.create "ex2" (record "ex1")
+                    anExampleGroup
+                    |> withExamples [ctx?example1; ctx?example2]
+                
+                context "when example 1 is included" [
+                    it "does not run example 2" <| fun ctx ->
+                        let filter (ex:Example.T) = ex.Name = "ex1"
+                        ctx
+                        |> performFilter filter
+                        |> getExampleNames
+                        |> should (equal ["ex1"])
+                ]
+
+                context "when no examples are included" [
+                    it "runs all examples" pending
+                ]
+            ]
+
+            yield context "an example group with child groups" [
+                subject <| fun ctx ->
+                    ctx?example1 <- Example.create "ex1" (record "ex1")
+                    ctx?example2 <- Example.create "ex2" (record "ex1")
+                    anExampleGroup
+                    |> withExamples [ctx?example1]
+                    |> withNestedGroup
+                        (withExamples [ctx?example2])
+
+                context "when example 1 is included" [
+                    it "does not run example 2" <| fun ctx ->
+                        let filter (ex:Example.T) = ex.Name = "ex1"
+                        ctx
+                        |> performFilter filter
+                        |> getExampleNames
+                        |> should (equal ["ex1"])
+                ]
+
+                context "when example 2 is included" [
+                    it "does not run example 1" <| fun ctx ->
+                        let filter (ex:Example.T) = ex.Name = "ex2"
+                        ctx
+                        |> performFilter filter
+                        |> getExampleNames
+                        |> should (equal ["ex2"])
+                ]
             ]
         ]
     ]

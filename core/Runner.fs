@@ -58,3 +58,7 @@ let run reporter topLevelGroups =
     reporter.BeginTestRun ()
     |> fold
     |> reporter.EndTestRun
+
+let filterExamples f groups =
+    let filterExamplesInGroup = ExampleGroup.filterExamples f
+    groups |> List.map filterExamplesInGroup
