@@ -17,8 +17,6 @@ let rec performTearDown groupStack ctx =
 
 let doRun exampleGroup reporter report =
     let rec run groupStack report =
-        let metaData = groupStack |> List.map ExampleGroup.getMetaData |> List.fold (fun state x -> x |> TestDataMap.merge state) TestDataMap.Zero
-
         let execExample (example:Example.T) =
             let metaDataStack = example.MetaData :: (groupStack |> List.map ExampleGroup.getMetaData)
             let metaData = metaDataStack |> List.fold TestDataMap.merge TestDataMap.Zero
