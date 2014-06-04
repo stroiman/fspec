@@ -39,7 +39,7 @@ let haveGroupName expected =
     |> createMatcher
 
 let itBehavesLikeAGroupWithChildGroup name =
-    MultipleOperations [
+    behavior [
         it "should have exactly one child group" <| fun c ->
             c |> getSubject
             |> should (haveChildGroups 1)

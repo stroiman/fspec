@@ -156,7 +156,14 @@ module ExampleGroup =
     let addMetaData data grp = { grp with Name = grp.Name; MetaData = grp.MetaData.Merge data }
     let foldExamples folder grp state = grp.Examples |> List.rev |> List.fold folder state
     let foldChildGroups folder grp state = grp.ChildGroups |> List.rev |> List.fold folder state
-    let rec filterExamples f grp : T =
-        let filteredExamples = grp.Examples |> List.filter f
-        let filteredChildGroups = grp.ChildGroups |> List.map (filterExamples f)
-        { grp with Examples = filteredExamples; ChildGroups = filteredChildGroups }
+    let empty grp = match (grp.ChildGroups, grp.Examples) with
+                    | ([],[]) -> true
+                    | _ -> false
+
+    let rec filterGroups f grps =
+        let filterGroup grp =
+            let filteredExamples = grp.Examples |> List.filter f
+            let filteredGroups = grp.ChildGroups |> filterGroups f
+            { grp with Examples = filteredExamples; ChildGroups = filteredGroups }
+
+        grps |> List.map filterGroup |> List.filter (empty >> not)

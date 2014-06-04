@@ -18,8 +18,8 @@ let shouldRecord expected grp =
 
 let specs =
     describe "Test runner" [
+        before <| clearCallList
         describe "execution order" [
-            before <| clearCallList
 
             describe "of examples" [
                 it "executes examples in the order they appear" <| fun _ ->
@@ -161,67 +161,57 @@ let specs =
         ]
         
         describe "example filtering" [
-            let getExampleNames grps =
-                let rec getExamples grps =
-                    [ for grp in grps do
-                        yield! grp.ChildGroups |> getExamples
-                        yield! grp.Examples]
-                getExamples grps
-                |> List.map (fun x -> x.Name)
+            let itRunsTheSelectedExample = 
+                context "get executed examples" [
+                    subject <| fun ctx ->
+                        let runner =
+                            { Configuration.defaultConfig with
+                                Include = ctx.MetaData?filter_func }
+                            |> Runner.fromConfig
+                        [ctx |> TestContext.getSubject]
+                        |> runner Helpers.TestReporter.instance
+                        |> ignore
+                        actualCallList()
 
-            let performFilter f ctx =
-                ctx
-                |> TestContext.getSubject
-                |> fun x -> [x]
-                |> Runner.filterExamples f
+                    ("filter_func" ++ (fun (x:Example.T) -> x.Name = "ex1")) ==>
+                    context "when example 1 is included" [
+                        it "does not run example 2" <| fun ctx ->
+                            ctx.Subject.Should (equal ["ex1"])
+                    ]
+
+                    ("filter_func" ++ (fun (x:Example.T) -> x.Name = "ex2")) ==>
+                    context "when example 2 is included" [
+                        it "does not run example 1" <| fun ctx ->
+                            ctx.Subject.Should (equal ["ex2"])
+                    ]
+
+                    ("filter_func" ++ (fun (x:Example.T) -> false)) ==>
+                    context "when no examples are included" [
+                        it "runs all examples" <| fun ctx ->
+                            ctx.Subject.Should (equal ["ex1";"ex2"])
+                    ]
+                ]
                     
             yield context "an example group with two exampels" [
                 subject <| fun ctx ->
                     ctx?example1 <- Example.create "ex1" (record "ex1")
-                    ctx?example2 <- Example.create "ex2" (record "ex1")
+                    ctx?example2 <- Example.create "ex2" (record "ex2")
                     anExampleGroup
                     |> withExamples [ctx?example1; ctx?example2]
                 
-                context "when example 1 is included" [
-                    it "does not run example 2" <| fun ctx ->
-                        let filter (ex:Example.T) = ex.Name = "ex1"
-                        ctx
-                        |> performFilter filter
-                        |> getExampleNames
-                        |> should (equal ["ex1"])
-                ]
-
-                context "when no examples are included" [
-                    it "runs all examples" pending
-                ]
+                itRunsTheSelectedExample
             ]
 
             yield context "an example group with child groups" [
                 subject <| fun ctx ->
                     ctx?example1 <- Example.create "ex1" (record "ex1")
-                    ctx?example2 <- Example.create "ex2" (record "ex1")
+                    ctx?example2 <- Example.create "ex2" (record "ex2")
                     anExampleGroup
                     |> withExamples [ctx?example1]
                     |> withNestedGroup
                         (withExamples [ctx?example2])
 
-                context "when example 1 is included" [
-                    it "does not run example 2" <| fun ctx ->
-                        let filter (ex:Example.T) = ex.Name = "ex1"
-                        ctx
-                        |> performFilter filter
-                        |> getExampleNames
-                        |> should (equal ["ex1"])
-                ]
-
-                context "when example 2 is included" [
-                    it "does not run example 1" <| fun ctx ->
-                        let filter (ex:Example.T) = ex.Name = "ex2"
-                        ctx
-                        |> performFilter filter
-                        |> getExampleNames
-                        |> should (equal ["ex2"])
-                ]
+                itRunsTheSelectedExample
             ]
         ]
     ]
