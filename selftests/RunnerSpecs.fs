@@ -84,6 +84,13 @@ let specs =
                     ["outer setup"; "outer test";
                      "outer setup"; "inner setup"; "inner test 1";
                      "outer setup"; "inner setup"; "inner test 2"]
+
+            it "is executed in the order they appear" <| fun _ ->
+                anExampleGroup
+                |> withSetupCode (record "setup 1")
+                |> withSetupCode (record "setup 2")
+                |> withAnExample
+                |> shouldRecord ["setup 1";"setup 2"]
         ]
 
         context "tear down" [
@@ -103,6 +110,13 @@ let specs =
                 |> shouldRecord
                     ["outer test"; "outer tearDown";
                      "inner test"; "inner tearDown"; "outer tearDown"]
+
+            it "runs in the order it appears" <| fun _ ->
+                anExampleGroup
+                |> withTearDownCode (record "teardown 1")
+                |> withTearDownCode (record "teardown 2")
+                |> withAnExample
+                |> shouldRecord ["teardown 1";"teardown 2"]
         ]
 
         describe "context cleanup" [

@@ -1,18 +1,19 @@
 ﻿module FSpec.Core.Runner
 
+let runMany ctx = List.rev >> List.iter (fun x -> x ctx)
 let rec performSetup groupStack ctx =
     match groupStack with
         | [] -> ()
-        | head::tail ->
-            performSetup tail ctx
-            head |> ExampleGroup.setups |> List.iter (fun y -> y ctx)
+        | x::xs ->
+            performSetup xs ctx
+            x |> ExampleGroup.setups |> runMany ctx
 
 let rec performTearDown groupStack ctx =
     match groupStack with
         | [] -> ()
-        | head::tail ->
-            head |> ExampleGroup.tearDowns |> List.iter (fun y -> y ctx)
-            performTearDown tail ctx
+        | x::xs ->
+            x |> ExampleGroup.tearDowns |> runMany ctx
+            performTearDown xs ctx
 
 let doRun exampleGroup reporter report =
     let rec run groupStack report =
