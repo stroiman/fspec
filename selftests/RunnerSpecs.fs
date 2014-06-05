@@ -161,57 +161,64 @@ let specs =
         ]
         
         describe "example filtering" [
-            let itRunsTheSelectedExample = 
-                context "get executed examples" [
-                    subject <| fun ctx ->
-                        let runner =
-                            { Configuration.defaultConfig with
-                                Include = ctx.MetaData?filter_func }
-                            |> Runner.fromConfig
-                        [ctx |> TestContext.getSubject]
-                        |> runner Helpers.TestReporter.instance
-                        |> ignore
-                        actualCallList()
-
-                    ("filter_func" ++ (fun (x:Example.T) -> x.Name = "ex1")) ==>
-                    context "when example 1 is included" [
-                        it "does not run example 2" <| fun ctx ->
-                            ctx.Subject.Should (equal ["ex1"])
-                    ]
-
-                    ("filter_func" ++ (fun (x:Example.T) -> x.Name = "ex2")) ==>
-                    context "when example 2 is included" [
-                        it "does not run example 1" <| fun ctx ->
-                            ctx.Subject.Should (equal ["ex2"])
-                    ]
-
-                    ("filter_func" ++ (fun (x:Example.T) -> false)) ==>
-                    context "when no examples are included" [
-                        it "runs all examples" <| fun ctx ->
-                            ctx.Subject.Should (equal ["ex1";"ex2"])
-                    ]
-                ]
-                    
-            yield context "an example group with two exampels" [
-                subject <| fun ctx ->
-                    ctx?example1 <- Example.create "ex1" (record "ex1")
-                    ctx?example2 <- Example.create "ex2" (record "ex2")
-                    anExampleGroup
-                    |> withExamples [ctx?example1; ctx?example2]
-                
-                itRunsTheSelectedExample
+            context "with default configuration" [
+                it "runs examples with the 'focus' metadata" pending
+                it "runs example groups with the 'focus' metadata" pending
             ]
 
-            yield context "an example group with child groups" [
-                subject <| fun ctx ->
-                    ctx?example1 <- Example.create "ex1" (record "ex1")
-                    ctx?example2 <- Example.create "ex2" (record "ex2")
-                    anExampleGroup
-                    |> withExamples [ctx?example1]
-                    |> withNestedGroup
-                        (withExamples [ctx?example2])
+            context "with a custom function" [
+                let itRunsTheSelectedExample = 
+                    context "get executed examples" [
+                        subject <| fun ctx ->
+                            let runner =
+                                { Configuration.defaultConfig with
+                                    Include = ctx.MetaData?filter_func }
+                                |> Runner.fromConfig
+                            [ctx |> TestContext.getSubject]
+                            |> runner Helpers.TestReporter.instance
+                            |> ignore
+                            actualCallList()
 
-                itRunsTheSelectedExample
+                        ("filter_func" ++ (fun (x:Example.T) -> x.Name = "ex1")) ==>
+                        context "when example 1 is included" [
+                            it "does not run example 2" <| fun ctx ->
+                                ctx.Subject.Should (equal ["ex1"])
+                        ]
+
+                        ("filter_func" ++ (fun (x:Example.T) -> x.Name = "ex2")) ==>
+                        context "when example 2 is included" [
+                            it "does not run example 1" <| fun ctx ->
+                                ctx.Subject.Should (equal ["ex2"])
+                        ]
+
+                        ("filter_func" ++ (fun (x:Example.T) -> false)) ==>
+                        context "when no examples are included" [
+                            it "runs all examples" <| fun ctx ->
+                                ctx.Subject.Should (equal ["ex1";"ex2"])
+                        ]
+                    ]
+                        
+                yield context "an example group with two exampels" [
+                    subject <| fun ctx ->
+                        ctx?example1 <- Example.create "ex1" (record "ex1")
+                        ctx?example2 <- Example.create "ex2" (record "ex2")
+                        anExampleGroup
+                        |> withExamples [ctx?example1; ctx?example2]
+                    
+                    itRunsTheSelectedExample
+                ]
+
+                yield context "an example group with child groups" [
+                    subject <| fun ctx ->
+                        ctx?example1 <- Example.create "ex1" (record "ex1")
+                        ctx?example2 <- Example.create "ex2" (record "ex2")
+                        anExampleGroup
+                        |> withExamples [ctx?example1]
+                        |> withNestedGroup
+                            (withExamples [ctx?example2])
+
+                    itRunsTheSelectedExample
+                ]
             ]
         ]
     ]
