@@ -17,7 +17,7 @@ def compile(output_file, prerequisites, target)
   if windows?
     fsc = 'fsc'
   else
-    fsc = 'fsharpc --resident'
+    fsc = 'fsharpc'
   end
   sh "#{fsc} #{fs_files.join(" ")} --out:#{output_file} #{reference_args.join(" ")} --target:#{target}"
 end
