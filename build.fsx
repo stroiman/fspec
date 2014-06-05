@@ -42,6 +42,11 @@ Target "IncBuildNo" <| fun _ ->
     { version with Build = version.Build + 1 }
     |> writeVersion
 
+Target "IncMinorVersion" <| fun _ ->
+    let version = getVersion()
+    { version with Build = 0; Minor = version.Minor + 1 }
+    |> writeVersion
+
 Target "Commit" <| fun _ ->
     StageAll "."
     let commitMsg = getCommitMsg ()
@@ -55,5 +60,16 @@ Target "Default" (fun _ ->
     trace "Hello World from FAKE"
     )
 
+Target "CreateBuild" (fun _ -> ())
+Target "CreateMinor" (fun _ -> ())
+
+"IncBuildNo"
+    ==> "Commit"
+    ==> "CreateBuild"
+    
+"IncMinorVersion"
+    ==> "Commit"
+    ==> "CreateMinor"
+    
 // start build
 RunTargetOrDefault "Default"
