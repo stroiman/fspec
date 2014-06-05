@@ -1,6 +1,7 @@
 #I @"./packages/FAKE/tools"
 #r @"./packages/FAKE/tools/FakeLib.dll"
 open Fake
+open Fake.Git
 
 type Version = { Major:int; Minor:int; Build:int }
 
@@ -14,19 +15,40 @@ module Helpers =
         { Major = getValue 1;
           Minor = getValue 2;
           Build = getValue 3 }
+
+    let versionToString version = 
+        sprintf "%d.%d.%d" version.Major version.Minor version.Build
+
+    let versionToCommitMsg version =
+        version
+        |> versionToString
+        |> sprintf "v-%s"
           
 let getVersion () = 
     ReadFileAsString "version.txt"
     |> parseVersion
 
+let getCommitMsg () =
+    getVersion ()
+    |> versionToCommitMsg
+
 let writeVersion version =
-    sprintf "%d.%d.%d" version.Major version.Minor version.Build
+    version
+    |> versionToString
     |> WriteStringToFile false "version.txt"
 
 Target "IncBuildNo" <| fun _ ->
     let version = getVersion()
     { version with Build = version.Build + 1 }
     |> writeVersion
+
+Target "Commit" <| fun _ ->
+    StageAll "."
+    let commitMsg = getCommitMsg ()
+    Commit "." commitMsg
+    sprintf "tag %s" commitMsg
+    |> runSimpleGitCommand "." 
+    |> trace
 
 // Default target
 Target "Default" (fun _ ->
