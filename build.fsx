@@ -51,6 +51,16 @@ Target "Build" <| fun _ ->
         info.FileName <- "rake"
         info.WorkingDirectory <- ".") (TimeSpan.FromMinutes 5.0)
     if result <> 0 then failwithf "MyProc.exe returned with a non-zero exit code"
+
+Target "CreatePackage" <| fun _ ->
+    let version = getVersion() |> versionToString
+    ensureDirectory "NuGet"
+    NuGet (fun p -> 
+        {p with
+            Version = version
+            WorkingDir = "."
+        })
+        "fspec.nuspec"
     
 Target "IncBuildNo" <| fun _ ->
     let version = getVersion()
@@ -77,13 +87,18 @@ Target "CreateMinor" (fun _ -> ())
 
 // Dependencies
 "IncBuildNo"
+    ==> "Build"
+    ==> "CreatePackage"
     ==> "Commit"
     ==> "CreateBuild"
     
 "IncMinorVersion"
+    ==> "Build"
+    ==> "CreatePackage"
     ==> "Commit"
     ==> "CreateMinor"
     
 "Build" ==> "Default"
+
 // start build
 RunTargetOrDefault "Default"
