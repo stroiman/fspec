@@ -9,10 +9,10 @@ type Version = { Major:int; Minor:int; Build:int }
 
 [<AutoOpen>]
 module Helpers =
-    let parseVersion v =
+    let parseVersion (v:string) =
         let regex = new System.Text.RegularExpressions.Regex("^(\d+).(\d+).(\d+)$");
-        let m = regex.Match(v)
-        if not (m.Success) then failwith "Invalid version file"
+        let m = regex.Match(v.Trim())
+        if not (m.Success) then failwithf "Invalid version file: %A" v
         let getValue (x:int) = m.Groups.Item(x).Value |> System.Int32.Parse
         { Major = getValue 1;
           Minor = getValue 2;
@@ -48,7 +48,7 @@ Target "Build" <| fun _ ->
     ]
 
     let result = ExecProcess (fun info ->
-        info.FileName <- "rake"
+        info.FileName <- "c:\\Ruby193\\bin\\rake.bat"
         info.WorkingDirectory <- ".") (TimeSpan.FromMinutes 5.0)
     if result <> 0 then failwithf "MyProc.exe returned with a non-zero exit code"
 
@@ -82,22 +82,18 @@ Target "Commit" <| fun _ ->
 
 // Default target
 Target "Default" <| fun _ -> ()
-Target "CreateBuild" (fun _ -> ())
-Target "CreateMinor" (fun _ -> ())
+Target "CreateBuild" <| fun _ -> 
+    run "IncBuildNo"
+    run "Build"
+    run "CreatePackage"
+    run "Commit"
 
-// Dependencies
-"IncBuildNo"
-    ==> "Build"
-    ==> "CreatePackage"
-    ==> "Commit"
-    ==> "CreateBuild"
-    
-"IncMinorVersion"
-    ==> "Build"
-    ==> "CreatePackage"
-    ==> "Commit"
-    ==> "CreateMinor"
-    
+Target "CreateMinor" <| fun _ -> 
+    run "IncMinorVersion"
+    run "Build"
+    run "CreatePackage"
+    run "Commit"
+
 "Build" ==> "Default"
 
 // start build
