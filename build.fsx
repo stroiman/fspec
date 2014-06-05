@@ -1,7 +1,9 @@
 #I @"./packages/FAKE/tools"
 #r @"./packages/FAKE/tools/FakeLib.dll"
+open System
 open Fake
 open Fake.Git
+open Fake.AssemblyInfoFile
 
 type Version = { Major:int; Minor:int; Build:int }
 
@@ -37,6 +39,19 @@ let writeVersion version =
     |> versionToString
     |> WriteStringToFile false "version.txt"
 
+Target "Build" <| fun _ ->
+    let version = getVersion () |> versionToString
+    CreateFSharpAssemblyInfo "./core/AssemblyInfo.fs" [
+        Attribute.Title "FSpec"
+        Attribute.Version version
+        Attribute.FileVersion version
+    ]
+
+    let result = ExecProcess (fun info ->
+        info.FileName <- "rake"
+        info.WorkingDirectory <- ".") (TimeSpan.FromMinutes 5.0)
+    if result <> 0 then failwithf "MyProc.exe returned with a non-zero exit code"
+    
 Target "IncBuildNo" <| fun _ ->
     let version = getVersion()
     { version with Build = version.Build + 1 }
@@ -56,13 +71,11 @@ Target "Commit" <| fun _ ->
     |> trace
 
 // Default target
-Target "Default" (fun _ ->
-    trace "Hello World from FAKE"
-    )
-
+Target "Default" <| fun _ -> ()
 Target "CreateBuild" (fun _ -> ())
 Target "CreateMinor" (fun _ -> ())
 
+// Dependencies
 "IncBuildNo"
     ==> "Commit"
     ==> "CreateBuild"
@@ -71,5 +84,6 @@ Target "CreateMinor" (fun _ -> ())
     ==> "Commit"
     ==> "CreateMinor"
     
+"Build" ==> "Default"
 // start build
 RunTargetOrDefault "Default"
