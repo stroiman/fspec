@@ -24,7 +24,7 @@ let it name func = AddExampleOperation <| Example.create name func
 let exampleFromMatcher<'T> matchType (matcher : Matcher<'T>) =
     Example.create 
         (sprintf "should %s" (matcher.MessageFor matchType))
-        (fun ctx -> ctx |> TestContext.getSubject |> performMatch matchType matcher)
+        (fun ctx -> ctx.Subject.Apply (performMatch matchType matcher))
     |> AddExampleOperation
 
 let itShould<'T> = exampleFromMatcher<'T> Should

@@ -160,3 +160,6 @@ type System.Object with
     /// Allows the use of testContext.Subject.ShouldNot (matcher)
     member self.ShouldNot<'T> (matcher : Matcher<'T>) =
         self :?> 'T |> shouldNot matcher
+
+    member self.Apply<'T,'U> (f : 'T -> 'U) =
+        self :?> 'T |> f

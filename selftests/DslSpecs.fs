@@ -43,8 +43,7 @@ let itBehavesLikeAGroupWithChildGroup name =
             c.Subject.Should (haveChildGroups 1)
         
         it "should have a group with the right name" <| fun c ->
-            c |> TestContext.getSubject
-            |> getChildGroups
+            c.Subject.Apply getChildGroups
             |> should (have.atLeastOneElement (haveGroupName name))
     ]
 
@@ -63,8 +62,7 @@ let specs =
                 ctx.Subject.Should (haveNoOfExampleExamples 1)
 
             it "should have one example named 'Test'" <| fun ctx ->
-                ctx |> TestContext.getSubject
-                |> getExamples
+                ctx.Subject.Apply getExamples
                 |> should (have.atLeastOneElement (haveExampleName "Test"))
         ]
 
@@ -99,13 +97,11 @@ let specs =
                 ]
 
             it "contains two setups" <| fun c ->
-                c |> TestContext.getSubject
-                |> getSetups
+                c.Subject.Apply getSetups
                 |> should (have.length (be.equalTo 2))
 
             it "contains one teardown" <| fun c ->
-                c |> TestContext.getSubject
-                |> getTearDowns
+                c.Subject.Apply getTearDowns
                 |> should (have.length (be.equalTo 1))
         ]
 
@@ -129,8 +125,7 @@ let specs =
 
                 it "should store the meta data on the child group" <| fun c ->
                     let child =
-                        c |> TestContext.getSubject
-                        |> getChildGroups
+                        c.Subject.Apply getChildGroups
                         |> List.head
                     child.MetaData?answer |> should (be.equalTo 42)
             ]
@@ -139,8 +134,7 @@ let specs =
                 let itStoresMeaDataOnTheExample = 
                     it "should store the meta data on the example" <| fun c ->
                         let example =
-                            c |> TestContext.getSubject
-                            |> getExamples
+                            c.Subject.Apply getExamples
                             |> List.head
                         example.MetaData?answer |> should (be.equalTo 42)
 
