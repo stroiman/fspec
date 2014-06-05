@@ -2,9 +2,9 @@
 open System.Reflection
 
 [<assembly: AssemblyTitleAttribute("FSpec")>]
-[<assembly: AssemblyVersionAttribute("0.6.0")>]
-[<assembly: AssemblyFileVersionAttribute("0.6.0")>]
+[<assembly: AssemblyVersionAttribute("0.0.7")>]
+[<assembly: AssemblyFileVersionAttribute("0.0.7")>]
 do ()
 
 module internal AssemblyVersionInformation =
-    let [<Literal>] Version = "0.6.0"
+    let [<Literal>] Version = "0.0.7"
