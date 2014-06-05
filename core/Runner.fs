@@ -3,11 +3,12 @@ open ExampleGroup
 
 module Configuration =
     type T = {
-        Include : Example.T -> bool
+        Include : TestDataMap.T -> bool
     }
-    let defaultConfig = {
-        Include = fun _ -> true
-    }
+    let defaultConfig = 
+        {
+            Include = TestDataMap.containsKey "focus"
+        }
 
 module Runner =
     open Configuration

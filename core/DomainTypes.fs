@@ -57,6 +57,7 @@ module TestDataMap =
     /// Merges two TestDataMap instances. In case the same key
     /// exists in both data maps, the value from 'a' will win.
     let merge a b = { Data = a.Data |> Map.fold (fun s k v -> s |> Map.add k v) b.Data }
+    let containsKey key data = data.Data.ContainsKey key
 
     /// Creates a TestDataMap with a single element
     let (++) k v = [(k,v)] |> create
@@ -66,6 +67,7 @@ module TestDataMap =
         member self.Add name value = { self with Data = self.Data |> Map.add name (value :> obj) }
         member self.Merge other = merge other self
         member self.Count with get() = self.Data.Count
+        member self.ContainsKey name = self.Data.ContainsKey name
         static member (?) (self,name) = get name self
 
         /// Synonym for merge
@@ -129,6 +131,7 @@ module Example =
     let create name test = { Name = name; Test = test; MetaData = TestDataMap.Zero }
     let addMetaData data ex = { ex with Name = ex.Name; MetaData = ex.MetaData.Merge data }
     let run context example = example.Test context
+    let hasMetaData name ex = ex.MetaData.ContainsKey name
 
 module ExampleGroup =
     type TestFunc = TestContext -> unit
@@ -160,10 +163,19 @@ module ExampleGroup =
                     | ([],[]) -> true
                     | _ -> false
 
-    let rec filterGroups f grps =
-        let filterGroup grp =
-            let filteredExamples = grp.Examples |> List.filter f
-            let filteredGroups = grp.ChildGroups |> filterGroups f
-            { grp with Examples = filteredExamples; ChildGroups = filteredGroups }
+    let filterGroups (f:TestDataMap.T->bool) grps =
+        let rec filterGroups metaData grps =
+            let filterGroup grp =
+                let metaData = grp.MetaData |> TestDataMap.merge metaData
+                let filteredExamples = 
+                    grp.Examples 
+                    |> List.filter (fun x -> x.MetaData |> TestDataMap.merge metaData |> f)
+                let filteredGroups = grp.ChildGroups |> filterGroups metaData
+                { grp with 
+                    Examples = filteredExamples; 
+                    ChildGroups = filteredGroups 
+                }
 
-        grps |> List.map filterGroup |> List.filter (empty >> not)
+            let notEmpty = empty >> not
+            grps |> List.map filterGroup |> List.filter notEmpty
+        grps |> filterGroups TestDataMap.Zero

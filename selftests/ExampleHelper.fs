@@ -48,7 +48,7 @@ let withAnExample = anExample |> ExampleGroup.addExample
 // Run helper
 let run exampleGroup = 
     let reporter = Helpers.TestReporter.instance
-    Runner.doRun exampleGroup reporter (reporter.BeginTestRun())
+    Runner.run reporter [exampleGroup]
 
 // ---- Custom matchers ----
 
