@@ -3,11 +3,12 @@ open FSpec.Core
 open Dsl
 open MatchersV3
 open Helpers
+open Example
 
 let haveNameTo matcher =
     createCompountMatcher
         matcher
-        (fun x -> x |> Example.name)
+        (fun x -> x.Name)
         "have name to"
 
 let createContextWithSubject subject =

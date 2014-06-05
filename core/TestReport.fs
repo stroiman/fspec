@@ -1,5 +1,6 @@
 namespace FSpec.Core
 open System
+open Example
 
 /// Represenations of the colors used to print to the console
 type Color =
@@ -62,7 +63,7 @@ module TreeReporter =
 
     let create (options : TreeReporterOptions.T) =
         let printer = options.Printer
-        let exampleName x = x.Example |> Example.name
+        let exampleName x = x.Example.Name
         let result ex = ex.Result
 
         let printFailedExamples executedExamples =

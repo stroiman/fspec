@@ -42,7 +42,7 @@ module TestReporter =
 
     let instance = {
         BeginGroup = fun grp -> grp.Name |> BeginGroup |> appendToReport
-        ReportExample = fun ex res -> (ex |> Example.name, res) |> Example |> appendToReport
+        ReportExample = fun ex res -> (ex.Name, res) |> Example |> appendToReport
         EndTestRun = fun r -> r
         EndGroup = EndGroup |> appendToReport
         Success = fun _ -> true

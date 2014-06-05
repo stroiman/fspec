@@ -31,7 +31,7 @@ let haveNoOfExampleExamples expected =
         |> Seq.length = expected)
 
 let haveExampleName expected =
-    (fun actual -> actual |> Example.name = expected)
+    (fun (actual:Example.T) -> actual.Name = expected)
     |> createMatcher
 
 let haveGroupName expected =
