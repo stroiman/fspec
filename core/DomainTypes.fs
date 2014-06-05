@@ -89,11 +89,6 @@ type TestContext =
         static member cleanup ctx =
             ctx.Disposables |> List.iter (fun x -> x.Dispose())
 
-module TestContextOperations =
-    let getSubject<'T> (context : TestContext) = context.Subject :?> 'T
-
-type TestContext
-    with
         member self.metadata = self.MetaData
         member ctx.Set name value =
             ctx.Data <- ctx.Data.Add name value

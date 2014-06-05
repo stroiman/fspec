@@ -3,7 +3,6 @@ open FSpec.Core
 open Dsl
 open MatchersV3
 open TestDataMap
-open TestContextOperations
 open ExampleGroup
 
 let pass = fun _ -> ()
@@ -41,11 +40,10 @@ let haveGroupName expected =
 let itBehavesLikeAGroupWithChildGroup name =
     behavior [
         it "should have exactly one child group" <| fun c ->
-            c |> getSubject
-            |> should (haveChildGroups 1)
+            c.Subject.Should (haveChildGroups 1)
         
         it "should have a group with the right name" <| fun c ->
-            c |> getSubject
+            c |> TestContext.getSubject
             |> getChildGroups
             |> should (have.atLeastOneElement (haveGroupName name))
     ]
@@ -59,15 +57,13 @@ let specs =
                 ]
 
             it "should have no child groups" <| fun ctx ->
-                ctx |> getSubject
-                |> should (haveChildGroups 0)
+                ctx.Subject.Should (haveChildGroups 0)
 
             it "should have exactly one example" <| fun ctx ->
-                ctx |> getSubject
-                |> should (haveNoOfExampleExamples 1)
+                ctx.Subject.Should (haveNoOfExampleExamples 1)
 
             it "should have one example named 'Test'" <| fun ctx ->
-                ctx |> getSubject
+                ctx |> TestContext.getSubject
                 |> getExamples
                 |> should (have.atLeastOneElement (haveExampleName "Test"))
         ]
@@ -103,12 +99,12 @@ let specs =
                 ]
 
             it "contains two setups" <| fun c ->
-                c |> getSubject
+                c |> TestContext.getSubject
                 |> getSetups
                 |> should (have.length (be.equalTo 2))
 
             it "contains one teardown" <| fun c ->
-                c |> getSubject
+                c |> TestContext.getSubject
                 |> getTearDowns
                 |> should (have.length (be.equalTo 1))
         ]
@@ -120,7 +116,7 @@ let specs =
                      describe "group" [])
 
                 it "should store the meta data on the example group" <| fun c ->
-                    let grp = c |> getSubject<ExampleGroup.T>
+                    let grp = c.GetSubject<ExampleGroup.T> ()
                     grp.MetaData?answer |> should (be.equalTo 42)
             ]
 
@@ -133,7 +129,7 @@ let specs =
 
                 it "should store the meta data on the child group" <| fun c ->
                     let child =
-                        c |> getSubject 
+                        c |> TestContext.getSubject
                         |> getChildGroups
                         |> List.head
                     child.MetaData?answer |> should (be.equalTo 42)
@@ -143,7 +139,7 @@ let specs =
                 let itStoresMeaDataOnTheExample = 
                     it "should store the meta data on the example" <| fun c ->
                         let example =
-                            c |> getSubject
+                            c |> TestContext.getSubject
                             |> getExamples
                             |> List.head
                         example.MetaData?answer |> should (be.equalTo 42)
@@ -175,8 +171,7 @@ let specs =
                 ]
 
             it "should have one example" <| fun ctx ->
-                ctx |> getSubject
-                |> should (haveNoOfExampleExamples 1)
+                ctx.Subject.Should (haveNoOfExampleExamples 1)
         ]
 
         describe "'itShouldNot' example expressions" [
@@ -186,7 +181,6 @@ let specs =
                 ]
 
             it "should have one example" <| fun ctx ->
-                ctx |> getSubject
-                |> should (haveNoOfExampleExamples 1)
+                ctx.Subject.Should (haveNoOfExampleExamples 1)
         ]
     ]

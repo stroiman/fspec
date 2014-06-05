@@ -7,7 +7,6 @@ open MatchersV3
 open Runner
 open ExampleHelper
 open Helpers
-open TestContextOperations
 
 let anExampleGroupNamed name = ExampleGroup.create name
 let aFailureWithMessage message = Failure {Message=message}

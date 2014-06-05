@@ -2,8 +2,6 @@
 open FSpec.Core
 open Dsl
 open MatchersV3
-open TestContextOperations
-
 
 type DisposeSpy () =
     member val Disposed = false with get, set

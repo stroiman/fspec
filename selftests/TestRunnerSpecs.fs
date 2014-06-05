@@ -3,7 +3,6 @@ open FSpec.Core
 open MatchersV3
 open Dsl
 open ExampleHelper
-open TestContextOperations
 open Helpers
 open TestReporter
 
