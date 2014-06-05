@@ -131,26 +131,26 @@ let specs =
                     |> withSetupCode (fun c -> c?dummy <- disposable)
 
                 it "is disposed after test run" <| fun ctx ->
-                    ctx |> TestContext.getSubject
+                    ctx.GetSubject<ExampleGroup.T> ()
                     |> withAnExample
                     |> run |> ignore
                     ctx?disposed |> should be.True
 
                 it "is disposed if test fails" <| fun ctx ->
-                    ctx |> TestContext.getSubject
+                    ctx.GetSubject<ExampleGroup.T> ()
                     |> withExampleCode (fun _ -> failwith "dummy")
                     |> run |> ignore
                     ctx?disposed |> should be.True
 
                 it "is disposed if teardown fails" <| fun ctx ->
-                    ctx |> TestContext.getSubject
+                    ctx.GetSubject<ExampleGroup.T> ()
                     |> withTearDownCode (fun _ -> failwith "dummy")
                     |> withAnExample
                     |> run |> ignore
                     ctx?disposed |> should be.True
 
                 it "is not disposed in teardown code" <| fun ctx ->
-                    ctx |> TestContext.getSubject
+                    ctx.GetSubject<ExampleGroup.T> ()
                     |> withTearDownCode (fun _ -> 
                         let disposed : bool = ctx?disposed
                         ctx?disposedDuringTearDown <- disposed)

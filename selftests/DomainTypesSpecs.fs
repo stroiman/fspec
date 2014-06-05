@@ -4,7 +4,7 @@ open Dsl
 open MatchersV3
 open ExampleHelper
 
-let change f = fun c -> c |> TestContext.getSubject |> f
+let change f = fun c -> c.Subject.Apply f
 
 let specs =
     [
@@ -41,14 +41,13 @@ let specs =
                 describe "addMetaData" [
                     it "does not clear existing metadata" <| fun c ->
                         let grp = 
-                            c |> TestContext.getSubject
-                            |> Example.addMetaData ("b" ++ 43)
+                            c.Subject.Apply (Example.addMetaData ("b" ++ 43))
                         grp.MetaData?a.Should (equal 42)
 
                     it "'wins' if name is the same as existing metadata" <| fun c ->
                         let ex = 
-                            c |> TestContext.getSubject
-                            |> Example.addMetaData ("a" ++ 43)
+                            c.Subject.Apply
+                             (Example.addMetaData ("a" ++ 43))
                         ex.MetaData?a.Should (equal 43)
                 ]
             ]

@@ -18,7 +18,7 @@ let createContextWithSubject subject =
 
 let testWithSubject subject ctx =
     let sutCtx = createContextWithSubject subject
-    fun () -> ctx |> TestContext.getSubject |> Example.run sutCtx
+    fun () -> ctx.Subject.Apply (Example.run sutCtx)
 
 let createExample = function 
                         | AddExampleOperation x -> x 

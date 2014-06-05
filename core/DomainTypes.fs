@@ -80,7 +80,6 @@ type TestContext =
         mutable Subject: obj
         mutable Data: TestDataMap.T }
     with
-        static member getSubject<'T> context = context.Subject :?> 'T
         static member registerDisposable (x:obj) ctx =
             match x with
             | :? System.IDisposable as d -> ctx.Disposables <- d::ctx.Disposables
@@ -103,8 +102,7 @@ type TestContext =
                 let result = initializer self
                 self.Set name result
                 result
-        
-        member ctx.GetSubject<'T> () = TestContext.getSubject<'T> ctx
+        member ctx.GetSubject<'T> () = ctx.Subject :?> 'T
         member ctx.SetSubject s = 
             ctx.Subject <- s :> obj
             ctx |> TestContext.registerDisposable s

@@ -12,7 +12,7 @@ let anExampleGroupNamed name = ExampleGroup.create name
 let aFailureWithMessage message = Failure {Message=message}
 let aFailure = aFailureWithMessage "dummy"
 
-let getSubject<'T> ctx : Reporter<'T> = ctx |> TestContext.getSubject
+let getSubject<'T> (ctx:TestContext) = ctx.GetSubject<Reporter<'T>> ()
 
 let haveLineMatching pattern = have.element (be.string.matching pattern)
 
