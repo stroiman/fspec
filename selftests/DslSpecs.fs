@@ -4,6 +4,7 @@ open Dsl
 open MatchersV3
 open TestDataMap
 open TestContextOperations
+open ExampleGroup
 
 let pass = fun _ -> ()
 
@@ -14,15 +15,19 @@ let setGroup x =
         | _ -> failwith "error"
 
 let createMatcher = createSimpleMatcher
+let getSetups grp = grp.Setups
+let getTearDowns grp = grp.TearDowns
+let getExamples grp = grp.Examples
+let getChildGroups grp = grp.ChildGroups
 
 let haveChildGroups expected =
     createMatcher (fun actual ->
-        actual |> ExampleGroup.childGroups |> Seq.length = expected)
+        actual.ChildGroups |> Seq.length = expected)
 
 let haveNoOfExampleExamples expected =
     createMatcher (fun actual ->
         actual
-        |> ExampleGroup.examples
+        |> getExamples
         |> Seq.length = expected)
 
 let haveExampleName expected =
@@ -30,7 +35,7 @@ let haveExampleName expected =
     |> createMatcher
 
 let haveGroupName expected =
-    (fun a -> a |> ExampleGroup.name = expected)
+    (fun a -> a.Name = expected)
     |> createMatcher
 
 let itBehavesLikeAGroupWithChildGroup name =
@@ -41,7 +46,7 @@ let itBehavesLikeAGroupWithChildGroup name =
         
         it "should have a group with the right name" <| fun c ->
             c |> getSubject
-            |> ExampleGroup.childGroups
+            |> getChildGroups
             |> should (have.atLeastOneElement (haveGroupName name))
     ]
 
@@ -63,7 +68,7 @@ let specs =
 
             it "should have one example named 'Test'" <| fun ctx ->
                 ctx |> getSubject
-                |> ExampleGroup.examples
+                |> getExamples
                 |> should (have.atLeastOneElement (haveExampleName "Test"))
         ]
 
@@ -99,12 +104,12 @@ let specs =
 
             it "contains two setups" <| fun c ->
                 c |> getSubject
-                |> ExampleGroup.setups
+                |> getSetups
                 |> should (have.length (be.equalTo 2))
 
             it "contains one teardown" <| fun c ->
                 c |> getSubject
-                |> ExampleGroup.tearDowns
+                |> getTearDowns
                 |> should (have.length (be.equalTo 1))
         ]
 
@@ -129,7 +134,7 @@ let specs =
                 it "should store the meta data on the child group" <| fun c ->
                     let child =
                         c |> getSubject 
-                        |> ExampleGroup.childGroups
+                        |> getChildGroups
                         |> List.head
                     child.MetaData?answer |> should (be.equalTo 42)
             ]
@@ -139,7 +144,7 @@ let specs =
                     it "should store the meta data on the example" <| fun c ->
                         let example =
                             c |> getSubject
-                            |> ExampleGroup.examples
+                            |> getExamples
                             |> List.head
                         example.MetaData?answer |> should (be.equalTo 42)
 

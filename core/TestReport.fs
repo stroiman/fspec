@@ -70,7 +70,7 @@ module TreeReporter =
                 match executedExamples with
                 | [] -> ()
                 | x::xs ->
-                    let (pop,push) = Helper.diff prevGroups (x.ContainingGroups |> List.map ExampleGroup.name)
+                    let (pop,push) = Helper.diff prevGroups (x.ContainingGroups |> List.map (fun x -> x.Name))
                     let indent = pop |> List.fold (fun (i:string list) y -> i.Tail) indent
                     let indentation = indent |> List.fold (+) ""
                     let prevGroups = pop |> List.fold (fun (i:string list) y -> i.Tail) prevGroups

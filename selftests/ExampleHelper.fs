@@ -3,6 +3,7 @@ open FSpec.Core
 open Matchers
 open Dsl
 open MatchersV3
+open ExampleGroup
 
 // Example building helpers
 let pass = fun _ -> ()
@@ -54,7 +55,7 @@ let run exampleGroup =
 let haveMetaData k v =
     let f a =
         let x =
-            a |> ExampleGroup.getMetaData |> TestDataMap.tryGet k
+            a.MetaData |> TestDataMap.tryGet k
         match x with
         | Some y -> y = v
         | None -> false

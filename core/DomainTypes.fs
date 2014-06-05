@@ -150,16 +150,10 @@ module ExampleGroup =
         ChildGroups = [];
         MetaData = TestDataMap.Zero
     }
-    let name grp = grp.Name
-    let setups grp = grp.Setups
-    let tearDowns grp = grp.TearDowns
     let addExample test grp = { grp with Examples = test::grp.Examples }
     let addSetup setup grp = { grp with Setups = setup::grp.Setups }
     let addTearDown tearDown grp = { grp with TearDowns = tearDown::grp.TearDowns }
     let addChildGroup child grp = { grp with ChildGroups = child::grp.ChildGroups }
     let addMetaData data grp = { grp with Name = grp.Name; MetaData = grp.MetaData.Merge data }
-    let getMetaData grp = grp.MetaData
-    let childGroups grp = grp.ChildGroups |> List.rev
-    let examples grp = grp.Examples 
     let foldExamples folder grp state = grp.Examples |> List.rev |> List.fold folder state
     let foldChildGroups folder grp state = grp.ChildGroups |> List.rev |> List.fold folder state

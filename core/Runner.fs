@@ -1,4 +1,5 @@
 ﻿module FSpec.Core.Runner
+open ExampleGroup
 
 let runMany ctx = List.rev >> List.iter (fun x -> x ctx)
 let rec performSetup groupStack ctx =
@@ -6,19 +7,19 @@ let rec performSetup groupStack ctx =
         | [] -> ()
         | x::xs ->
             performSetup xs ctx
-            x |> ExampleGroup.setups |> runMany ctx
+            x.Setups |> runMany ctx
 
 let rec performTearDown groupStack ctx =
     match groupStack with
         | [] -> ()
         | x::xs ->
-            x |> ExampleGroup.tearDowns |> runMany ctx
+            x.TearDowns |> runMany ctx
             performTearDown xs ctx
 
 let doRun exampleGroup reporter report =
     let rec run groupStack report =
         let execExample (example:Example.T) =
-            let metaDataStack = example.MetaData :: (groupStack |> List.map ExampleGroup.getMetaData)
+            let metaDataStack = example.MetaData :: (groupStack |> List.map (fun x -> x.MetaData))
             let metaData = metaDataStack |> List.fold TestDataMap.merge TestDataMap.Zero
             try
                 let context = metaData |> TestContext.create

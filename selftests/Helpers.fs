@@ -1,5 +1,6 @@
 ﻿module FSpec.SelfTests.Helpers
 open FSpec.Core
+open ExampleGroup
 
 let stringBuilderPrinter builder =
     fun color msg ->
@@ -40,7 +41,7 @@ module TestReporter =
     let appendToReport n r = { r with CallList = n::r.CallList }
 
     let instance = {
-        BeginGroup = ExampleGroup.name >> BeginGroup >> appendToReport
+        BeginGroup = fun grp -> grp.Name |> BeginGroup |> appendToReport
         ReportExample = fun ex res -> (ex |> Example.name, res) |> Example |> appendToReport
         EndTestRun = fun r -> r
         EndGroup = EndGroup |> appendToReport
