@@ -73,36 +73,26 @@ module TestDataMap =
         /// Synonym for merge
         static member (|||) (a,b) = merge a b
 
-type SubjectWrapper =
+type SubjectWrapper<'T> =
     {
-        ParentSubject : SubjectWrapper option
-        Initializer : TestContext -> obj
-        mutable x : obj
+        ParentSubject : SubjectWrapper<'T> option
+        Initializer : 'T -> obj
+        mutable Instance : obj
     }
     with
-        static member create (f:TestContext->'a) parent = {
-            Initializer = (fun (ctx:TestContext) -> (f ctx) :> obj)
+        static member create (f:'T->'a) parent = {
+            Initializer = (fun (ctx:'T) -> (f ctx) :> obj)
             ParentSubject = parent
-            x = null }
-        member private self.Eval ctx =
-            let tmp = ctx.WrappedSubject
-            try
-                ctx.WrappedSubject <- self.ParentSubject
-                let x = self.Initializer ctx
-                ctx.RegisterDisposable x
-                x
-            finally
-                ctx.WrappedSubject <- tmp
+            Instance = null }
+        member self.Get f =
+            if self.Instance = null then self.Instance <- f self
+            self.Instance
 
-        member self.Get ctx =
-            if self.x = null then self.x <- self.Eval ctx
-            self.x
-
-and TestContext =
+type TestContext =
     { 
         MetaData: TestDataMap.T
         mutable Disposables: System.IDisposable list
-        mutable WrappedSubject: SubjectWrapper option
+        mutable WrappedSubject: SubjectWrapper<TestContext> option
         mutable Data: TestDataMap.T }
     with
         static member cleanup ctx =
@@ -129,16 +119,25 @@ and TestContext =
 
         member ctx.SetSubject f = 
             ctx.WrappedSubject <- Some (SubjectWrapper.create f ctx.WrappedSubject)
-//            ctx.RegisterDisposable s
-        member ctx.GetSubject<'T> () = ctx.WrappedSubject.Value.Get ctx :?> 'T
 
         member ctx.Subject
             with get () : obj =
                 match ctx.WrappedSubject with
                 | None -> null
-                | Some x -> x.Get ctx
+                | Some x -> 
+                    let f wrapper =
+                        let tmp = ctx.WrappedSubject
+                        try
+                            ctx.WrappedSubject <- wrapper.ParentSubject
+                            let x = wrapper.Initializer ctx
+                            ctx.RegisterDisposable x
+                            x
+                        finally
+                            ctx.WrappedSubject <- tmp
+                    x.Get f
             and set x =
                 ctx.SetSubject (fun _ -> x)
+        member ctx.GetSubject<'T> () = ctx.Subject :?> 'T
 
         static member (?) (self:TestContext,name) = self.Get name 
         static member (?<-) (self:TestContext,name,value) = self.Set name value 

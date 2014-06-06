@@ -102,14 +102,14 @@ let specs =
 
             context "when subject is not requested" [
                 it "does not evaluate subject initialization code" <| fun ctx ->
-                    ctx?callCount |> should (equal 0)
+                    ctx?callCount.Should (equal 0)
             ]
 
             context "when subject is requested twice" [
                 it "only call initialization code once" <| fun ctx ->
                     ctx.Subject |> ignore
                     ctx.Subject |> ignore
-                    ctx?callCount |> should (equal 2)
+                    ctx?callCount.Should (equal 2)
             ]
         ]
 
