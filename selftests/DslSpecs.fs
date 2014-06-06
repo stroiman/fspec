@@ -4,6 +4,7 @@ open Dsl
 open MatchersV3
 open TestDataMap
 open ExampleGroup
+open CustomMatchers
 
 let pass = fun _ -> ()
 
@@ -13,29 +14,10 @@ let setGroup x =
         | AddExampleGroupOperation g -> g
         | _ -> failwith "error"
 
-let createMatcher = createSimpleMatcher
 let getSetups grp = grp.Setups
 let getTearDowns grp = grp.TearDowns
 let getExamples grp = grp.Examples
 let getChildGroups grp = grp.ChildGroups
-
-let haveChildGroups expected =
-    createMatcher (fun actual ->
-        actual.ChildGroups |> Seq.length = expected)
-
-let haveNoOfExampleExamples expected =
-    createMatcher (fun actual ->
-        actual
-        |> getExamples
-        |> Seq.length = expected)
-
-let haveExampleName expected =
-    (fun (actual:Example.T) -> actual.Name = expected)
-    |> createMatcher
-
-let haveGroupName expected =
-    (fun a -> a.Name = expected)
-    |> createMatcher
 
 let itBehavesLikeAGroupWithChildGroup name =
     behavior [
@@ -59,11 +41,11 @@ let specs =
                 ctx.Subject.Should (haveChildGroups 0)
 
             it "should have exactly one example" <| fun ctx ->
-                ctx.Subject.Should (haveNoOfExampleExamples 1)
+                ctx.Subject.Should (haveNoOfExamples 1)
 
             it "should have one example named 'Test'" <| fun ctx ->
                 ctx.Subject.Apply getExamples
-                |> should (have.atLeastOneElement (haveExampleName "Test"))
+                |> should (have.atLeastOneElement (haveExampleNamed "Test"))
         ]
 
         context "a 'Describe' statement inside a 'Describe' statement" [
@@ -165,7 +147,7 @@ let specs =
                 ]
 
             it "should have one example" <| fun ctx ->
-                ctx.Subject.Should (haveNoOfExampleExamples 1)
+                ctx.Subject.Should (haveNoOfExamples 1)
         ]
 
         describe "'itShouldNot' example expressions" [
@@ -175,6 +157,6 @@ let specs =
                 ]
 
             it "should have one example" <| fun ctx ->
-                ctx.Subject.Should (haveNoOfExampleExamples 1)
+                ctx.Subject.Should (haveNoOfExamples 1)
         ]
     ]

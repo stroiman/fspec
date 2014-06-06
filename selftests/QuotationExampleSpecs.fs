@@ -4,12 +4,7 @@ open Dsl
 open MatchersV3
 open Helpers
 open Example
-
-let haveNameTo matcher =
-    createCompountMatcher
-        matcher
-        (fun x -> x.Name)
-        "have name to"
+open CustomMatchers
 
 let createContextWithSubject subject =
     let ctx = TestContext.create TestDataMap.Zero
@@ -31,8 +26,7 @@ let specs =
                 createExample (itShould (be.False))
                 
             it "should be name 'should be false'" <| fun ctx ->
-                ctx.Subject.Should (haveNameTo 
-                    (equal "should be false"))
+                ctx.Subject.Should (haveExampleNamed "should be false")
 
             it "should succeed when subject is false" <| fun c ->
                 c |> testWithSubject false
@@ -48,8 +42,7 @@ let specs =
                 createExample (itShouldNot (be.True))
                 
             it "should be name 'should not be true'" <| fun ctx ->
-                ctx.Subject.Should (haveNameTo 
-                    (equal "should not be true"))
+                ctx.Subject.Should (haveExampleNamed "should not be true")
 
             it "should succeed when subject is false" <| fun c ->
                 c |> testWithSubject false
@@ -65,8 +58,8 @@ let specs =
                 createExample (itShould (have.length (equal 1)))
                    
             it "should have name 'should have length equal 1'" <| fun c ->
-                c.Subject.Should (haveNameTo
-                    (equal "should have length to equal 1"))
+                c.Subject.Should 
+                    (haveExampleNamed "should have length to equal 1")
 
             it "should pass when given a collection with one element" <| fun c ->
                 c |> testWithSubject ["dummy"]

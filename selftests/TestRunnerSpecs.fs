@@ -14,8 +14,8 @@ let beExampleWithResult f =
 
 let itIsFailure = function | Failure _ -> true | _ -> false
 let itIsError = function | Error _ -> true | _ -> false
-
 let itRaisesException = fun _ -> raise (new System.NotImplementedException())
+
 let beExample = beExampleWithResult (fun _ -> true)
 let bePending = beExampleWithResult (fun r -> r = Pending)
 let beSuccess = beExampleWithResult (fun r -> r = Success)
