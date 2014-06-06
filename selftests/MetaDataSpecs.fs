@@ -1,7 +1,7 @@
 ﻿module FSpec.SelfTests.MetaDataSpecs
 open FSpec.Core
 open Dsl
-open Matchers
+open MatchersV3
 
 type TestContext with
     member self.data with get() = self.GetSubject<TestDataMap.T> ()
@@ -13,7 +13,7 @@ let specs =
         describe "dynamic get operator" [
             it "can retrieve data" <| fun _ ->
                 let md = createMap [("data",1)]
-                md?data |> should equal 1
+                md?data.Should (equal 1)
         ]
 
         describe "merge" [
@@ -25,11 +25,11 @@ let specs =
                     
                 it "contains two elements" <| fun ctx ->
                     let result = ctx.data
-                    result.Count |> should equal 2
+                    result.Count.Should (equal 2)
 
                 it "returns a metadata with both objects" <| fun ctx ->
-                    ctx.data.Get "a" |> should equal 1
-                    ctx.data.Get "b" |> should equal 2
+                    ctx.data.Get "a" |> should (equal 1)
+                    ctx.data.Get "b" |> should (equal 2)
             ]
 
             context "when two metadata sets have same objects" [
@@ -39,10 +39,10 @@ let specs =
                     a |> mergeMap b
                     
                 it "should have one element" <| fun ctx ->
-                    ctx.data.Count |> should equal 1
+                    ctx.data.Count.Should (equal 1)
 
                 it "returns a metadata with the 'last' given value" <| fun ctx ->
-                    ctx.data.Get "a" |> should equal 2
+                    ctx.data.Get "a" |> should (equal 2)
             ]
         ]
     ]
