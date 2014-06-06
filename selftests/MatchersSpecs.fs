@@ -8,6 +8,16 @@ type A() = class end
 type B() = class end
 type A'() = inherit A()
 
+let shouldPass test =
+    test ()
+
+let shouldFail test = 
+    try
+        test ()
+        failwith "Error expected"
+    with
+        | _ -> ()
+
 let specs = [
     describe "Collection matcher" [
         describe "have.element" [

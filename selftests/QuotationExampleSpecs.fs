@@ -30,11 +30,11 @@ let specs =
 
             it "should succeed when subject is false" <| fun c ->
                 c |> testWithSubject false
-                |> shouldPass
+                |> should succeed
 
             it "should fail when subject is true" <| fun c ->
                 c |> testWithSubject true
-                |> shouldFail
+                |> should fail
         ]
 
         describe "shouldNot (be.True)" [
@@ -46,11 +46,11 @@ let specs =
 
             it "should succeed when subject is false" <| fun c ->
                 c |> testWithSubject false
-                |> shouldPass
+                |> should succeed
 
             it "should fail when subject is true" <| fun c ->
                 c |> testWithSubject true
-                |> shouldFail
+                |> should fail
         ]
 
         describe "syntax (have.length (equal 1))" [
@@ -63,14 +63,14 @@ let specs =
 
             it "should pass when given a collection with one element" <| fun c ->
                 c |> testWithSubject ["dummy"]
-                |> shouldPass
+                |> should succeed
 
             it "should fail when given a collection with two elements"<| fun c ->
                 c |> testWithSubject ["foo"; "bar"]
-                |> shouldFail
+                |> should fail
 
             it "should fail when subject is not a collection" <| fun c ->
                 c |> testWithSubject 42
-                |> shouldFail
+                |> should fail
         ]
     ]

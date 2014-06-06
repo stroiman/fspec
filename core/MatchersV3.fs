@@ -122,6 +122,14 @@ let fail =
         | _ -> true
     createMatcher f "fail"
 
+let succeed =
+    let f a =
+        try
+            a (); true
+        with
+        | _ -> false
+    createMatcher f "pass"
+
 module throwException =
     let withMessage matcher =
         let f a = 

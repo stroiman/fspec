@@ -13,23 +13,11 @@ let tryExecute test =
     with
         | AssertionError(info) -> Some(info)
 
-let shouldPass test =
-    match tryExecute test with
-    | None -> ()
-    | Some(x) -> failwithf "Test failed with %A" x
-
 let getErrorMsg test : string =
     match tryExecute test with
     | None -> failwith "Expected test failure"
     | Some(x) -> x.Message
     
-let shouldFail test = 
-    try
-        test ()
-        failwith "Error expected"
-    with
-        | _ -> ()
-
 module TestReporter =
     type ReportType =
         | BeginGroup of string
