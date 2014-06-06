@@ -21,11 +21,10 @@ Currently the following features are supported
    data that may or may not have been initialized.
  * Better error messages when context/meta data does not exist, or is of
    incorrect type.
+ * One liner examples
 
-Ideas for future improvements (prioritized list)
+Ideas for future improvements
 
- * Better support for batch building examples.
- * One liner verifications using expressions (I want this)
  * Context data and meta data keys can be other types than strings, e.g.
    discriminated unions, partly to avoid name clashes.
  * Global setup/teardown code, useful for clearing database between tests.
@@ -145,15 +144,41 @@ let specs =
         before <| fun _ ->
             ctx?user <- createUser "John" "Doe"
         it "sets the first name" <| fun ctx ->
-            ctx?user |> User.firstName |> should equal "John"
+            ctx?user |> (fun x -> x.FirstName) |> should equal "John"
         it "sets the last name" <| fun ctx ->
-            ctx?user |> User.lastName |> should equal "Doe"
+            ctx?user |> (fun x -> x.LastName) |> should equal "Doe"
     ]
 ```
 
 Where other test frameworks relies on class member fields to share data
 between, e.g. general setup and test code, the _TestContext_ is the place to
 store it in FSpec.
+
+The data is internally stored as instances of type _obj_, but the ? operator
+works with the type inference system, so it will automatically cast the data to
+the expected type. 
+
+In the above example, the _fun x -> x.FirstName_ would be inferred to be of
+type _User -> string_ - assuming the _User_ type was the only type with a
+_FirstName_ property currently opened.
+
+The above example could be written a little nicer, if we introduced custom
+matchers for members on the _User_ type
+
+```fsharp
+let specs =
+    describe "createUser function" [
+        before <| fun _ ->
+            ctx?user <- createUser "John" "Doe"
+        it "sets the first name" <| fun ctx ->
+            ctx?user.Should (haveFirstName "John")
+        it "sets the last name" <| fun ctx ->
+            ctx?user.Should (haveLastName "Doe")
+    ]
+```
+
+Because the matchers themselves are typed to the type of the expected value,
+the type inference system will bring the expected type to the _?_ operator.
 
 If you get a compiler error saying that the it cannot infer the type, use
 the generic _Get<'T>_ function instead.
@@ -188,7 +213,8 @@ let specs =
 ### Implicit subject ###
 
 A special context variable, _Subject_, can be used to reference the thing under
-test. It can be retrieved using the _getSubject_ function.
+test. The variable is of type _obj_, but the generic function _GetSubject<'T>_
+will cast the subject to the expected type
 
 ```fsharp
 let specs =
@@ -196,16 +222,50 @@ let specs =
         subject <| fun _ -> createuser "john" "doe"
 
         it "sets the first name" <| fun ctx ->
-            ctx |> getSubject |> User.firstName |> should equal "John"
+            let user = ctx.GetSubject<User> ()
+            user.FirstName |> should (equal "John")
         it "sets the last name" <| fun ctx ->
-            ctx |> getSubject |> User.lastName |> should equal "Doe"
+            let user = ctx.GetSubject<User> ()
+            user.LastName |> should (equal "Doe")
     ]
 ```
 
-_getSubject_ is generic, taking the actual type of subject as type argument,
-but often F# type inference will figure out the type argument based on the
-usage.
+There are two extension methods declared on _obj_: _Should_, and _ShouldNot_.
+These will automatically cast the subject to the type expected by the matcher.
 
+```fsharp
+let specs =
+    describe "createUser function" [
+        subject <| fun _ -> createuser "john" "doe"
+
+        it "sets the first name" <| fun ctx ->
+            ctx.Subject.Should (haveFirstName "John")
+
+        it "sets the last name" <| fun ctx ->
+            ctx.Subject.Should (haveLastName "Doe")
+    ]
+```
+
+If you don't have custom matchers for the properties on the subject, there is a
+third option _Apply_ which allows you pass a function to retrieve the data from
+the subject that is of interest.
+
+```fsharp
+let specs =
+    describe "createUser function" [
+        subject <| fun _ -> createuser "john" "doe"
+
+        it "sets the first name" <| fun ctx ->
+            ctx.Subject.Apply (fun x -> x.FirstName)
+            |> should (equal "John")
+
+        it "sets the last name" <| fun ctx ->
+            ctx.Subject.Apply (fun x -> x.LastName)
+            |> should (equal "Doe")
+    ]
+```
+
+#### Functions as subjects ####
 The subject can also be a function.
 
 ```fsharp
@@ -214,8 +274,9 @@ let specs =
         ...
         subject <| fun _ -> 
             (fun () -> CreateAndSaveNewUser())
+
         it "should fail" <| fun ctx ->
-            ctx |> getSubject |> should fail
+            ctx.Subject.Should fail
 ```
 
 ### Test metadata ###
@@ -274,23 +335,11 @@ FSpec has it's own set of assertions (not very complete currently). The
 assertions are typed, so the actual value must be of the correct type
 
 ```fsharp
-5 |> should equal 5 // pass
-5 |> should be.greaterThan 6 // fail
-5 |> should equal 5.0 // does not compile.
-"blah blah" |> should beInstanceOf<string> // pass
-42 |> should beInstanceOf<string> // fail
-"foobar" |> should matchRegex "ooba" // pass
+5 |> should (equal 5) // pass
+5 |> should (be.greaterThan 6) // fail
+5 |> should (equal 5.0) // does not compile, incompatible types
+"foobar" |> should (be.string.matching "ooba") // pass
 ```
-
-The strongly typed matchers also works with context data.
-
-```fsharp
-ctx?user |> User.firstName |> should equal "John"
-ctx.metadata?email |> should equal "john.doe@example.com"
-```
-
-This will automatically cause the data collections to try to retrieve the
-object of the correct type.
 
 ### Writing new assertions ###
 
