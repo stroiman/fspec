@@ -6,8 +6,8 @@ let pending = fun _ -> raise PendingError
 type Operation =
     | AddExampleOperation of Example.T
     | AddExampleGroupOperation of ExampleGroup.T
-    | AddSetupOperation of ExampleGroup.TestFunc
-    | AddTearDownOperation of ExampleGroup.TestFunc
+    | AddSetupOperation of TestFunc
+    | AddTearDownOperation of TestFunc
     | MultipleOperations of Operation list
     | AddMetaDataOperation of string*obj
     static member ApplyMetaData metaData op =

@@ -115,10 +115,12 @@ type TestContext =
             Disposables = []
             Subject = null }
 
+type TestFunc = TestContext -> unit
+
 module Example =
     type T = {
         Name: string; 
-        Test: TestContext -> unit;
+        Test: TestFunc;
         MetaData: TestDataMap.T
     }
     let create name test = { Name = name; Test = test; MetaData = TestDataMap.Zero }
@@ -127,7 +129,6 @@ module Example =
     let hasMetaData name ex = ex.MetaData.ContainsKey name
 
 module ExampleGroup =
-    type TestFunc = TestContext -> unit
     type T = {
         Name: string
         Examples: Example.T list;
