@@ -42,7 +42,6 @@ file 'output/FSpec.SelfTests.dll' => [
     'selftests/DomainTypesSpecs.fs',
     'selftests/RunnerSpecs.fs', 
     'selftests/TestRunnerSpecs.fs',
-    'selftests/MatchersSpecs.fs', 
     'selftests/MatchersV3Specs.fs',
     'selftests/TestReportSpecs.fs',
     'selftests/MetaDataSpecs.fs',

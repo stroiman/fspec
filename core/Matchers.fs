@@ -1,4 +1,5 @@
 module FSpec.Core.Matchers
+#nowarn "0044"
 
 type IsMatch = IsMatch of bool
 type ShouldMessage = ShouldMessage of string
@@ -33,14 +34,18 @@ module MatchResult =
             let apply (ShouldNotMessage msg) = msg
             raise (AssertionError({Message = apply result.FailureMessageForShouldNot}))
 
+[<System.Obsolete("These matchers will be deleted in 0.1 - use MatchersV3 instead")>]
 let should matcher = matcher MatchResult.assertSuccess
+[<System.Obsolete("These matchers will be deleted in 0.1 - use MatchersV3 instead")>]
 let shouldNot matcher = matcher MatchResult.assertFail
     
 type VerifyResult = MatchResult.T -> unit
 
+[<System.Obsolete("These matchers will be deleted in 0.1 - use MatchersV3 instead")>]
 let isOfType (t: System.Type) actual =
     t.IsInstanceOfType(actual)
 
+[<System.Obsolete("These matchers will be deleted in 0.1 - use MatchersV3 instead")>]
 let equal verifyResult expected = 
     fun actual ->
         MatchResult.build 
@@ -49,6 +54,7 @@ let equal verifyResult expected =
             (ShouldNotMessage (sprintf "expected %A to not equal %A" actual expected))
         |> verifyResult
 
+[<System.Obsolete("These matchers will be deleted in 0.1 - use MatchersV3 instead")>]
 let beOfType<'T> (verifyResult : VerifyResult) =
     let expectedType = typeof<'T>
     fun actual ->
@@ -58,6 +64,7 @@ let beOfType<'T> (verifyResult : VerifyResult) =
             (sprintf "expected %A to not be of type %A" actual expectedType |> ShouldNotMessage)
         |> verifyResult
 
+[<System.Obsolete("These matchers will be deleted in 0.1 - use MatchersV3 instead")>]
 let matchRegex verifyResult pattern =
     fun actual ->
         let regex = System.Text.RegularExpressions.Regex pattern
@@ -80,6 +87,7 @@ let fail verifyResult actual =
         ("exception was thrown when none was expected" |> ShouldNotMessage)
     |> verifyResult    
 
+[<System.Obsolete("These matchers will be deleted in 0.1 - use MatchersV3 instead")>]
 module be =
     let greaterThan verifyResult expected actual =
         MatchResult.build 
@@ -88,9 +96,11 @@ module be =
             (sprintf "expected %A to not be greater than %A" actual expected |> ShouldNotMessage)
         |> verifyResult
 
+[<System.Obsolete("These matchers will be deleted in 0.1 - use MatchersV3 instead")>]
 let toBe matcher =
     matcher MatchResult.success
 
+[<System.Obsolete("These matchers will be deleted in 0.1 - use MatchersV3 instead")>]
 module have =
     let exactly verifyResult no matcher actual =
         let result = actual |> Seq.filter matcher |> Seq.length
