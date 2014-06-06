@@ -41,7 +41,7 @@ let specs =
             describe "Report example result" [
                 subject <| fun c ->
                     anExampleGroup
-                    |> withExamples [ c.metadata?example ]
+                    |> withExamples [ c.MetaData?example ]
                     |> doRun
 
                 ("example" ++ aPassingExample) ==>
@@ -113,7 +113,7 @@ let specs =
         describe "metadata handling" [
             context "test contains metadata" [
                 before <| fun ctx ->
-                    ctx?testFunc <- (fun (c:TestContext) -> ctx?answer <- c.metadata.Get<int> "answer")
+                    ctx?testFunc <- (fun (c:TestContext) -> ctx?answer <- c.MetaData.Get<int> "answer")
 
                 it "passes the metadata to the test" <| fun ctx ->
                     anExampleGroup
@@ -134,11 +134,11 @@ let specs =
             context "example group contains metadata" [
                 before <| fun ctx ->
                     let withExampleMetaData =
-                        match ctx.metadata?addExampleMetaData with
+                        match ctx.MetaData?addExampleMetaData with
                         | false -> id
                         | true -> withExampleMetaData ("source", "example")
                     let withChildGroupMetaData =
-                        match ctx.metadata?addChildGroupMetaData with
+                        match ctx.MetaData?addChildGroupMetaData with
                         | false -> id
                         | true -> withMetaData ("source", "child group")
 
@@ -148,7 +148,7 @@ let specs =
                         withChildGroupMetaData
                         >> withExamples [
                             anExampleWithCode (fun testCtx ->
-                                ctx.Set "source" (testCtx.metadata?source))
+                                ctx.Set "source" (testCtx.MetaData?source))
                             |> withExampleMetaData
                         ])
                     |> runExamples

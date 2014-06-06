@@ -80,32 +80,32 @@ type TestContext =
         mutable Subject: obj
         mutable Data: TestDataMap.T }
     with
-        static member registerDisposable (x:obj) ctx =
+        static member cleanup ctx =
+            ctx.Disposables |> List.iter (fun x -> x.Dispose())
+
+        member private ctx.RegisterDisposable (x:obj) =
             match x with
             | :? System.IDisposable as d -> ctx.Disposables <- d::ctx.Disposables
             | _ -> ()
             
-        static member cleanup ctx =
-            ctx.Disposables |> List.iter (fun x -> x.Dispose())
-
-        member self.metadata = self.MetaData
         member ctx.Set name value =
             ctx.Data <- ctx.Data.Add name value
-            ctx |> TestContext.registerDisposable value
-
+            ctx.RegisterDisposable value
         member ctx.Get<'T> name = ctx.Data.Get<'T> name
+
         member ctx.TryGet<'T> name = ctx.Data |> TestDataMap.tryGet<'T> name
-        member self.GetOrDefault<'T> name (initializer : TestContext -> 'T) =
-            match self.TryGet<'T> name with
+        member ctx.GetOrDefault<'T> name (initializer : TestContext -> 'T) =
+            match ctx.TryGet<'T> name with
             | Some x -> x
             | None -> 
-                let result = initializer self
-                self.Set name result
+                let result = initializer ctx
+                ctx.Set name result
                 result
-        member ctx.GetSubject<'T> () = ctx.Subject :?> 'T
+
         member ctx.SetSubject s = 
             ctx.Subject <- s :> obj
-            ctx |> TestContext.registerDisposable s
+            ctx.RegisterDisposable s
+        member ctx.GetSubject<'T> () = ctx.Subject :?> 'T
 
         static member (?) (self:TestContext,name) = self.Get name 
         static member (?<-) (self:TestContext,name,value) = self.Set name value 
