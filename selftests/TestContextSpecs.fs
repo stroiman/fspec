@@ -95,11 +95,21 @@ let specs =
         ]
 
         describe "subject" [
-            context "subject is a function" [
-                subject <| fun _ ->
-                    (fun () -> ())
-                it "is evaluated when a matcher expects a function" <| fun ctx ->
-                    ctx.Subject.ShouldNot fail
+            before <| fun ctx ->
+                ctx?callCount <- 0
+                ctx.SetSubject <| fun ctx ->
+                    ctx?callCount <- 1 + ctx?callCount
+
+            context "when subject is not requested" [
+                it "does not evaluate subject initialization code" <| fun ctx ->
+                    ctx?callCount |> should (equal 0)
+            ]
+
+            context "when subject is requested twice" [
+                it "only call initialization code once" <| fun ctx ->
+                    ctx.Subject |> ignore
+                    ctx.Subject |> ignore
+                    ctx?callCount |> should (equal 2)
             ]
         ]
 
@@ -123,7 +133,8 @@ let specs =
             it "calls dispose on Subject" (fun _ ->
                 let x = new DisposeSpy()
                 let ctx = createContext
-                ctx.SetSubject x
+                ctx.Subject <- x
+                ctx.Subject |> ignore // make sure it is evaluated
                 ctx |> TestContext.cleanup
                 x.Disposed |> should be.True
             )

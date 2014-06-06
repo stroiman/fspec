@@ -75,10 +75,30 @@ module TestDataMap =
 
 type SubjectWrapper =
     {
-        WrappedSubject : obj
+        ParentSubject : SubjectWrapper option
+        Initializer : TestContext -> obj
+        mutable x : obj
     }
+    with
+        static member create (f:TestContext->'a) parent = {
+            Initializer = (fun (ctx:TestContext) -> (f ctx) :> obj)
+            ParentSubject = parent
+            x = null }
+        member private self.Eval ctx =
+            let tmp = ctx.WrappedSubject
+            try
+                ctx.WrappedSubject <- self.ParentSubject
+                let x = self.Initializer ctx
+                ctx.RegisterDisposable x
+                x
+            finally
+                ctx.WrappedSubject <- tmp
 
-type TestContext =
+        member self.Get ctx =
+            if self.x = null then self.x <- self.Eval ctx
+            self.x
+
+and TestContext =
     { 
         MetaData: TestDataMap.T
         mutable Disposables: System.IDisposable list
@@ -88,7 +108,7 @@ type TestContext =
         static member cleanup ctx =
             ctx.Disposables |> List.iter (fun x -> x.Dispose())
 
-        member private ctx.RegisterDisposable (x:obj) =
+        member internal ctx.RegisterDisposable (x:obj) =
             match x with
             | :? System.IDisposable as d -> ctx.Disposables <- d::ctx.Disposables
             | _ -> ()
@@ -107,17 +127,18 @@ type TestContext =
                 ctx.Set name result
                 result
 
-        member ctx.SetSubject s = 
-            ctx.WrappedSubject <- Some { WrappedSubject = s :> obj }
-            ctx.RegisterDisposable s
-        member ctx.GetSubject<'T> () = ctx.WrappedSubject.Value.WrappedSubject :?> 'T
+        member ctx.SetSubject f = 
+            ctx.WrappedSubject <- Some (SubjectWrapper.create f ctx.WrappedSubject)
+//            ctx.RegisterDisposable s
+        member ctx.GetSubject<'T> () = ctx.WrappedSubject.Value.Get ctx :?> 'T
 
         member ctx.Subject
             with get () : obj =
                 match ctx.WrappedSubject with
                 | None -> null
-                | Some x -> x.WrappedSubject
-            and set s = ctx.SetSubject s
+                | Some x -> x.Get ctx
+            and set x =
+                ctx.SetSubject (fun _ -> x)
 
         static member (?) (self:TestContext,name) = self.Get name 
         static member (?<-) (self:TestContext,name,value) = self.Set name value 
