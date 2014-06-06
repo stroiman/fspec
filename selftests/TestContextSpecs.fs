@@ -97,7 +97,7 @@ let specs =
         describe "subject" [
             before <| fun ctx ->
                 ctx?callCount <- 0
-                ctx.SetSubject <| fun ctx ->
+                ctx.SetSubject <| fun _ ->
                     ctx?callCount <- 1 + ctx?callCount
 
             context "when subject is not requested" [
@@ -133,7 +133,7 @@ let specs =
             it "calls dispose on Subject" (fun _ ->
                 let x = new DisposeSpy()
                 let ctx = createContext
-                ctx.Subject <- x
+                ctx.SetSubject (fun _ -> x)
                 ctx.Subject |> ignore // make sure it is evaluated
                 ctx |> TestContext.cleanup
                 x.Disposed |> should be.True

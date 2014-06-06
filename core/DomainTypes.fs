@@ -128,6 +128,7 @@ type TestContext =
                     let f wrapper =
                         let tmp = ctx.WrappedSubject
                         try
+                            
                             ctx.WrappedSubject <- wrapper.ParentSubject
                             let x = wrapper.Initializer ctx
                             ctx.RegisterDisposable x
@@ -135,8 +136,6 @@ type TestContext =
                         finally
                             ctx.WrappedSubject <- tmp
                     x.Get f
-            and set x =
-                ctx.SetSubject (fun _ -> x)
         member ctx.GetSubject<'T> () = ctx.Subject :?> 'T
 
         static member (?) (self:TestContext,name) = self.Get name 

@@ -8,7 +8,7 @@ open CustomMatchers
 
 let createContextWithSubject subject =
     let ctx = TestContext.create TestDataMap.Zero
-    ctx.Subject <- subject
+    ctx.SetSubject (fun _ -> subject)
     ctx
 
 let testWithSubject subject (ctx:TestContext) =
