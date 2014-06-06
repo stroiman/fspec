@@ -24,17 +24,28 @@ type Matcher<'TActual> () =
 let applyMatcher<'T,'U> (matcher: Matcher<'T>) f (a : 'T) : 'U =
     matcher.ApplyActual f a
 
-let newCreateFullMatcher<'T> (f : 'T -> MatchResult) (shouldMsg : string) (shouldNotMsg : string) =
+let createFullMatcher<'T> 
+        (f : 'T -> MatchResult) 
+        (shouldMsg : string) 
+        (shouldNotMsg : string) =
     { new Matcher<'T> () with
         member __.ApplyActual g actual = f actual |> g
         member __.FailureMsgForShould = shouldMsg
         member __.FailureMsgForShouldNot = shouldNotMsg
     }
 
-let newCreateMatcher<'T> (f : 'T -> MatchResult) (shouldMsg : string) =
-    newCreateFullMatcher f shouldMsg (sprintf "not %s" shouldMsg)
+let createMatcher<'T> (f : 'T -> MatchResult) (shouldMsg : string) =
+    createFullMatcher f shouldMsg (sprintf "not %s" shouldMsg)
 
-let createFullMatcher<'T> 
+/// Helps create a matcher, that uses a child matcher for some verification.
+/// The passed function should extract the value from the actual value, that
+/// the child matcher should match. E.g. for a sequence length matcher, the
+/// f extracts the length of the sequence, and the matcher matches the length.
+let createCompountMatcher matcher f =
+    createMatcher
+        (fun a -> a |> f |> applyMatcher matcher id)
+
+let createFullBoolMatcher<'T> 
         (f : 'T -> bool) 
         (shouldMsg : string) 
         (shouldNotMsg : string) =
@@ -42,15 +53,15 @@ let createFullMatcher<'T>
         match f a with
         | true -> MatchSuccess (a :> obj)
         | false -> MatchFail (a :> obj)
-    newCreateFullMatcher wrapF shouldMsg shouldNotMsg
+    createFullMatcher wrapF shouldMsg shouldNotMsg
 
-let createMatcher<'T> (f : 'T -> bool) (shouldMsg : string) =
-    createFullMatcher f shouldMsg (sprintf "not %s" shouldMsg)
+let createBoolMatcher<'T> (f : 'T -> bool) (shouldMsg : string) =
+    createFullBoolMatcher f shouldMsg (sprintf "not %s" shouldMsg)
 
-let createSimpleMatcher f = createMatcher f "FAIL"
+let createSimpleMatcher f = createBoolMatcher f "FAIL"
         
 let equal expected =
-    createMatcher
+    createBoolMatcher
         (fun a -> a = expected)
         (sprintf "equal %A" expected)
 
@@ -58,46 +69,38 @@ module be =
     let equalTo = equal
 
     let greaterThan expected =
-        createMatcher
+        createBoolMatcher
             (fun a -> a > expected)
             (sprintf "be greater than %A" expected)
 
     let True =
-        createMatcher 
+        createBoolMatcher 
             (fun actual -> actual = true) 
             (sprintf "be true")
 
     let False =
-        createMatcher 
+        createBoolMatcher 
             (fun actual -> actual = false)
             (sprintf "be false")
 
     module string =
         let containing expected =
-            createMatcher
+            createBoolMatcher
                 (fun (a:string) -> a.Contains(expected))
                 (sprintf "contain %s" expected)
 
         let matching pattern =
             let regex = System.Text.RegularExpressions.Regex pattern
-            createMatcher
+            createBoolMatcher
                 (fun actual -> regex.IsMatch actual)
                 (sprintf "match regex pattern %A" pattern)
-
-/// Helps create a matcher, that uses a child matcher for some verification.
-/// The passed function should extract the value from the actual value, that
-/// the child matcher should match. E.g. for a sequence length matcher, the
-/// f extracts the length of the sequence, and the matcher matches the length.
-let createCompountMatcher matcher f =
-    newCreateMatcher
-        (fun a -> a |> f |> applyMatcher matcher id)
 
 module have =
     let atLeastOneElement matcher =
         let f a = a |> Seq.exists (Matcher.IsMatch matcher)
         let msg = sprintf "contain at least one element to %s" matcher.FailureMsgForShould
         let notMsg = sprintf "contain no elements to %s" matcher.FailureMsgForShould
-        createFullMatcher f msg notMsg
+        createFullBoolMatcher f msg notMsg
 
     let element = atLeastOneElement
     
@@ -112,7 +115,7 @@ module have =
         let msg = 
             sprintf "contain exactly %d element to %s" no 
                 matcher.FailureMsgForShould
-        createMatcher f msg
+        createBoolMatcher f msg
 
 let fail =
     let f a =
@@ -120,7 +123,7 @@ let fail =
             a (); false
         with
         | _ -> true
-    createMatcher f "fail"
+    createBoolMatcher f "fail"
 
 let succeed =
     let f a =
@@ -128,7 +131,7 @@ let succeed =
             a (); true
         with
         | _ -> false
-    createMatcher f "pass"
+    createBoolMatcher f "pass"
 
 module throwException =
     let withMessage matcher =
@@ -138,7 +141,7 @@ module throwException =
                 MatchFail "No exception thrown"
             with
             | e -> e.Message |> applyMatcher matcher id 
-        newCreateMatcher f
+        createMatcher f
             (sprintf "throw exception with message %s" matcher.FailureMsgForShould)
             
     let withMessageContaining msg =

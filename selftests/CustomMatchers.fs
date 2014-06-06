@@ -6,21 +6,32 @@ open MatchersV3
 
 let haveLineMatching pattern = have.element (be.string.matching pattern)
 
-let createMatcher = createSimpleMatcher
 let haveChildGroups expected =
-    createMatcher (fun actual ->
+    createSimpleMatcher (fun actual ->
         actual.ChildGroups |> Seq.length = expected)
 
 let haveNoOfExamples expected =
-    createMatcher (fun actual ->
+    createSimpleMatcher (fun actual ->
         actual
         |> (fun x -> x.Examples)
         |> Seq.length = expected)
 
 let haveExampleNamed expected =
     (fun (actual:Example.T) -> actual.Name = expected)
-    |> createMatcher
+    |> createSimpleMatcher
 
 let haveGroupName expected =
     (fun a -> a.Name = expected)
-    |> createMatcher
+    |> createSimpleMatcher
+
+let failWithAssertionError expected =
+    let matcher = be.string.containing expected
+    let f a = 
+        try
+            a ()
+            MatchFail "No exception thrown"
+        with
+            | AssertionError(info) -> 
+                info.Message |> applyMatcher matcher id
+    createMatcher f
+        (sprintf "fail assertion with message %A" expected)

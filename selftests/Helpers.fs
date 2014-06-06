@@ -6,18 +6,6 @@ let stringBuilderPrinter builder =
     fun color msg ->
         Printf.bprintf builder "%s" msg
 
-let tryExecute test =
-    try
-        test ()
-        None
-    with
-        | AssertionError(info) -> Some(info)
-
-let getErrorMsg test : string =
-    match tryExecute test with
-    | None -> failwith "Expected test failure"
-    | Some(x) -> x.Message
-    
 module TestReporter =
     type ReportType =
         | BeginGroup of string

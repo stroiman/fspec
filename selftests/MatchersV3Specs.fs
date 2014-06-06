@@ -2,7 +2,7 @@ module FSpec.SelfTests.MatcherV3Specs
 open FSpec.Core
 open Dsl
 open MatchersV3
-open Helpers
+open CustomMatchers
 
 let specs = [
     describe "System.Object extesions" [
@@ -64,8 +64,7 @@ let specs = [
 
             it "fails when not equal" <| fun _ ->
                 let test () = 5 |> should (equal 6)
-                test |> getErrorMsg 
-                |> should (be.string.matching "5 was expected to equal 6")
+                test.Should (failWithAssertionError "5 was expected to equal 6")
         ]
 
         describe "shouldNot equal" [
@@ -74,8 +73,7 @@ let specs = [
 
             it "fails when equal" <| fun _ ->
                 let test () = 5 |> shouldNot (equal 5)
-                test |> getErrorMsg
-                |> should (be.string.matching "5 was expected to not equal 5")
+                test.Should (failWithAssertionError "5 was expected to not equal 5")
         ]
     ]
 
@@ -141,14 +139,13 @@ let specs = [
             it "fails when collection has no matching element" <| fun _ ->
                 let test () = [1;2;3] |> should (have.atLeastOneElement (equal 4))
                 let expected =  "[1; 2; 3] was expected to contain at least one element to equal 4"
-                test |> getErrorMsg |> should (be.string.containing expected)
+                test.Should (failWithAssertionError expected)
         ]
 
         describe "shouldNot have.atLeastOneElement" [
             it "fails when collection has matching element" <| fun _ ->
                 let test () = [1;2;3] |> shouldNot (have.atLeastOneElement (equal 2))
-                test |> getErrorMsg
-                |> should (be.string.containing "[1; 2; 3] was expected to contain no elements to equal 2")
+                test.Should (failWithAssertionError "[1; 2; 3] was expected to contain no elements to equal 2")
         ]
     ]
 
@@ -172,14 +169,12 @@ let specs = [
             it "displays the actual exception message in the assertion failure message" <| fun _ ->
                 let f () = raise (new System.Exception("custom msg"))
                 let test () = f |> should (throwException.withMessageContaining "wrong msg")
-                test |> getErrorMsg
-                |> should (be.string.containing "custom msg")
+                test.Should (failWithAssertionError "custom msg")
 
             it "should display 'was expected to throw exception'" <| fun _ ->
                 let f () = raise (new System.Exception("custom msg"))
                 let test () = f |> should (throwException.withMessageContaining "wrong msg")
-                test |> getErrorMsg
-                |> should (be.string.containing "was expected to throw exception")
+                test.Should (failWithAssertionError "was expected to throw exception")
         ]
     ]
 ]
