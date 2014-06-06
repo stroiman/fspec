@@ -4,7 +4,7 @@ open Dsl
 open MatchersV3
 open ExampleHelper
 
-let change f = fun c -> c.Subject.Apply f
+let change f = fun (c:TestContext) -> c.Subject.Apply f
 
 let specs =
     [

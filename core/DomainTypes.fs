@@ -73,11 +73,16 @@ module TestDataMap =
         /// Synonym for merge
         static member (|||) (a,b) = merge a b
 
+type SubjectWrapper =
+    {
+        WrappedSubject : obj
+    }
+
 type TestContext =
     { 
         MetaData: TestDataMap.T
         mutable Disposables: System.IDisposable list
-        mutable Subject: obj
+        mutable WrappedSubject: SubjectWrapper option
         mutable Data: TestDataMap.T }
     with
         static member cleanup ctx =
@@ -103,9 +108,16 @@ type TestContext =
                 result
 
         member ctx.SetSubject s = 
-            ctx.Subject <- s :> obj
+            ctx.WrappedSubject <- Some { WrappedSubject = s :> obj }
             ctx.RegisterDisposable s
-        member ctx.GetSubject<'T> () = ctx.Subject :?> 'T
+        member ctx.GetSubject<'T> () = ctx.WrappedSubject.Value.WrappedSubject :?> 'T
+
+        member ctx.Subject
+            with get () : obj =
+                match ctx.WrappedSubject with
+                | None -> null
+                | Some x -> x.WrappedSubject
+            and set s = ctx.SetSubject s
 
         static member (?) (self:TestContext,name) = self.Get name 
         static member (?<-) (self:TestContext,name,value) = self.Set name value 
@@ -113,7 +125,7 @@ type TestContext =
             MetaData = metaData
             Data = TestDataMap.Zero
             Disposables = []
-            Subject = null }
+            WrappedSubject = None }
 
 type TestFunc = TestContext -> unit
 

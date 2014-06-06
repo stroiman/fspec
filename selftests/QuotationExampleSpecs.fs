@@ -11,7 +11,7 @@ let createContextWithSubject subject =
     ctx.Subject <- subject
     ctx
 
-let testWithSubject subject ctx =
+let testWithSubject subject (ctx:TestContext) =
     let sutCtx = createContextWithSubject subject
     fun () -> ctx.Subject.Apply (Example.run sutCtx)
 
