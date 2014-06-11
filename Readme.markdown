@@ -31,6 +31,10 @@ Ideas for future improvements
 
 The framework is self testing, i.e. the framework is used to test itself.
 
+I have written a few [blog posts][1] about FSpec
+
+[1]: http://stroiman.com/software/fspec
+
 ## Want to contribute? ##
 
 Awesome. By using FSpec and giving feedback on what could be improved, what
