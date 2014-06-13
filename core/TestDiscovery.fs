@@ -32,10 +32,14 @@ let getSpecsFromAssembly (assembly : Assembly) =
         |> List.ofSeq
     specs
 
-let runSpecsWithReporter reporter specs =
+let runSpecsWithRunnerAndReporter runner reporter specs =
     specs
-    |> Runner.run reporter
+    |> runner reporter
     |> reporter.Success
+
+let runSpecsWithReporter reporter specs =
+    let runner = Runner.run
+    runSpecsWithRunnerAndReporter runner reporter specs
 
 let runSpecs specs = 
     let reporter = TreeReporter.create TreeReporterOptions.Default
@@ -46,9 +50,14 @@ let toExitCode result =
     | true -> 0
     | false -> 1
 
-let runSingleAssembly assembly = 
+let runSingleAssemblyWithConfig config assembly = 
+    let runner = Runner.fromConfig config
     let reporter = TreeReporter.create TreeReporterOptions.Default
     assembly 
     |> getSpecsFromAssembly 
-    |> runSpecsWithReporter reporter
+    |> runSpecsWithRunnerAndReporter runner reporter
     |> toExitCode
+
+let runSingleAssembly assembly = 
+    let config = Configuration.defaultConfig
+    runSingleAssemblyWithConfig config assembly
