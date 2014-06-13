@@ -200,6 +200,15 @@ let specs =
                         anExampleWithCode (record "ex1") 
                         anExampleWithCode (record "ex2") ]
                     |> shouldRecord ["ex1";"ex2"]
+
+                it "excludes example with 'slow' metadata" <| fun _ ->
+                    anExampleGroup
+                    |> withExamples [
+                        anExampleWithCode (record "ex1") 
+                            |> withExampleMetaData ("slow", true)
+                        anExampleWithCode (record "ex2") ]
+                    |> shouldRecord ["ex2"]
+
             ]
         ]
     ]

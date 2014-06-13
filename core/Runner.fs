@@ -4,10 +4,12 @@ open ExampleGroup
 module Configuration =
     type T = {
         Include : TestDataMap.T -> bool
+        Exclude : TestDataMap.T -> bool
     }
     let defaultConfig = 
         {
             Include = TestDataMap.containsKey "focus"
+            Exclude = TestDataMap.containsKey "slow"
         }
 
 module Runner =
@@ -74,6 +76,7 @@ module Runner =
                 topLevelGroups 
                 |> List.ofSeq
                 |> filterExamples cfg.Include
+                |> ExampleGroup.filterGroups (cfg.Exclude >> not)
             let fold r = List.fold (fun r g -> doRun g reporter r) r filteredGroups
             reporter.BeginTestRun ()
             |> fold
