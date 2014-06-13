@@ -11,6 +11,11 @@ module Configuration =
             Include = TestDataMap.containsKey "focus"
             Exclude = TestDataMap.containsKey "slow"
         }
+    let includeAll =
+        {
+            Include = fun x -> false
+            Exclude = fun x -> false
+        }
 
 module Runner =
     open Configuration
