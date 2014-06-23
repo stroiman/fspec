@@ -43,6 +43,7 @@
     <Compile Include="MatchersV3.fs" />
     <Compile Include="Dsl.fs" />
     <Compile Include="TestDiscovery.fs" />
+    <Compile Include="Compatibility.fs" />
     <Compile Include="AssemblyInfo.fs" />
   </ItemGroup>
   <ItemGroup>

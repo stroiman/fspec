@@ -1,5 +1,5 @@
 module FSpec.SelfTests.DomainTypesSpecs
-open FSpec.Core
+open FSpec
 open Dsl
 open MatchersV3
 open ExampleHelper

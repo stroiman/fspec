@@ -30,6 +30,7 @@ file 'output/FSpec.Core.dll' => [
     'core/MatchersV3.fs',
     'core/Dsl.fs',
     'core/TestDiscovery.fs',
+    'core/Compatibility.fs',
     'core/AssemblyInfo.fs'
     ] do |t|
   compile(t.name, t.prerequisites, :library)

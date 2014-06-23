@@ -1,4 +1,4 @@
-module FSpec.Core.Matchers
+module FSpec.Matchers
 #nowarn "0044"
 
 type IsMatch = IsMatch of bool

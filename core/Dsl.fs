@@ -1,4 +1,4 @@
-﻿module FSpec.Core.Dsl
+﻿module FSpec.Dsl
 open MatchersV3
 
 let pending = fun _ -> raise PendingError

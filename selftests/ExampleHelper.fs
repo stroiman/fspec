@@ -1,6 +1,5 @@
 ﻿module FSpec.SelfTests.ExampleHelper
-open FSpec.Core
-open Matchers
+open FSpec
 open Dsl
 open MatchersV3
 open ExampleGroup

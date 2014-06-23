@@ -1,5 +1,5 @@
 ﻿module FSpec.SelfTests.TestRunnerSpecs
-open FSpec.Core
+open FSpec
 open MatchersV3
 open Dsl
 open ExampleHelper

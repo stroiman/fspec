@@ -1,4 +1,4 @@
-﻿namespace FSpec.Core
+﻿namespace FSpec
 open ExampleGroup
 
 module Configuration =

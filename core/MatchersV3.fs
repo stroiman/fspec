@@ -1,4 +1,4 @@
-module FSpec.Core.MatchersV3
+module FSpec.MatchersV3
 
 type MatchResult =
     | MatchSuccess of obj
@@ -41,9 +41,12 @@ let createMatcher<'T> (f : 'T -> MatchResult) (shouldMsg : string) =
 /// The passed function should extract the value from the actual value, that
 /// the child matcher should match. E.g. for a sequence length matcher, the
 /// f extracts the length of the sequence, and the matcher matches the length.
-let createCompountMatcher matcher f =
+let createCompoundMatcher matcher f =
     createMatcher
         (fun a -> a |> f |> applyMatcher matcher id)
+
+[<System.Obsolete("Use function createCompoundMatcher instead")>]
+let createCompountMatcher = createCompoundMatcher
 
 let createFullBoolMatcher<'T> 
         (f : 'T -> bool) 
@@ -105,7 +108,7 @@ module have =
     let element = atLeastOneElement
     
     let length lengthMatcher =
-        createCompountMatcher
+        createCompoundMatcher
             lengthMatcher
             (fun a -> a |> Seq.length) 
             (sprintf "have length to %s" lengthMatcher.FailureMsgForShould) 

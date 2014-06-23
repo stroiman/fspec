@@ -1,4 +1,4 @@
-﻿namespace FSpec.Core
+﻿namespace FSpec
 
 /// Contains error information when an assertion failed
 type AssertionErrorInfo = { Message: string } 

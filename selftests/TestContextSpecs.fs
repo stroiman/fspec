@@ -1,5 +1,5 @@
 ﻿module FSpec.SelfTests.TestContextSpecs
-open FSpec.Core
+open FSpec
 open Dsl
 open MatchersV3
 

@@ -1,7 +1,7 @@
 module Main
 open System.Reflection
-open FSpec.Core
-open FSpec.Core.TestDiscovery
+open FSpec
+open FSpec.TestDiscovery
 
 [<EntryPoint>]
 let main args =

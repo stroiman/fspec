@@ -1,5 +1,5 @@
 ﻿module FSpec.SelfTests.CustomMatchers
-open FSpec.Core
+open FSpec
 open Example
 open ExampleGroup
 open MatchersV3

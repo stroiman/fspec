@@ -1,7 +1,7 @@
-﻿module FSpec.Core.TestDiscovery
+﻿module FSpec.TestDiscovery
 open Microsoft.FSharp.Reflection
 open System.Reflection
-open FSpec.Core.Dsl
+open FSpec.Dsl
 
 module Seq =
     let mapMany f x = seq { for y in x do yield! f y }

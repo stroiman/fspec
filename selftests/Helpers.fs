@@ -1,5 +1,5 @@
 ﻿module FSpec.SelfTests.Helpers
-open FSpec.Core
+open FSpec
 open ExampleGroup
 
 let stringBuilderPrinter builder =

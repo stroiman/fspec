@@ -1,7 +1,7 @@
 module FSpec.SelfTests.TestReportSpecs
 open System
 open System.Text
-open FSpec.Core
+open FSpec
 open Dsl
 open MatchersV3
 open Runner
