@@ -1,7 +1,7 @@
 module FSpec.SelfTests.MatcherV3Specs
 open FSpec
 open Dsl
-open MatchersV3
+open Matchers
 open CustomMatchers
 
 let specs = [

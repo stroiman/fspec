@@ -1,7 +1,7 @@
 module FSpec.SelfTests.RunnerSpecs
 open FSpec
 open Dsl
-open MatchersV3
+open Matchers
 open ExampleHelper
 open ExampleGroup
 

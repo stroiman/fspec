@@ -30,7 +30,7 @@ module Core =
         let itShouldNot<'T> = itShouldNot<'T>
 
     module MatchersV3 =
-        open FSpec.MatchersV3
+        open FSpec.Matchers
 
         [<Obsolete("Use types from FSpec.Matchers instead of FSpec.Core.MatchersV3")>]
         let applyMatcher = applyMatcher
@@ -59,14 +59,14 @@ module Core =
         let shouldNot<'T> = shouldNot<'T>
 
         module throwException =
-            open FSpec.MatchersV3.throwException
+            open FSpec.Matchers.throwException
             [<Obsolete("Use types from FSpec.Matchers instead of FSpec.Core.MatchersV3")>]
             let withMessage = withMessage
             [<Obsolete("Use types from FSpec.Matchers instead of FSpec.Core.MatchersV3")>]
             let withMessageContaining = withMessageContaining
 
         module have = 
-            open FSpec.MatchersV3.have
+            open FSpec.Matchers.have
             [<Obsolete("Use types from FSpec.Matchers instead of FSpec.Core.MatchersV3")>]
             let element = element
             [<Obsolete("Use types from FSpec.Matchers instead of FSpec.Core.MatchersV3")>]
@@ -77,7 +77,7 @@ module Core =
             let exactly = exactly
 
         module be =
-            open FSpec.MatchersV3.be
+            open FSpec.Matchers.be
             [<Obsolete("Use types from FSpec.Matchers instead of FSpec.Core.MatchersV3")>]
             let True = True
             [<Obsolete("Use types from FSpec.Matchers instead of FSpec.Core.MatchersV3")>]
@@ -97,10 +97,10 @@ module Core =
             with
                 [<Obsolete("Use types from FSpec.Matchers instead of FSpec.Core.MatchersV3")>]
                 member self.Should<'T> (matcher : Matcher<'T>) =
-                    self :?> 'T |> FSpec.MatchersV3.should matcher
+                    self :?> 'T |> FSpec.Matchers.should matcher
                 [<Obsolete("Use types from FSpec.Matchers instead of FSpec.Core.MatchersV3")>]
                 member self.ShouldNot<'T> (matcher : Matcher<'T>) =
-                    self :?> 'T |> FSpec.MatchersV3.shouldNot matcher
+                    self :?> 'T |> FSpec.Matchers.shouldNot matcher
                 [<Obsolete("Use types from FSpec.Matchers instead of FSpec.Core.MatchersV3")>]
                 member self.Apply<'T,'U> (f : 'T -> 'U) =
                     self :?> 'T |> f

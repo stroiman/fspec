@@ -1,7 +1,7 @@
 ﻿module FSpec.SelfTests.TestContextSpecs
 open FSpec
 open Dsl
-open MatchersV3
+open Matchers
 
 type DisposeSpy () =
     member val Disposed = false with get, set

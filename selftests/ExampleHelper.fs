@@ -1,7 +1,7 @@
 ﻿module FSpec.SelfTests.ExampleHelper
 open FSpec
 open Dsl
-open MatchersV3
+open Matchers
 open ExampleGroup
 
 // Example building helpers

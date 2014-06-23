@@ -1,7 +1,7 @@
 ﻿module FSpec.SelfTests.DslV2Specs
 open FSpec
 open Dsl
-open MatchersV3
+open Matchers
 open TestDataMap
 open ExampleGroup
 open CustomMatchers

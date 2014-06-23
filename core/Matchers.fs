@@ -1,115 +1,179 @@
 module FSpec.Matchers
-#nowarn "0044"
 
-type IsMatch = IsMatch of bool
-type ShouldMessage = ShouldMessage of string
-type ShouldNotMessage = ShouldNotMessage of string
+type MatchResult =
+    | MatchSuccess of obj
+    | MatchFail of obj
 
-module MatchResult =
-    type T = {
-            IsMatch: IsMatch
-            FailureMessageForShould: ShouldMessage
-            FailureMessageForShouldNot: ShouldNotMessage
-        }
+type MatchType =
+    | Should
+    | ShouldNot
 
-    let create success = { 
-        IsMatch = success;
-        FailureMessageForShould =  ShouldMessage "assertion failed"
-        FailureMessageForShouldNot = ShouldNotMessage "assertion failed" }
+[<AbstractClass>]
+type Matcher<'TActual> () = 
+    abstract member ApplyActual<'TResult> : (MatchResult -> 'TResult) -> 'TActual -> 'TResult
+    abstract member FailureMsgForShould : string
+    abstract member FailureMsgForShouldNot : string
+    static member IsMatch (matcher:Matcher<'TActual>) actual =
+        let resultToBool = function | MatchSuccess _ -> true | _ -> false
+        actual |> matcher.ApplyActual resultToBool
+    member self.MessageFor = 
+        function
+            | Should -> self.FailureMsgForShould
+            | ShouldNot -> self.FailureMsgForShouldNot
+
+let applyMatcher<'T,'U> (matcher: Matcher<'T>) f (a : 'T) : 'U =
+    matcher.ApplyActual f a
+
+let createFullMatcher<'T> 
+        (f : 'T -> MatchResult) 
+        (shouldMsg : string) 
+        (shouldNotMsg : string) =
+    { new Matcher<'T> () with
+        member __.ApplyActual g actual = f actual |> g
+        member __.FailureMsgForShould = shouldMsg
+        member __.FailureMsgForShouldNot = shouldNotMsg
+    }
+
+let createMatcher<'T> (f : 'T -> MatchResult) (shouldMsg : string) =
+    createFullMatcher f shouldMsg (sprintf "not %s" shouldMsg)
+
+/// Helps create a matcher, that uses a child matcher for some verification.
+/// The passed function should extract the value from the actual value, that
+/// the child matcher should match. E.g. for a sequence length matcher, the
+/// f extracts the length of the sequence, and the matcher matches the length.
+let createCompoundMatcher matcher f =
+    createMatcher
+        (fun a -> a |> f |> applyMatcher matcher id)
+
+[<System.Obsolete("Use function createCompoundMatcher instead")>]
+let createCompountMatcher = createCompoundMatcher
+
+let createFullBoolMatcher<'T> 
+        (f : 'T -> bool) 
+        (shouldMsg : string) 
+        (shouldNotMsg : string) =
+    let wrapF = fun a -> 
+        match f a with
+        | true -> MatchSuccess (a :> obj)
+        | false -> MatchFail (a :> obj)
+    createFullMatcher wrapF shouldMsg shouldNotMsg
+
+let createBoolMatcher<'T> (f : 'T -> bool) (shouldMsg : string) =
+    createFullBoolMatcher f shouldMsg (sprintf "not %s" shouldMsg)
+
+let createSimpleMatcher f = createBoolMatcher f "FAIL"
         
-    let success result = 
-        let apply (IsMatch m) = m
-        apply result.IsMatch
+let equal expected =
+    createBoolMatcher
+        (fun a -> a = expected)
+        (sprintf "equal %A" expected)
 
-    let build isMatch failureMsgForShould failureMsgForShouldNot =
-        { IsMatch = isMatch;
-          FailureMessageForShould = failureMsgForShould;
-          FailureMessageForShouldNot = failureMsgForShouldNot }
-    let assertSuccess result =
-        if not (result |> success) then
-            let apply (ShouldMessage msg) = msg
-            raise (AssertionError({Message = (apply result.FailureMessageForShould)}))
-    let assertFail result =
-        if (result |> success) then
-            let apply (ShouldNotMessage msg) = msg
-            raise (AssertionError({Message = apply result.FailureMessageForShouldNot}))
-
-[<System.Obsolete("These matchers will be deleted in 0.1 - use MatchersV3 instead")>]
-let should matcher = matcher MatchResult.assertSuccess
-[<System.Obsolete("These matchers will be deleted in 0.1 - use MatchersV3 instead")>]
-let shouldNot matcher = matcher MatchResult.assertFail
-    
-type VerifyResult = MatchResult.T -> unit
-
-[<System.Obsolete("These matchers will be deleted in 0.1 - use MatchersV3 instead")>]
-let isOfType (t: System.Type) actual =
-    t.IsInstanceOfType(actual)
-
-[<System.Obsolete("These matchers will be deleted in 0.1 - use MatchersV3 instead")>]
-let equal verifyResult expected = 
-    fun actual ->
-        MatchResult.build 
-            (IsMatch (expected = actual))
-            (ShouldMessage (sprintf "expected %A to equal %A" actual expected))
-            (ShouldNotMessage (sprintf "expected %A to not equal %A" actual expected))
-        |> verifyResult
-
-[<System.Obsolete("These matchers will be deleted in 0.1 - use MatchersV3 instead")>]
-let beOfType<'T> (verifyResult : VerifyResult) =
-    let expectedType = typeof<'T>
-    fun actual ->
-        MatchResult.build 
-            (expectedType.IsInstanceOfType(actual) |> IsMatch)
-            (sprintf "expected %A to be of type %A" actual expectedType |> ShouldMessage)
-            (sprintf "expected %A to not be of type %A" actual expectedType |> ShouldNotMessage)
-        |> verifyResult
-
-[<System.Obsolete("These matchers will be deleted in 0.1 - use MatchersV3 instead")>]
-let matchRegex verifyResult pattern =
-    fun actual ->
-        let regex = System.Text.RegularExpressions.Regex pattern
-        MatchResult.build
-            (regex.IsMatch actual |> IsMatch)
-            (sprintf "expected %A to match regex pattern %A" actual pattern |> ShouldMessage)
-            (sprintf "expected %A to not match regex pattern %A" actual pattern |> ShouldNotMessage)
-        |> verifyResult
-
-let fail verifyResult actual =
-    let isMatch =
-        try
-            actual ()
-            IsMatch false
-        with
-            | _ -> IsMatch true
-    MatchResult.build
-        isMatch
-        ("expected exception to be thrown, but none was thrown" |> ShouldMessage)
-        ("exception was thrown when none was expected" |> ShouldNotMessage)
-    |> verifyResult    
-
-[<System.Obsolete("These matchers will be deleted in 0.1 - use MatchersV3 instead")>]
 module be =
-    let greaterThan verifyResult expected actual =
-        MatchResult.build 
-            (actual > expected |> IsMatch)
-            (sprintf "expected %A to be greater than %A" actual expected |> ShouldMessage)
-            (sprintf "expected %A to not be greater than %A" actual expected |> ShouldNotMessage)
-        |> verifyResult
+    let equalTo = equal
 
-[<System.Obsolete("These matchers will be deleted in 0.1 - use MatchersV3 instead")>]
-let toBe matcher =
-    matcher MatchResult.success
+    let greaterThan expected =
+        createBoolMatcher
+            (fun a -> a > expected)
+            (sprintf "be greater than %A" expected)
 
-[<System.Obsolete("These matchers will be deleted in 0.1 - use MatchersV3 instead")>]
+    let True =
+        createBoolMatcher 
+            (fun actual -> actual = true) 
+            (sprintf "be true")
+
+    let False =
+        createBoolMatcher 
+            (fun actual -> actual = false)
+            (sprintf "be false")
+
+    module string =
+        let containing expected =
+            createBoolMatcher
+                (fun (a:string) -> a.Contains(expected))
+                (sprintf "contain %s" expected)
+
+        let matching pattern =
+            let regex = System.Text.RegularExpressions.Regex pattern
+            createBoolMatcher
+                (fun actual -> regex.IsMatch actual)
+                (sprintf "match regex pattern %A" pattern)
+
 module have =
-    let exactly verifyResult no matcher actual =
-        let result = actual |> Seq.filter matcher |> Seq.length
-        result |> should equal no
+    let atLeastOneElement matcher =
+        let f a = a |> Seq.exists (Matcher.IsMatch matcher)
+        let msg = sprintf "contain at least one element to %s" matcher.FailureMsgForShould
+        let notMsg = sprintf "contain no elements to %s" matcher.FailureMsgForShould
+        createFullBoolMatcher f msg notMsg
 
-    let element verifyResult matcher actual =
-        let result = actual |> Seq.exists matcher |> IsMatch
-        MatchResult.build
-            result
-            (ShouldMessage "")
-            (ShouldNotMessage "")
-        |> verifyResult
+    let element = atLeastOneElement
+    
+    let length lengthMatcher =
+        createCompoundMatcher
+            lengthMatcher
+            (fun a -> a |> Seq.length) 
+            (sprintf "have length to %s" lengthMatcher.FailureMsgForShould) 
+
+    let exactly no matcher =
+        let f a = a |> Seq.filter (Matcher.IsMatch matcher) |> Seq.length = no
+        let msg = 
+            sprintf "contain exactly %d element to %s" no 
+                matcher.FailureMsgForShould
+        createBoolMatcher f msg
+
+let fail =
+    let f a =
+        try
+            a (); false
+        with
+        | _ -> true
+    createBoolMatcher f "fail"
+
+let succeed =
+    let f a =
+        try
+            a (); true
+        with
+        | _ -> false
+    createBoolMatcher f "pass"
+
+module throwException =
+    let withMessage matcher =
+        let f a = 
+            try
+                a ()
+                MatchFail "No exception thrown"
+            with
+            | e -> e.Message |> applyMatcher matcher id 
+        createMatcher f
+            (sprintf "throw exception with message %s" matcher.FailureMsgForShould)
+            
+    let withMessageContaining msg =
+        withMessage (be.string.containing msg)
+    
+let performMatch<'T> matchType (matcher:Matcher<'T>) (actual:'T) =
+    let raiseMsg a = 
+            let msg = sprintf "%A was expected to %s but was %A" 
+                        actual (matcher.MessageFor matchType) a
+            raise (AssertionError { Message = msg })
+    let continuation result =
+        match (matchType, result) with
+        | (Should, MatchFail x) -> raiseMsg x
+        | (ShouldNot, MatchSuccess x) -> raiseMsg x
+        | _ -> ()
+    matcher.ApplyActual continuation actual
+    
+let should<'T> = performMatch<'T> Should 
+let shouldNot<'T> = performMatch<'T> ShouldNot
+
+/// Extension methods for System.Object to aid in assertions
+type System.Object with
+    /// Allows the use of testContext.Subject.Should (matcher)
+    member self.Should<'T> (matcher : Matcher<'T>) =
+        self :?> 'T |> should matcher
+
+    /// Allows the use of testContext.Subject.ShouldNot (matcher)
+    member self.ShouldNot<'T> (matcher : Matcher<'T>) =
+        self :?> 'T |> shouldNot matcher
+
+    member self.Apply<'T,'U> (f : 'T -> 'U) =
+        self :?> 'T |> f

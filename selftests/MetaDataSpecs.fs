@@ -1,7 +1,7 @@
 ﻿module FSpec.SelfTests.MetaDataSpecs
 open FSpec
 open Dsl
-open MatchersV3
+open Matchers
 
 type TestContext with
     member self.data with get() = self.GetSubject<TestDataMap.T> ()

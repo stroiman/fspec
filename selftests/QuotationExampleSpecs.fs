@@ -1,7 +1,7 @@
 ﻿module FSpec.SelfTests.QuotationExampleSpecs
 open FSpec
 open Dsl
-open MatchersV3
+open Matchers
 open Helpers
 open Example
 open CustomMatchers

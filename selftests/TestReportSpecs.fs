@@ -3,7 +3,7 @@ open System
 open System.Text
 open FSpec
 open Dsl
-open MatchersV3
+open Matchers
 open Runner
 open ExampleHelper
 open Helpers

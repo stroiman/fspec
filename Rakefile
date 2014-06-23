@@ -27,7 +27,6 @@ file 'output/FSpec.dll' => [
     'core/TestReport.fs', 
     'core/Runner.fs',
     'core/Matchers.fs', 
-    'core/MatchersV3.fs',
     'core/Dsl.fs',
     'core/TestDiscovery.fs',
     'core/Compatibility.fs',

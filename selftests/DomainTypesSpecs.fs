@@ -1,7 +1,7 @@
 module FSpec.SelfTests.DomainTypesSpecs
 open FSpec
 open Dsl
-open MatchersV3
+open Matchers
 open ExampleHelper
 
 let change f = fun (c:TestContext) -> c.Subject.Apply f

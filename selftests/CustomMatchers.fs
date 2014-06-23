@@ -2,7 +2,7 @@
 open FSpec
 open Example
 open ExampleGroup
-open MatchersV3
+open Matchers
 
 let haveLineMatching pattern = have.element (be.string.matching pattern)
 
