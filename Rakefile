@@ -35,6 +35,18 @@ file 'output/FSpec.dll' => [
   compile(t.name, t.prerequisites, :library)
 end
 
+file 'output/FSpec.AutoFoq.dll' => [
+    'FSpec.AutoFoq/FoqMockingKernel.fs',
+    'FSpec.AutoFoq/TestContext.fs',
+    'FSpec.AutoFoq/AssemblyInfo.fs',
+    'output/FSpec.dll',
+    'packages/Ninject.MockingKernel.3.2.0.0/lib/net45-full/Ninject.MockingKernel.dll',
+    'packages/Ninject.3.2.0.0/lib/net45-full/Ninject.dll',
+    'packages/Foq.1.6/Lib/net45/Foq.dll'
+    ] do |t|
+  compile(t.name, t.prerequisites, :library)
+end
+
 file 'output/FSpec.SelfTests.dll' => [
     'selftests/Helpers.fs',
     'selftests/ExampleHelper.fs',
@@ -60,7 +72,7 @@ file 'output/fspec-runner.exe' => ['cli/Main.fs', 'output/FSpec.dll'] do |t|
   compile(t.name, t.prerequisites, :exe)
 end
 
-task :build => ['output/fspec-runner.exe'] do
+task :build => ['output/fspec-runner.exe','output/FSpec.AutoFoq.dll'] do
 end
 
 task :test => ['output/fspec-runner.exe', 'output/FSpec.SelfTests.dll'] do
