@@ -22,7 +22,7 @@ def compile(output_file, prerequisites, target)
   sh "#{fsc} #{fs_files.join(" ")} --out:#{output_file} #{reference_args.join(" ")} --target:#{target}"
 end
 
-file 'output/FSpec.Core.dll' => [
+file 'output/FSpec.dll' => [
     'core/DomainTypes.fs',
     'core/TestReport.fs', 
     'core/Runner.fs',
@@ -49,22 +49,22 @@ file 'output/FSpec.SelfTests.dll' => [
     'selftests/DslSpecs.fs',
     'selftests/QuotationExampleSpecs.fs',
     'selftests/TestContextSpecs.fs',
-    'output/FSpec.Core.dll'
+    'output/FSpec.dll'
     ] do |t|
   compile(t.name, t.prerequisites, :library)
 end
 
-file 'output/fspec.exe' => ['cli/Main.fs', 'output/FSpec.Core.dll'] do |t|
+file 'output/fspec-runner.exe' => ['cli/Main.fs', 'output/FSpec.dll'] do |t|
   compile(t.name, t.prerequisites, :exe)
 end
 
-task :build => ['output/fspec.exe'] do
+task :build => ['output/fspec-runner.exe'] do
 end
 
-task :test => ['output/fspec.exe', 'output/FSpec.SelfTests.dll'] do
+task :test => ['output/fspec-runner.exe', 'output/FSpec.SelfTests.dll'] do
   executer = ""
   executer = "mono " unless windows?
-  sh("#{executer}output/fspec.exe output/FSpec.SelfTests.dll")
+  sh("#{executer}output/fspec-runner.exe output/FSpec.SelfTests.dll")
 end
 
 task :default => [:build, :test]

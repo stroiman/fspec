@@ -41,13 +41,6 @@
     <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\core\fspec.core.fsproj">
-      <Name>fspec.core</Name>
-      <Project>{3a1228a7-f39e-49fd-974c-47abb1caba42}</Project>
-      <Private>True</Private>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="Helpers.fs" />
     <Compile Include="ExampleHelper.fs" />
     <Compile Include="CustomMatchers.fs" />
@@ -60,6 +53,13 @@
     <Compile Include="DslSpecs.fs" />
     <Compile Include="QuotationExampleSpecs.fs" />
     <Compile Include="TestContextSpecs.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\core\FSpec.fsproj">
+      <Name>FSpec</Name>
+      <Project>{3a1228a7-f39e-49fd-974c-47abb1caba42}</Project>
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>

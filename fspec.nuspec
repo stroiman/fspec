@@ -17,11 +17,11 @@
     <copyright>Copyright 2014</copyright>
     <tags>tdd unittesting bdd</tags>
     <references>
-      <reference file="FSpec.Core.dll" />
+      <reference file="FSpec.dll" />
     </references>
   </metadata>
   <files>
-    <file src="output/FSpec.Core.dll" target="lib/net40/FSpec.Core.dll" />
-    <file src="output/FSpec.exe" target="tools/FSpec.exe" />
+    <file src="output/FSpec.dll" target="lib/net40/FSpec.dll" />
+    <file src="output/FSpec-runner.exe" target="tools/FSpec-runner.exe" />
   </files>
 </package>
