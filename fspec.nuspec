@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>fspec</id>
+    <id>FSpec</id>
     <version>@build.number@</version>
     <authors>Peter Stroiman</authors>
     <owners>Peter Stroiman</owners>
