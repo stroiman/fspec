@@ -5,12 +5,12 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>8272d347-f66a-44f1-b5b1-bc7fe2812f47</ProjectGuid>
+    <ProjectGuid>555ae588-7391-4d6d-8ef0-9d249d91bcb8</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>fspec.selftests</RootNamespace>
-    <AssemblyName>fspec.selftests</AssemblyName>
+    <RootNamespace>FSpec.AutoFoq</RootNamespace>
+    <AssemblyName>FSpec.AutoFoq</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <Name>fspec.selftests</Name>
+    <Name>FSpec.AutoFoq</Name>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -20,7 +20,7 @@
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <DocumentationFile>bin\Debug\fspec.selftests.XML</DocumentationFile>
+    <DocumentationFile>bin\Debug\FSpec.AutoFoq.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -29,27 +29,16 @@
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <DocumentationFile>bin\Release\fspec.selftests.XML</DocumentationFile>
+    <DocumentationFile>bin\Release\FSpec.AutoFoq.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.0\Framework\v4.0\Microsoft.FSharp.Targets" Condition=" Exists('$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.0\Framework\v4.0\Microsoft.FSharp.Targets')" />
   <ItemGroup>
-    <Compile Include="Helpers.fs" />
-    <Compile Include="ExampleHelper.fs" />
-    <Compile Include="CustomMatchers.fs" />
-    <Compile Include="DomainTypesSpecs.fs" />
-    <Compile Include="MatchersV3Specs.fs" />
-    <Compile Include="RunnerSpecs.fs" />
-    <Compile Include="TestRunnerSpecs.fs" />
-    <Compile Include="TestReportSpecs.fs" />
-    <Compile Include="MetaDataSpecs.fs" />
-    <Compile Include="DslSpecs.fs" />
-    <Compile Include="QuotationExampleSpecs.fs" />
-    <Compile Include="TestContextSpecs.fs" />
-    <Compile Include="AutoFoqSpecs.fs" />
-    <None Include="Foq.Usage.fsx" />
+    <Compile Include="FoqMockingKernel.fs" />
+    <Compile Include="TestContext.fs" />
+    <Compile Include="AssemblyInfo.fs" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -61,17 +50,22 @@
     <Reference Include="FSharp.Core, Version=4.3.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <Private>True</Private>
     </Reference>
+    <Reference Include="Ninject">
+      <HintPath>..\packages\Ninject.3.2.0.0\lib\net45-full\Ninject.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Ninject.MockingKernel">
+      <HintPath>..\packages\Ninject.MockingKernel.3.2.0.0\lib\net45-full\Ninject.MockingKernel.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\core\FSpec.fsproj">
       <Name>FSpec</Name>
       <Project>{3a1228a7-f39e-49fd-974c-47abb1caba42}</Project>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\FSpec.AutoFoq\FSpec.AutoFoq.fsproj">
-      <Name>FSpec.AutoFoq</Name>
-      <Project>{555ae588-7391-4d6d-8ef0-9d249d91bcb8}</Project>
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>

@@ -7,6 +7,8 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "fspec.selftests", "selftest
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSpec.Runner", "cli\FSpec.Runner.fsproj", "{4136D8B8-C7D8-4D6B-B734-3C5809193CE1}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSpec.AutoFoq", "FSpec.AutoFoq\FSpec.AutoFoq.fsproj", "{555AE588-7391-4D6D-8EF0-9D249D91BCB8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,6 +27,10 @@ Global
 		{4136D8B8-C7D8-4D6B-B734-3C5809193CE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4136D8B8-C7D8-4D6B-B734-3C5809193CE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4136D8B8-C7D8-4D6B-B734-3C5809193CE1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{555AE588-7391-4D6D-8EF0-9D249D91BCB8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{555AE588-7391-4D6D-8EF0-9D249D91BCB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{555AE588-7391-4D6D-8EF0-9D249D91BCB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{555AE588-7391-4D6D-8EF0-9D249D91BCB8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
