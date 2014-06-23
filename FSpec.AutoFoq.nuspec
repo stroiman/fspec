@@ -19,13 +19,13 @@
     <references>
       <reference file="FSpec.AutoFoq.dll" />
     </references>
+    <dependencies>
+      <dependency id="FSpec" version="@build.number@" />
+      <dependency id="Ninject.MockingKernel" />
+      <dependency id="Foq" />
+    </dependencies>
   </metadata>
   <files>
     <file src="output/FSpec.AutoFoq.dll" target="lib/net40/FSpec.AutoFoq.dll" />
   </files>
-  <dependencies>
-    <dependency id="FSpec" />
-    <dependency id="Ninject.MockingKernel" />
-    <dependency id="Foq" />
-  </dependencies>
 </package>
