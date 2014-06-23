@@ -28,6 +28,7 @@ module Core =
         let itShould<'T> = itShould<'T>
         [<Obsolete("Use types from FSpec.Dsl namespace instead of FSpec.Core.Dsl")>]
         let itShouldNot<'T> = itShouldNot<'T>
+        let (<<-) = (<<-)
 
     module MatchersV3 =
         open FSpec.Matchers
