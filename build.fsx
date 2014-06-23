@@ -94,16 +94,23 @@ Target "Commit" <| fun _ ->
 
 // Default target
 Target "Default" <| fun _ -> ()
-Target "CreateBuild" <| fun _ -> 
+
+Target "TestCreateBuild" <| fun _ ->
     run "IncBuildNo"
     run "Build"
     run "CreatePackage"
-    run "Commit"
 
-Target "CreateMinor" <| fun _ -> 
+Target "TestCreateMinor" <| fun _ -> 
     run "IncMinorVersion"
     run "Build"
     run "CreatePackage"
+
+Target "CreateBuild" <| fun _ -> 
+    run "TestCreateBuild"
+    run "Commit"
+
+Target "CreateMinor" <| fun _ -> 
+    run "TestCreateBuild"
     run "Commit"
 
 "Build" ==> "Default"
