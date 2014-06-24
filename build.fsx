@@ -110,7 +110,7 @@ Target "CreateBuild" <| fun _ ->
     run "Commit"
 
 Target "CreateMinor" <| fun _ -> 
-    run "TestCreateBuild"
+    run "TestCreateMinor"
     run "Commit"
 
 "Build" ==> "Default"
