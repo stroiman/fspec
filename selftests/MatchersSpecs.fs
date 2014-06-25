@@ -1,4 +1,4 @@
-module FSpec.SelfTests.MatcherV3Specs
+module FSpec.SelfTests.MatcherSpecs
 open FSpec
 open Dsl
 open Matchers
