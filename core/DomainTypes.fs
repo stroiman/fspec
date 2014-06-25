@@ -142,7 +142,7 @@ type TestContext =
         static member (?<-) (self:TestContext,name,value) = self.Set name value 
         static member create metaData = { 
             MetaData = metaData
-            Data = TestDataMap.Zero
+            Data = metaData
             Disposables = []
             WrappedSubject = None }
 

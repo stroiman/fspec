@@ -8,9 +8,28 @@ type DisposeSpy () =
     interface System.IDisposable with
         member self.Dispose () = self.Disposed <- true
 let createContext = TestDataMap.Zero |> TestContext.create
+
+let haveContextData name valueMatcher =
+    createCompoundMatcher 
+        valueMatcher
+        (fun (x:TestContext) -> x.Get name)
+        (sprintf "have data key %A with value %s" name (valueMatcher.FailureMsgForShould))
         
 let specs =
     describe "TestContext" [
+        describe "context data" [
+            it "is initialized from metadata" <| fun _ ->
+                let metaData = TestDataMap.create [("answer", 42)]
+                let context = metaData |> TestContext.create
+                context.Should (haveContextData "answer" (equal 42))
+
+            it "does not change original metadata" <| fun _ ->
+                let metaData = TestDataMap.create [("answer", 42)]
+                let context = metaData |> TestContext.create
+                context?answer <- 43
+                metaData?answer.Should (equal 42)
+        ]
+
         describe "set and get data" [
             let itCanLookupTheData =
                 examples [
