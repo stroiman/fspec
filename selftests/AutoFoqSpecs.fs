@@ -21,6 +21,15 @@ let specs =
     describe "FSpec.AutoFoq" [
         it "allows you to setup code first" <| fun ctx ->
             let entity = TestEntity.createWithId 42
+            ctx.InitMock<ITestDataAccess>(fun mock ->
+                    mock.Setup(fun x -> <@ x.Load 42 @>)
+                        .Returns(entity))
+            let service = ctx.GetInstance<TestApplicationService>()
+            let entity = service.Get 42
+            entity.Should (equal entity)
+
+        it "allows you to inject a configured mock" <| fun ctx ->
+            let entity = TestEntity.createWithId 42
             ctx.Inject <|
                 Mock<ITestDataAccess>()
                     .Setup(fun x -> <@ x.Load 42 @>)
