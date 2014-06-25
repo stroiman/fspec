@@ -157,21 +157,21 @@ let specs =
                  "addExampleMetaData" ++ false) ==>
                 context "test contains no metadata" [
                     it "uses metadata from setup" <| fun ctx ->
-                        ctx.Get "source" |> should (be.equalTo "parent group")
+                        ctx?source.Should (equal "parent group")
                 ]   
 
                 ("addChildGroupMetaData" ++ false |||
                  "addExampleMetaData" ++ true) ==>
                 context "test overrides same metadata" [
                     it "uses the metadata specified in test" <| fun ctx ->
-                        ctx?source.Should (be.equalTo "example")
+                        ctx?source.Should (equal "example")
                 ]
 
                 ("addChildGroupMetaData" ++ true |||
                  "addExampleMetaData" ++ false) ==>
                 context "nested example group overrides metadata" [
                     it "uses the metadata from the child group" <| fun ctx ->
-                        ctx?source.Should (be.equalTo "child group")
+                        ctx?source.Should (equal "child group")
                 ]
             ]
         ]
