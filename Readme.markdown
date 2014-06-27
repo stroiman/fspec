@@ -6,7 +6,8 @@ _RSpec inspired test framework for F#_
 The aim of this project is to provide a test framework to the .NET platform
 having the same elegance as the RSpec framework has on Ruby.
 
-You can easily use this framework to test C# code.
+You can easily use this framework to test C# code - that was in fact the
+original intent for this project.
 
 Currently the following features are supported
 
@@ -37,27 +38,19 @@ I have written a few [blog posts][1] about FSpec
 
 ## Want to contribute? ##
 
-Awesome. By using FSpec and giving feedback on what could be improved, what
-works, and what doesn't, you have already contributed greatly.
+Please. Contributers are greatly welcome.
 
-Feel like actually adding code? Hack away. One thing that could be really nice
-would be IDE integration, NCrunch in particular.
+Feedback is also more than welcome.
 
-## Possible Future Changes ##
+## Stability ##
 
-As the FSpec tool is still quite new and haven't really been used in many
-projects (only a few of my own), there is a risk that the API could change. 
+FSpec is stil in it's 0.x phase, so there is a risk that the API could change.
 
-The DSL for building examples and example groups have already undergone a big
-change, but I'm quite happy with the way it looks now. I don't expect any major
-changes to this, only minor additions, or possibly modifications to how meta
-data is applied to examples and example groups.
+However, both the example building DSL, and the matchers have undergone
+significant changes already, and I have reached a point where I am quite happy
+with most of it. 
 
-I'm not currently happy with the matcher API, and I am experimenting with a new
-API that allows better support for composition, and custom matchers. So this
-could change.
-
-But you can use any assertion framework, e.g. unqoute, for matchers.
+So I believe that there should be no major changes to the API.
 
 ## General syntax ##
 
@@ -67,6 +60,7 @@ the fspec runner command line.
 
 ```fsharp
 module MySpecModule
+open FSpec.Dsl
 
 let specs =
     describe "Some component" [
@@ -289,8 +283,8 @@ You can associate metadata to an individual example, or an example group. The
 syntax is currently a strange set of operators. The metadata is basically a map
 of _string_ keys and _obj_ values.
 
-The metadata getter is generic, but will fail at runtime if the actual data is
-not of the correct type.
+Meta data assigned to an example, or example group, will be available on the
+_TestContext_ when executing the example.
 
 Metadata can be useful when you want to modify a general setup in a more
 specific context.
@@ -299,7 +293,7 @@ specific context.
 let specs =
     describe "Register new user feature" [
         before (fun ctx ->
-            let user = ctx.metadata?existing_user
+            let user = ctx?existing_user
             Mock<IUserRepository>()
                 .Setup(fun x -> <@ x.FindByEmail(email) @>)
                 .Returns(user)
@@ -325,6 +319,9 @@ let specs =
         ]
     ]
 ```
+
+The metadata getter is generic, but will fail at runtime if the actual data is
+not of the correct type.
 
 The _++_ operator combines creates a collection of metadata, and the _|||_
 operator combines two collections of metadata. The _==>_ operator passes a
@@ -352,8 +349,8 @@ Is possible, and soon to be documented.
 ## Extending Test Context ##
 
 Common test functionality can be created by writing extensions to the
-TestContext type. E.g. here, where FSpec is used to test a typical C#
-dependency injection architectural project.
+TestContext type. E.g. here, where FSpec is used to test a C# project following
+a typical dependency injection architecture.
 
 ```fsharp
 module MyApplicationSpecs.TestHelpers
@@ -361,7 +358,7 @@ open FSpec.Core
 
 type TestContext with
     member self.AutoMocker =
-	self.GetOrDefault "auto_mocker" (fun _ -> AutoMocker())
+	      self.GetOrDefault "auto_mocker" (fun _ -> AutoMocker())
     member self.GetMock<'T> () = self.AutoMocker.GetMock<'T> ()
     member self.Get<'T> () = self.AutoMocker.Get<'T> ()
 ```
@@ -379,20 +376,18 @@ returned.
 Because examples are created at runtime, you can use _List_ operations to
 generate batches of test cases.
 
-Although this example is a bit noisy with paranthesis, it shows that it can
-be done with the current api.
-
 ```fsharp
 let specs =
     describe "Email validator" (
-        (["user@example.com"
+        yield! (["user@example.com"
           ...
           "dotted.user@example.com"]
          |> List.map (fun email ->
             it (sprintf "validates email: %s" email) (fun _ ->
                 email |> validateEmail |> should equal true))
-        ) @ 
-        (["user@example";
+        )
+
+        yield! (["user@example";
           ...
           "user@.com"]
          |> List.map (fun email ->
@@ -402,9 +397,34 @@ let specs =
     )
 ```
 
+Although this example is a bit noisy with paranthesis, it shows that it can
+be done with the current api.
+
+Alternately, you can create helper functions to create tests for you.
+
+```fsharp
+let itIsValidEmail email =
+    it (sprintf "validates email: %s" email) (fun _ ->
+        email |> validateEmail |> should (equal true))
+
+let itIsInvalidEmail email =
+    it (sprintf "does not validate email: %s" email) (fun _ ->
+        email |> validateEmail |> should (equal false))
+
+let specs =
+    describe "Email validator" (
+        itIsValidEmail "user@example.com"
+        ...
+        itIsValidEmail "dotted.user@example.com"
+
+        itIsInvalidEmail "user@example"
+        ...
+        itIsInvalidEmail "user@.com"
+    )
+```
 ## Running the tests ##
 
-You can either use the console runner for running the specs. Or - create you
+You can either use the console runner for running the specs. Or - create your
 spec assembly as a console application, and use this following piece of code as
 the main function
 
@@ -412,5 +432,5 @@ the main function
 [<EntryPoint>]
 let main argv = 
     System.Reflection.Assembly.GetExecutingAssembly ()
-    |> FSpec.Core.TestDiscovery.runSingleAssembly
+    |> FSpec.TestDiscovery.runSingleAssembly
 ```
