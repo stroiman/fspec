@@ -9,3 +9,6 @@ obj
 *~
 *.nupkg
 packages
+_NCrunch_*
+*.ncrunchproject
+*.ncrunchsolution
