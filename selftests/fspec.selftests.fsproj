@@ -49,6 +49,7 @@
     <Compile Include="QuotationExampleSpecs.fs" />
     <Compile Include="TestContextSpecs.fs" />
     <Compile Include="AutoFoqSpecs.fs" />
+    <Compile Include="MbUnitWrapperSpecs.fs" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

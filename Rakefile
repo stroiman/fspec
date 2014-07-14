@@ -61,6 +61,7 @@ file 'output/FSpec.SelfTests.dll' => [
     'selftests/QuotationExampleSpecs.fs',
     'selftests/TestContextSpecs.fs',
     'selftests/AutoFoqSpecs.fs',
+    'selftests/MbUnitWrapperSpecs.fs',
     'packages/Foq.1.6/Lib/net45/Foq.dll',
     'output/FSpec.AutoFoq.dll',
     'output/FSpec.dll',
