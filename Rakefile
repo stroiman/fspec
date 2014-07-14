@@ -63,7 +63,11 @@ file 'output/FSpec.SelfTests.dll' => [
     'selftests/AutoFoqSpecs.fs',
     'packages/Foq.1.6/Lib/net45/Foq.dll',
     'output/FSpec.AutoFoq.dll',
-    'output/FSpec.dll'
+    'output/FSpec.dll',
+    'packages/mbunit.3.3.454.0/lib/net40/Gallio.dll',
+    'packages/mbunit.3.3.454.0/lib/net40/Gallio40.dll',
+    'packages/mbunit.3.3.454.0/lib/net40/MbUnit.dll',
+    'packages/mbunit.3.3.454.0/lib/net40/MbUnit40.dll',
     ] do |t|
   compile(t.name, t.prerequisites, :library)
 end
