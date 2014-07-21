@@ -19,6 +19,10 @@ module Configuration =
 
 module Runner =
     open Configuration
+
+    type SingleExample = {
+        Example : Example.T
+        ContainingGroups : ExampleGroup.T list }
             
     let runMany ctx = List.rev >> List.iter (fun x -> x ctx)
     let rec performSetup groupStack ctx =
@@ -35,29 +39,33 @@ module Runner =
                 x.TearDowns |> runMany ctx
                 performTearDown xs ctx
 
+    let execExample x =
+        let example = x.Example
+        let groupStack = x.ContainingGroups
+        let metaDataStack = example.MetaData :: (groupStack |> List.map (fun x -> x.MetaData))
+        let metaData = metaDataStack |> List.fold TestDataMap.merge TestDataMap.Zero
+        try
+            let context = metaData |> TestContext.create
+            try
+                try
+                    performSetup groupStack context
+                    example |> Example.run context
+                finally
+                    performTearDown groupStack context
+            finally
+                TestContext.cleanup context
+            Success
+        with
+        | PendingError -> Pending
+        | AssertionError(e) -> Failure e
+        | ex -> Error ex
+
     let doRun exampleGroup reporter report =
         let rec run groupStack report =
-            let execExample (example:Example.T) =
-                let metaDataStack = example.MetaData :: (groupStack |> List.map (fun x -> x.MetaData))
-                let metaData = metaDataStack |> List.fold TestDataMap.merge TestDataMap.Zero
-                try
-                    let context = metaData |> TestContext.create
-                    try
-                        try
-                            performSetup groupStack context
-                            example |> Example.run context
-                        finally
-                            performTearDown groupStack context
-                    finally
-                        TestContext.cleanup context
-                    Success
-                with
-                | PendingError -> Pending
-                | AssertionError(e) -> Failure e
-                | ex -> Error ex
-
             let runExample (example:Example.T) =
-                execExample example 
+                { Example = example;
+                  ContainingGroups = groupStack }
+                |> execExample
                 |> reporter.ReportExample example 
 
             let grp = groupStack |> List.head
