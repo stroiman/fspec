@@ -61,6 +61,8 @@ file 'output/FSpec.SelfTests.dll' => [
     'selftests/QuotationExampleSpecs.fs',
     'selftests/TestContextSpecs.fs',
     'selftests/AutoFoqSpecs.fs',
+    'packages/Ninject.MockingKernel.3.2.0.0/lib/net45-full/Ninject.MockingKernel.dll',
+    'packages/Ninject.3.2.0.0/lib/net45-full/Ninject.dll',
     'packages/Foq.1.6/Lib/net45/Foq.dll',
     'output/FSpec.AutoFoq.dll',
     'output/FSpec.dll'
