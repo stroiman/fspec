@@ -84,8 +84,8 @@ type SubjectWrapper<'T> =
             Initializer = (fun (ctx:'T) -> (f ctx) :> obj)
             ParentSubject = parent
             Instance = null }
-        member self.Get f =
-            if self.Instance = null then self.Instance <- f self
+        member self.Get ctx =
+            if self.Instance = null then self.Instance <- self.Initializer ctx
             self.Instance
 
 type TestContext =
@@ -124,18 +124,15 @@ type TestContext =
             with get () : obj =
                 match ctx.WrappedSubject with
                 | None -> null
-                | Some x -> 
-                    let f wrapper =
-                        let tmp = ctx.WrappedSubject
-                        try
-                            
-                            ctx.WrappedSubject <- wrapper.ParentSubject
-                            let x = wrapper.Initializer ctx
-                            ctx.RegisterDisposable x
-                            x
-                        finally
-                            ctx.WrappedSubject <- tmp
-                    x.Get f
+                | Some subject -> 
+                    let tmp = ctx.WrappedSubject
+                    try
+                        ctx.WrappedSubject <- subject.ParentSubject
+                        let x = subject.Get ctx
+                        ctx.RegisterDisposable x
+                        x
+                    finally
+                        ctx.WrappedSubject <- tmp
         member ctx.GetSubject<'T> () = ctx.Subject :?> 'T
 
         static member (?) (self:TestContext,name) = self.Get name 
