@@ -81,7 +81,7 @@ type SubjectWrapper<'T> =
     }
     with
         static member create (f:'T->'a) parent = {
-            Initializer = (fun (ctx:'T) -> (f ctx) :> obj)
+            Initializer = (fun ctx -> (f ctx) :> obj)
             ParentSubject = parent
             Instance = null }
         member self.Get ctx =
@@ -124,19 +124,22 @@ type TestContext
         member ctx.SetSubject f = 
             ctx.WrappedSubject <- Some (SubjectWrapper.create f ctx.WrappedSubject)
 
+        member ctx.WithSubject s f =
+            let tmp = ctx.WrappedSubject
+            try
+                ctx.WrappedSubject <- s
+                f ctx
+            finally
+                ctx.WrappedSubject <- tmp
+
         member ctx.Subject
             with get () : obj =
                 match ctx.WrappedSubject with
                 | None -> null
                 | Some subject -> 
-                    let tmp = ctx.WrappedSubject
-                    try
-                        ctx.WrappedSubject <- subject.ParentSubject
-                        ctx
-                        |> subject.Get
-                        |> ctx.RegisterDisposable
-                    finally
-                        ctx.WrappedSubject <- tmp
+                    ctx.WithSubject     
+                        subject.ParentSubject 
+                        (subject.Get >> ctx.RegisterDisposable)
         member ctx.GetSubject<'T> () = ctx.Subject :?> 'T
 
         static member (?) (self:TestContext,name) = self.Get name 
