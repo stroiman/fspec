@@ -94,18 +94,22 @@ type TestContext =
         mutable Disposables: System.IDisposable list
         mutable WrappedSubject: SubjectWrapper<TestContext> option
         mutable Data: TestDataMap.T }
+
+type TestContext
     with
         static member cleanup ctx =
             ctx.Disposables |> List.iter (fun x -> x.Dispose())
 
-        member internal ctx.RegisterDisposable (x:obj) =
-            match x with
-            | :? System.IDisposable as d -> ctx.Disposables <- d::ctx.Disposables
-            | _ -> ()
+        member internal ctx.RegisterDisposable x =
+            match (x :> obj) with
+            | :? System.IDisposable as d -> 
+                ctx.Disposables <- d::ctx.Disposables
+                x
+            | _ -> x
             
         member ctx.Set name value =
             ctx.Data <- ctx.Data.Add name value
-            ctx.RegisterDisposable value
+            ctx.RegisterDisposable value |> ignore
         member ctx.Get<'T> name = ctx.Data.Get<'T> name
 
         member ctx.TryGet<'T> name = ctx.Data |> TestDataMap.tryGet<'T> name
@@ -128,9 +132,9 @@ type TestContext =
                     let tmp = ctx.WrappedSubject
                     try
                         ctx.WrappedSubject <- subject.ParentSubject
-                        let x = subject.Get ctx
-                        ctx.RegisterDisposable x
-                        x
+                        ctx
+                        |> subject.Get
+                        |> ctx.RegisterDisposable
                     finally
                         ctx.WrappedSubject <- tmp
         member ctx.GetSubject<'T> () = ctx.Subject :?> 'T
