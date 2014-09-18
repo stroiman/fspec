@@ -88,31 +88,33 @@ type SubjectWrapper<'T> =
             if self.Instance = null then self.Instance <- self.Initializer ctx
             self.Instance
 
-type TestContext =
+type TestContextData<'T> =
     { 
         MetaData: TestDataMap.T
         mutable Disposables: System.IDisposable list
-        mutable WrappedSubject: SubjectWrapper<TestContext> option
+        mutable WrappedSubject: SubjectWrapper<'T> option
         mutable Data: TestDataMap.T }
 
-type TestContext
-    with
-        static member cleanup ctx =
-            ctx.Disposables |> List.iter (fun x -> x.Dispose())
+type TestContext(data:TestContextData<TestContext>) =
+        member ctx.Cleanup () =
+            data.Disposables |> List.iter (fun x -> x.Dispose())
+            
+        static member cleanup (ctx : TestContext) =
+            ctx.Cleanup ()
 
         member internal ctx.RegisterDisposable x =
             match (x :> obj) with
             | :? System.IDisposable as d -> 
-                ctx.Disposables <- d::ctx.Disposables
+                data.Disposables <- d::data.Disposables
                 x
             | _ -> x
             
         member ctx.Set name value =
-            ctx.Data <- ctx.Data.Add name value
+            data.Data <- data.Data.Add name value
             ctx.RegisterDisposable value |> ignore
-        member ctx.Get<'T> name = ctx.Data.Get<'T> name
+        member ctx.Get<'T> name = data.Data.Get<'T> name
 
-        member ctx.TryGet<'T> name = ctx.Data |> TestDataMap.tryGet<'T> name
+        member ctx.TryGet<'T> name = data.Data |> TestDataMap.tryGet<'T> name
         member ctx.GetOrDefault<'T> name (initializer : TestContext -> 'T) =
             match ctx.TryGet<'T> name with
             | Some x -> x
@@ -122,19 +124,22 @@ type TestContext
                 result
 
         member ctx.SetSubject f = 
-            ctx.WrappedSubject <- Some (SubjectWrapper.create f ctx.WrappedSubject)
+            data.WrappedSubject <- Some (SubjectWrapper.create f data.WrappedSubject)
 
         member ctx.WithSubject s f =
-            let tmp = ctx.WrappedSubject
+            let tmp = data.WrappedSubject
             try
-                ctx.WrappedSubject <- s
+                data.WrappedSubject <- s
                 f ctx
             finally
-                ctx.WrappedSubject <- tmp
+                data.WrappedSubject <- tmp
+
+        member ctx.MetaData
+            with get () = data.MetaData
 
         member ctx.Subject
             with get () : obj =
-                match ctx.WrappedSubject with
+                match data.WrappedSubject with
                 | None -> null
                 | Some subject -> 
                     ctx.WithSubject     
@@ -144,11 +149,13 @@ type TestContext
 
         static member (?) (self:TestContext,name) = self.Get name 
         static member (?<-) (self:TestContext,name,value) = self.Set name value 
-        static member create metaData = { 
-            MetaData = metaData
-            Data = metaData
-            Disposables = []
-            WrappedSubject = None }
+        static member create metaData = 
+            let data = { 
+                MetaData = metaData
+                Data = metaData
+                Disposables = []
+                WrappedSubject = None }
+            TestContext(data)
 
 type TestFunc = TestContext -> unit
 
