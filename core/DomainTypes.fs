@@ -95,67 +95,68 @@ type TestContextData<'T> =
         mutable WrappedSubject: SubjectWrapper<'T> option
         mutable Data: TestDataMap.T }
 
-type TestContext(data:TestContextData<TestContext>) =
-        member ctx.Cleanup () =
-            data.Disposables |> List.iter (fun x -> x.Dispose())
-            
-        static member cleanup (ctx : TestContext) =
-            ctx.Cleanup ()
-
-        member internal ctx.RegisterDisposable x =
-            match (x :> obj) with
-            | :? System.IDisposable as d -> 
-                data.Disposables <- d::data.Disposables
-                x
-            | _ -> x
-            
-        member ctx.Set name value =
-            data.Data <- data.Data.Add name value
-            ctx.RegisterDisposable value |> ignore
-        member ctx.Get<'T> name = data.Data.Get<'T> name
-
-        member ctx.TryGet<'T> name = data.Data |> TestDataMap.tryGet<'T> name
-        member ctx.GetOrDefault<'T> name (initializer : TestContext -> 'T) =
-            match ctx.TryGet<'T> name with
-            | Some x -> x
-            | None -> 
-                let result = initializer ctx
-                ctx.Set name result
-                result
-
-        member ctx.SetSubject f = 
-            data.WrappedSubject <- Some (SubjectWrapper.create f data.WrappedSubject)
-
-        member ctx.WithSubject s f =
-            let tmp = data.WrappedSubject
-            try
-                data.WrappedSubject <- s
-                f ctx
-            finally
-                data.WrappedSubject <- tmp
-
-        member ctx.MetaData
-            with get () = data.MetaData
-
-        member ctx.Subject
-            with get () : obj =
-                match data.WrappedSubject with
-                | None -> null
-                | Some subject -> 
-                    ctx.WithSubject     
-                        subject.ParentSubject 
-                        (subject.Get >> ctx.RegisterDisposable)
-        member ctx.GetSubject<'T> () = ctx.Subject :?> 'T
-
-        static member (?) (self:TestContext,name) = self.Get name 
-        static member (?<-) (self:TestContext,name,value) = self.Set name value 
-        static member create metaData = 
-            let data = { 
+type TestContext(metaData : TestDataMap.T) =
+    let mutable data = {
                 MetaData = metaData
                 Data = metaData
                 Disposables = []
                 WrappedSubject = None }
-            TestContext(data)
+
+    member ctx.Cleanup () =
+        data.Disposables |> List.iter (fun x -> x.Dispose())
+        
+    static member cleanup (ctx : TestContext) =
+        ctx.Cleanup ()
+
+    member internal ctx.RegisterDisposable x =
+        match (x :> obj) with
+        | :? System.IDisposable as d -> 
+            data.Disposables <- d::data.Disposables
+            x
+        | _ -> x
+        
+    member ctx.Set name value =
+        data.Data <- data.Data.Add name value
+        ctx.RegisterDisposable value |> ignore
+    member ctx.Get<'T> name = data.Data.Get<'T> name
+
+    member ctx.TryGet<'T> name = data.Data |> TestDataMap.tryGet<'T> name
+    member ctx.GetOrDefault<'T> name (initializer : TestContext -> 'T) =
+        match ctx.TryGet<'T> name with
+        | Some x -> x
+        | None -> 
+            let result = initializer ctx
+            ctx.Set name result
+            result
+
+    member ctx.SetSubject f = 
+        data.WrappedSubject <- Some (SubjectWrapper.create f data.WrappedSubject)
+
+    member ctx.WithSubject s f =
+        let tmp = data.WrappedSubject
+        try
+            data.WrappedSubject <- s
+            f ctx
+        finally
+            data.WrappedSubject <- tmp
+
+    member ctx.MetaData
+        with get () = data.MetaData
+
+    member ctx.Subject
+        with get () : obj =
+            match data.WrappedSubject with
+            | None -> null
+            | Some subject -> 
+                ctx.WithSubject     
+                    subject.ParentSubject 
+                    (subject.Get >> ctx.RegisterDisposable)
+    member ctx.GetSubject<'T> () = ctx.Subject :?> 'T
+
+    static member (?) (self:TestContext,name) = self.Get name 
+    static member (?<-) (self:TestContext,name,value) = self.Set name value 
+    static member create metaData = 
+        TestContext(metaData)
 
 type TestFunc = TestContext -> unit
 
