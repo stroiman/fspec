@@ -91,9 +91,9 @@ type SubjectWrapper<'T> =
 type TestContextData<'T> =
     { 
         MetaData: TestDataMap.T
-        mutable Disposables: System.IDisposable list
-        mutable WrappedSubject: SubjectWrapper<'T> option
-        mutable Data: TestDataMap.T }
+        Disposables: System.IDisposable list
+        WrappedSubject: SubjectWrapper<'T> option
+        Data: TestDataMap.T }
 
 type TestContext(metaData : TestDataMap.T) =
     let mutable data = {
@@ -111,12 +111,12 @@ type TestContext(metaData : TestDataMap.T) =
     member internal ctx.RegisterDisposable x =
         match (x :> obj) with
         | :? System.IDisposable as d -> 
-            data.Disposables <- d::data.Disposables
+            data <- { data with Disposables = d::data.Disposables }
             x
         | _ -> x
         
     member ctx.Set name value =
-        data.Data <- data.Data.Add name value
+        data <- { data with Data = data.Data.Add name value }
         ctx.RegisterDisposable value |> ignore
     member ctx.Get<'T> name = data.Data.Get<'T> name
 
@@ -130,15 +130,16 @@ type TestContext(metaData : TestDataMap.T) =
             result
 
     member ctx.SetSubject f = 
-        data.WrappedSubject <- Some (SubjectWrapper.create f data.WrappedSubject)
+        let wrapper = SubjectWrapper.create f data.WrappedSubject
+        data <- { data with WrappedSubject = Some (wrapper) }
 
     member ctx.WithSubject s f =
         let tmp = data.WrappedSubject
         try
-            data.WrappedSubject <- s
+            data <- { data with WrappedSubject = s }
             f ctx
         finally
-            data.WrappedSubject <- tmp
+            data <- { data with WrappedSubject = tmp }
 
     member ctx.MetaData
         with get () = data.MetaData
