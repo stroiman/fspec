@@ -162,6 +162,7 @@ module Example =
     let addMetaData data ex = { ex with Name = ex.Name; MetaData = ex.MetaData.Merge data }
     let run context example = example.Test context
     let hasMetaData name ex = ex.MetaData.ContainsKey name
+    let getMetaData ex = ex.MetaData
 
 module ExampleGroup =
     type T = {

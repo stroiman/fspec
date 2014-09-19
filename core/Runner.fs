@@ -37,8 +37,9 @@ module Runner =
 
     let doRun exampleGroup reporter report =
         let rec run groupStack report =
-            let execExample (example:Example.T) =
-                let metaDataStack = example.MetaData :: (groupStack |> List.map (fun x -> x.MetaData))
+            let execExample example =
+                let exMetaData = example |> Example.getMetaData
+                let metaDataStack = exMetaData :: (groupStack |> List.map (fun x -> x.MetaData))
                 let metaData = metaDataStack |> List.fold TestDataMap.merge TestDataMap.Zero
                 try
                     let context = metaData |> TestContext.create
@@ -56,7 +57,7 @@ module Runner =
                 | AssertionError(e) -> Failure e
                 | ex -> Error ex
 
-            let runExample (example:Example.T) =
+            let runExample example =
                 execExample example 
                 |> reporter.ReportExample example 
 
