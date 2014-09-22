@@ -8,7 +8,7 @@ type DisposeSpy () =
     interface System.IDisposable with
         member self.Dispose () = self.Disposed <- true
 let create = TestContext.create
-let createContext = TestDataMap.Zero |> create
+let createContext () = TestDataMap.Zero |> create
 
 let haveContextData name valueMatcher =
     createCompoundMatcher 
@@ -136,7 +136,7 @@ let specs =
         describe "cleanup" [
             it "calls dispose on objects" <| fun _ ->
                 let x = new DisposeSpy()
-                let ctx = createContext
+                let ctx = createContext ()
                 ctx?x <- x
                 ctx |> TestContext.cleanup
                 x.Disposed |> should be.True
@@ -144,7 +144,7 @@ let specs =
             it "disposes instances, that are no longer present" <| fun _ ->
                 let x = new DisposeSpy()
                 let y = new DisposeSpy()
-                let ctx = createContext
+                let ctx = createContext ()
                 ctx?x <- x
                 ctx?x <- y
                 ctx |> TestContext.cleanup
@@ -152,7 +152,7 @@ let specs =
 
             it "calls dispose on Subject" (fun _ ->
                 let x = new DisposeSpy()
-                let ctx = createContext
+                let ctx = createContext ()
                 ctx.SetSubject (fun _ -> x)
                 ctx.Subject |> ignore // make sure it is evaluated
                 ctx |> TestContext.cleanup

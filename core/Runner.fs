@@ -42,15 +42,12 @@ module Runner =
                 let metaDataStack = exMetaData :: (groupStack |> List.map (fun x -> x.MetaData))
                 let metaData = metaDataStack |> List.fold TestDataMap.merge TestDataMap.Zero
                 try
-                    let context = metaData |> TestContext.create
+                    use context = metaData |> TestContext.create
                     try
-                        try
-                            performSetup groupStack context
-                            example |> Example.run context
-                        finally
-                            performTearDown groupStack context
+                        performSetup groupStack context
+                        example |> Example.run context
                     finally
-                        TestContext.cleanup context
+                        performTearDown groupStack context
                     Success
                 with
                 | PendingError -> Pending

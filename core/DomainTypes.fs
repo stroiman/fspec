@@ -105,6 +105,10 @@ type TestContext(metaData : TestDataMap.T) =
     member ctx.Cleanup () =
         data.Disposables |> List.iter (fun x -> x.Dispose())
         
+    interface System.IDisposable
+        with
+            member ctx.Dispose () = ctx.Cleanup ()
+
     static member cleanup (ctx : TestContext) =
         ctx.Cleanup ()
 
@@ -157,7 +161,7 @@ type TestContext(metaData : TestDataMap.T) =
     static member (?) (self:TestContext,name) = self.Get name 
     static member (?<-) (self:TestContext,name,value) = self.Set name value 
     static member create metaData = 
-        TestContext(metaData)
+        new TestContext(metaData)
 
 type TestFunc = TestContext -> unit
 
