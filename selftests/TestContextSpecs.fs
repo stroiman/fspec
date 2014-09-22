@@ -7,7 +7,8 @@ type DisposeSpy () =
     member val Disposed = false with get, set
     interface System.IDisposable with
         member self.Dispose () = self.Disposed <- true
-let createContext = TestDataMap.Zero |> TestContext.create
+let create = TestContext.create
+let createContext = TestDataMap.Zero |> create
 
 let haveContextData name valueMatcher =
     createCompoundMatcher 
@@ -20,12 +21,12 @@ let specs =
         describe "context data" [
             it "is initialized from metadata" <| fun _ ->
                 let metaData = TestDataMap.create [("answer", 42)]
-                let context = metaData |> TestContext.create
+                let context = metaData |> create
                 context.Should (haveContextData "answer" (equal 42))
 
             it "does not change original metadata" <| fun _ ->
                 let metaData = TestDataMap.create [("answer", 42)]
-                let context = metaData |> TestContext.create
+                let context = metaData |> create
                 context?answer <- 43
                 metaData?answer.Should (equal 42)
         ]
