@@ -7,7 +7,7 @@ open Example
 open CustomMatchers
 
 let createContextWithSubject subject =
-    let ctx = TestContext.create TestDataMap.Zero
+    let ctx = TestContextImpl.create TestDataMap.Zero
     ctx.SetSubject (fun _ -> subject)
     ctx
 

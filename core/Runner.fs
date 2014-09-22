@@ -42,7 +42,7 @@ module Runner =
                 let metaDataStack = exMetaData :: (groupStack |> List.map (fun x -> x.MetaData))
                 let metaData = metaDataStack |> List.fold TestDataMap.merge TestDataMap.Zero
                 try
-                    use context = metaData |> TestContext.create
+                    use context = metaData |> TestContextImpl.create
                     try
                         performSetup groupStack context
                         example |> Example.run context
