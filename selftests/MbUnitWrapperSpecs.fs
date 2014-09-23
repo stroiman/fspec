@@ -18,6 +18,10 @@ module SuiteHelpers =
 
 open SuiteHelpers
 
+type Wrapper() =
+  inherit ActualTestFactory()
+  
+
 let specs =
   describe "MbUnit wrapper" [
     describe "createSuiteFromExampleGroup()" [

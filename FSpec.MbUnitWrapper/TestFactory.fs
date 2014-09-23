@@ -5,14 +5,6 @@ open FSpec.Runner
 open FSpec.ExampleGroup
 open System.Collections.Generic
 
-type TestFactory () =
-  [<DynamicTestFactory>]
-  member __.FSpecWrapper () : IEnumerable<Test> =
-    let test = TestCase("Test", (fun _ -> ()))
-    [
-        test :> Test
-    ] |> List.toSeq
-
 type FSpecTestCase (example : Runner.SingleExample) =
   inherit TestCase(example.Example.Name, fun _ -> Runner.runSingleExample example)
 
@@ -29,5 +21,17 @@ let createSuiteFromExampleGroup g =
         Example = x
         ContainingGroups = containingGroups }
       s.Children.Add(FSpecTestCase x))
-    s
+    s :> Test
   createWithParentGroups g []
+
+let createSuiteFromExampleGroups gs =
+  gs |> List.map createSuiteFromExampleGroup
+
+[<AbstractClass>]
+type ActualTestFactory () =
+  [<DynamicTestFactory>]
+  member this.ActualTestFactory () : IEnumerable<Test> =
+    this.GetType().Assembly
+    |> TestDiscovery.getSpecsFromAssembly
+    |> createSuiteFromExampleGroups
+    |> List.toSeq
