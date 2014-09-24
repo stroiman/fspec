@@ -53,6 +53,12 @@ Target "Build" <| fun _ ->
         Attribute.FileVersion version
     ]
 
+    CreateFSharpAssemblyInfo "./FSpec.MbUnitWrapper/AssemblyInfo.fs" [
+        Attribute.Title "FSpec.MbUnitWrapper"
+        Attribute.Version version
+        Attribute.FileVersion version
+    ]
+
     let result = ExecProcess (fun info ->
         info.FileName <- "c:\\Ruby193\\bin\\rake.bat"
         info.WorkingDirectory <- ".") (TimeSpan.FromMinutes 5.0)
@@ -73,6 +79,12 @@ Target "CreatePackage" <| fun _ ->
             WorkingDir = "."
         })
         "FSpec.AutoFoq.nuspec"
+    NuGet (fun p -> 
+        {p with
+            Version = version
+            WorkingDir = "."
+        })
+        "FSpec.MbUnitWrapper.nuspec"
     
 Target "IncBuildNo" <| fun _ ->
     let version = getVersion()
