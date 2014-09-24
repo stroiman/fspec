@@ -53,6 +53,11 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\FSpec.MbUnitWrapper\FSpec.MbUnitWrapper.fsproj">
+      <Name>FSpec.MbUnitWrapper</Name>
+      <Project>{c5c98d42-1ffc-40ac-ac07-a9184acc2a7d}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <Reference Include="Foq">
       <HintPath>..\packages\Foq.1.6\Lib\net45\Foq.dll</HintPath>
       <Private>True</Private>
