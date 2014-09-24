@@ -149,6 +149,7 @@ type TestContext =
 type TestFunc = TestContext -> unit
 
 module Example =
+    [<ReferenceEqualityAttribute>]
     type T = {
         Name: string; 
         Test: TestFunc;
@@ -160,6 +161,7 @@ module Example =
     let hasMetaData name ex = ex.MetaData.ContainsKey name
 
 module ExampleGroup =
+    [<ReferenceEqualityAttribute>]
     type T = {
         Name: string
         Examples: Example.T list;

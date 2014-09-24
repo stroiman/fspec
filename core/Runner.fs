@@ -39,21 +39,24 @@ module Runner =
                 x.TearDowns |> runMany ctx
                 performTearDown xs ctx
 
-    let execExample x =
+    let runSingleExample x =
         let example = x.Example
         let groupStack = x.ContainingGroups
         let metaDataStack = example.MetaData :: (groupStack |> List.map (fun x -> x.MetaData))
         let metaData = metaDataStack |> List.fold TestDataMap.merge TestDataMap.Zero
+        let context = metaData |> TestContext.create
         try
-            let context = metaData |> TestContext.create
             try
-                try
-                    performSetup groupStack context
-                    example |> Example.run context
-                finally
-                    performTearDown groupStack context
+                performSetup groupStack context
+                example |> Example.run context
             finally
-                TestContext.cleanup context
+                performTearDown groupStack context
+        finally
+            TestContext.cleanup context
+      
+    let execExample x =
+        try
+            runSingleExample x
             Success
         with
         | PendingError -> Pending
