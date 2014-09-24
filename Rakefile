@@ -35,6 +35,17 @@ file 'output/FSpec.dll' => [
   compile(t.name, t.prerequisites, :library)
 end
 
+file 'output/FSpec.MbUnitWrapper.dll' => [
+    'FSpec.MbUnitWrapper/TestFactory.fs',
+    'output/FSpec.dll',
+    'packages/mbunit.3.3.454.0/lib/net40/Gallio.dll',
+    'packages/mbunit.3.3.454.0/lib/net40/Gallio40.dll',
+    'packages/mbunit.3.3.454.0/lib/net40/MbUnit.dll',
+    'packages/mbunit.3.3.454.0/lib/net40/MbUnit40.dll',
+    ] do |t|
+  compile(t.name, t.prerequisites, :library)
+end
+
 file 'output/FSpec.AutoFoq.dll' => [
     'FSpec.AutoFoq/FoqMockingKernel.fs',
     'FSpec.AutoFoq/TestContext.fs',
