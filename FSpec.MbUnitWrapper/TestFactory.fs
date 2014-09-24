@@ -28,7 +28,7 @@ let createSuiteFromExampleGroups gs =
   gs |> List.map createSuiteFromExampleGroup
 
 [<AbstractClass>]
-type ActualTestFactory () =
+type MbUnitWrapperBase () =
   [<DynamicTestFactory>]
   member this.ActualTestFactory () : IEnumerable<Test> =
     this.GetType().Assembly

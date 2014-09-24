@@ -19,8 +19,7 @@ module SuiteHelpers =
 open SuiteHelpers
 
 type Wrapper() =
-  inherit ActualTestFactory()
-  
+  inherit MbUnitWrapperBase()
 
 let specs =
   describe "MbUnit wrapper" [
