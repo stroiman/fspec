@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>FSpec.AutoFoq</id>
+    <version>@build.number@</version>
+    <authors>Peter Stroiman</authors>
+    <owners>Peter Stroiman</owners>
+    <licenseUrl>https://raw.githubusercontent.com/PeteProgrammer/fspec/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/PeteProgrammer/fspec</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/PeteProgrammer/fspec/master/FSpec_logo_med.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <summary>Wraps FSpec examples as an MbUnit test suite</summary>
+    <description>
+      MbUnit supports creating tests dynamically at run time. By creating a
+      wrapper that exposes FSpec tests as MbUnit dynamic tests, tools that
+      integrate with MbUnit can be allowed to see FSpec tests.
+    </description>
+    <!--<releaseNotes>Summary of changes made in this release of the package.</releaseNotes>-->
+    <copyright>Copyright 2014</copyright>
+    <tags>tdd unittesting bdd mocking mock foq fspec</tags>
+    <references>
+      <reference file="FSpec.MbUnitWrapper.dll" />
+    </references>
+    <dependencies>
+      <dependency id="FSpec" version="@build.number@" />
+      <dependency id="mbunit" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="output/FSpec.MbUnitWrapper.dll" target="lib/net40/FSpec.MbUnitWrapper.dll" />
+  </files>
+</package>
