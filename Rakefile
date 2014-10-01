@@ -38,6 +38,7 @@ end
 
 file 'output/FSpec.MbUnitWrapper.dll' => [
     'FSpec.MbUnitWrapper/TestFactory.fs',
+    'FSpec.MbUnitWrapper/AssemblyInfo.fs',
     'output/FSpec.dll',
     'packages/mbunit.3.3.454.0/lib/net40/Gallio.dll',
     'packages/mbunit.3.3.454.0/lib/net40/Gallio40.dll',
