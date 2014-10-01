@@ -1,7 +1,7 @@
 ﻿namespace System
 open System.Reflection
 
-[<assembly: AssemblyTitleAttribute("FSpec.AutoFoq")>]
+[<assembly: AssemblyTitleAttribute("FSpec.MbUnitWrapper")>]
 [<assembly: AssemblyVersionAttribute("0.2.0")>]
 [<assembly: AssemblyFileVersionAttribute("0.2.0")>]
 do ()
