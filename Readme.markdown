@@ -438,3 +438,29 @@ let main argv =
     System.Reflection.Assembly.GetExecutingAssembly ()
     |> FSpec.TestDiscovery.runSingleAssembly
 ```
+
+## Visual Studio Integration ##
+
+You can use the NCrunch plugin for Visual Studio to run unit tests
+automatically as you are writing code.
+
+The integration is based on the fact that `MbUnit` allows the creation of a
+`DynamicTestFactory` that can return tests as instances of a `TestCase` class.
+
+FSpec provides a base class that contains wrapping code, mapping FSpec to
+MbUnit dynamic tests suites.
+
+In the spec assembly, add the FSpec.MbUnitWrapper nuget package, and create a
+class that derives from `MbUnitWrapperBase`.
+
+```fsharp
+type MbUnitWrapperWrapper() =
+    inherit MbUnitWrapperBase()
+```
+
+Just make sure that you have enabled MbUnit support with NCrunch. I am also not
+sure whether or not it works in NCrunch version 1. 
+
+Unfortunately, NCrunch cannot see each individual test, it only recognizes the
+entire test suite as a single test. But if your tests are fast, that should
+work for a normal red/green/refactor workflow.
