@@ -23,6 +23,7 @@ Currently the following features are supported
  * Better error messages when context/meta data does not exist, or is of
    incorrect type.
  * One liner examples
+ * [Visual Studio Integration]i(#visual-studio-integration)
 
 Ideas for future improvements
 
@@ -450,7 +451,7 @@ The integration is based on the fact that `MbUnit` allows the creation of a
 FSpec provides a base class that contains wrapping code, mapping FSpec to
 MbUnit dynamic tests suites.
 
-In the spec assembly, add the FSpec.MbUnitWrapper nuget package, and create a
+In the spec assembly, add the `FSpec.MbUnitWrapper` nuget package, and create a
 class that derives from `MbUnitWrapperBase`.
 
 ```fsharp
@@ -459,7 +460,7 @@ type MbUnitWrapperWrapper() =
 ```
 
 Just make sure that you have enabled MbUnit support with NCrunch. I am also not
-sure whether or not it works in NCrunch version 1. 
+sure whether or not it works in NCrunch version 1.
 
 Unfortunately, NCrunch cannot see each individual test, it only recognizes the
 entire test suite as a single test. But if your tests are fast, that should
