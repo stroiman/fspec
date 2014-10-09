@@ -23,7 +23,7 @@ Currently the following features are supported
  * Better error messages when context/meta data does not exist, or is of
    incorrect type.
  * One liner examples
- * [Visual Studio Integration]i(#visual-studio-integration)
+ * [Visual Studio Integration](#visual-studio-integration)
 
 Ideas for future improvements
 
