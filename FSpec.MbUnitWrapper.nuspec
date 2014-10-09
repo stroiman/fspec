@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>FSpec.AutoFoq</id>
+    <id>FSpec.MbUnitWrapper</id>
     <version>@build.number@</version>
     <authors>Peter Stroiman</authors>
     <owners>Peter Stroiman</owners>
