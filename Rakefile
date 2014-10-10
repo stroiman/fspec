@@ -93,7 +93,7 @@ file 'output/fspec-runner.exe' => ['cli/Main.fs', 'output/FSpec.dll'] do |t|
   compile(t.name, t.prerequisites, :exe)
 end
 
-task :build => ['output/fspec-runner.exe','output/FSpec.AutoFoq.dll'] do
+task :build => ['output/fspec-runner.exe','output/FSpec.AutoFoq.dll', 'output/FSpec.MbUnitWrapper.dll'] do
 end
 
 task :test => ['output/fspec-runner.exe', 'output/FSpec.SelfTests.dll'] do
