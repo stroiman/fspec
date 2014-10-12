@@ -455,8 +455,9 @@ In the spec assembly, add the `FSpec.MbUnitWrapper` nuget package, and create a
 class that derives from `MbUnitWrapperBase`.
 
 ```fsharp
-type MbUnitWrapperWrapper() =
-    inherit MbUnitWrapperBase()
+[<MbUnit.Framework.TestFixtureAttribute>]
+type Wrapper() =
+    inherit FSpec.MbUnitWrapper.MbUnitWrapperBase()
 ```
 
 Just make sure that you have enabled MbUnit support with NCrunch. I am also not
