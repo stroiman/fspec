@@ -1,9 +1,9 @@
-﻿module FSpec.SelfTests.MbUnitWrapperSpecs
+﻿module FSpec.Extras.SelfTests.MbUnitWrapperSpecs
 open FSpec.Dsl
 open FSpec.Runner
 open FSpec.Matchers
 open FSpec.ExampleGroup
-open ExampleHelper
+open FSpec.SelfTests.ExampleHelper
 open MbUnit.Framework
 open FSpec.MbUnitWrapper
 

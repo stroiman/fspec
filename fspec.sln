@@ -11,6 +11,8 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSpec.AutoFoq", "FSpec.Auto
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSpec.MbUnitWrapper", "FSpec.MbUnitWrapper\FSpec.MbUnitWrapper.fsproj", "{C5C98D42-1FFC-40AC-AC07-A9184ACC2A7D}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSpec.Extras.SelfTests", "FSpec.Extras.SelfTests\FSpec.Extras.SelfTests.fsproj", "{0381ACB6-20E2-434F-8832-B037E2716181}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,6 +39,10 @@ Global
 		{C5C98D42-1FFC-40AC-AC07-A9184ACC2A7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C5C98D42-1FFC-40AC-AC07-A9184ACC2A7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C5C98D42-1FFC-40AC-AC07-A9184ACC2A7D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0381ACB6-20E2-434F-8832-B037E2716181}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0381ACB6-20E2-434F-8832-B037E2716181}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0381ACB6-20E2-434F-8832-B037E2716181}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0381ACB6-20E2-434F-8832-B037E2716181}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

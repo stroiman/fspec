@@ -1,4 +1,4 @@
-﻿module AutoFoqSpecs
+﻿module FSpec.Extras.SelfTests.AutoFoqSpecs
 open FSpec.Dsl
 open FSpec.Matchers
 open FSpec.AutoFoq
