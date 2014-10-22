@@ -38,6 +38,7 @@ I have written a few [blog posts][1] about FSpec
 #### Status 
  * FSpec: [![NuGet Status](http://img.shields.io/nuget/v/FSpec.svg)](https://www.nuget.org/packages/FSpec/)
  * FSpec.AutoFoq: [![NuGet Status](http://img.shields.io/nuget/v/FSpec.AutoFoq.svg)](https://www.nuget.org/packages/FSpec.AutoFoq/)
+ * FSpec.MbUnitWrapper: [![NuGet Status](http://img.shields.io/nuget/v/FSpec.AutoFoq.svg)](https://www.nuget.org/packages/FSpec.MbUnitWrapper/)
 
 [1]: http://stroiman.com/software/fspec
 
