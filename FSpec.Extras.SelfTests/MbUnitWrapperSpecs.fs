@@ -11,6 +11,8 @@ module SuiteHelpers =
   module beSuite =
     let withName m =
       createCompoundMatcher m (fun (x:TestSuite) -> x.Name) "have name"
+    let withChildren m =
+      createCompoundMatcher m (fun (x:TestSuite) -> x.Children) "have children"
 
   module beExample =
     let withWrappedExample m =
@@ -30,9 +32,23 @@ let specs =
             |> withExamples [ aSlowExample ]
             |> (fun x -> [x])
             |> createSuitesFromExampleGroups
+            |> List.map (fun x -> x :?> TestSuite)
 
         it "creates an empty suite" (fun ctx ->
           ctx.Subject.Should (have.length (be.equalTo 0))
+        )
+      ]
+
+      context "with a 'focus' example" [
+        subject <| fun _ -> 
+            anExampleGroupNamed "Group"
+            |> withExamples [ anExample; aFocusedExample ]
+            |> (fun x -> [x])
+            |> createSuitesFromExampleGroups
+            |> List.map (fun x -> x :?> TestSuite)
+
+        it "only executes the focused example" (fun ctx -> 
+          ctx.Subject.Should (have.exactly 1 (beSuite.withChildren (have.length (be.equalTo 1))))
         )
       ]
 

@@ -20,6 +20,7 @@ let withExampleMetaData md = TestDataMap.create [md] |> Example.addMetaData
 let anExampleWithMetaData data = aPassingExample |> withExampleMetaData data
 
 let aSlowExample = anExampleWithMetaData("slow", true)
+let aFocusedExample = anExampleWithMetaData("focus", true)
 
 // Example group building helpers
 let anExampleGroupNamed = ExampleGroup.create

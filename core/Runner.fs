@@ -77,19 +77,22 @@ module Runner =
 
         run [exampleGroup] report
 
-    let fromConfig cfg =
+    let filterGroupsFromConfig cfg topLevelGroups =
         let filterExamples f groups =
             let filteredGroups = groups |> ExampleGroup.filterGroups f
             match filteredGroups with
             | [] -> groups
             | x -> x
+        topLevelGroups 
+        |> List.ofSeq
+        |> filterExamples cfg.Include
+        |> ExampleGroup.filterGroups (cfg.Exclude >> not)
 
+    let fromConfig cfg =
         fun reporter topLevelGroups ->
             let filteredGroups = 
-                topLevelGroups 
-                |> List.ofSeq
-                |> filterExamples cfg.Include
-                |> ExampleGroup.filterGroups (cfg.Exclude >> not)
+                topLevelGroups
+                |> filterGroupsFromConfig cfg
             let fold r = List.fold (fun r g -> doRun g reporter r) r filteredGroups
             reporter.BeginTestRun ()
             |> fold

@@ -30,7 +30,7 @@ let createSuiteFromExampleGroups gs =
 let createSuitesFromExampleGroups gs =
   let cfg = Configuration.defaultConfig
   gs
-  |> ExampleGroup.filterGroups (cfg.Exclude >> not)
+  |> Runner.filterGroupsFromConfig cfg
   |> List.map createSuiteFromExampleGroup
 
 [<AbstractClass>]
