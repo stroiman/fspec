@@ -24,6 +24,18 @@ type Wrapper() =
 let specs =
   describe "MbUnit wrapper" [
     describe "createSuiteFromExampleGroup()" [
+      context "with a 'slow' example" [
+        subject <| fun _ -> 
+            anExampleGroupNamed "Group"
+            |> withExamples [ aSlowExample ]
+            |> (fun x -> [x])
+            |> createSuitesFromExampleGroups
+
+        it "creates an empty suite" (fun ctx ->
+          ctx.Subject.Should (have.length (be.equalTo 0))
+        )
+      ]
+
       context "with an example group" [
         before <| fun ctx -> ctx?group <- anExampleGroupNamed "Group"
         subject (fun c -> c?group |> createSuiteFromExampleGroup)

@@ -19,6 +19,8 @@ let anExceptionThrowingExample = anExampleWithCode (fun _ -> raise (new System.E
 let withExampleMetaData md = TestDataMap.create [md] |> Example.addMetaData
 let anExampleWithMetaData data = aPassingExample |> withExampleMetaData data
 
+let aSlowExample = anExampleWithMetaData("slow", true)
+
 // Example group building helpers
 let anExampleGroupNamed = ExampleGroup.create
 let anExampleGroup = anExampleGroupNamed "dummy"

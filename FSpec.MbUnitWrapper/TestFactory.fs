@@ -27,11 +27,18 @@ let createSuiteFromExampleGroup g =
 let createSuiteFromExampleGroups gs =
   gs |> List.map createSuiteFromExampleGroup
 
+let createSuitesFromExampleGroups gs =
+  let cfg = Configuration.defaultConfig
+  gs
+  |> ExampleGroup.filterGroups (cfg.Exclude >> not)
+  |> List.map createSuiteFromExampleGroup
+
 [<AbstractClass>]
 type MbUnitWrapperBase () =
   [<DynamicTestFactory>]
   member this.ActualTestFactory () : IEnumerable<Test> =
+
     this.GetType().Assembly
     |> TestDiscovery.getSpecsFromAssembly
-    |> createSuiteFromExampleGroups
+    |> createSuitesFromExampleGroups
     |> List.toSeq
