@@ -1,6 +1,21 @@
 namespace FSpec
 open System
 
+type SubjectWrapper<'T> =
+    {
+        ParentSubject : SubjectWrapper<'T> option
+        Initializer : 'T -> obj
+        mutable Instance : obj
+    }
+    with
+        static member create (f:'T->'a) parent = {
+            Initializer = (fun ctx -> (f ctx) :> obj)
+            ParentSubject = parent
+            Instance = null }
+        member self.Get ctx =
+            if self.Instance = null then self.Instance <- self.Initializer ctx
+            self.Instance
+
 type TestContextData<'T> =
     { 
         MetaData: TestDataMap.T

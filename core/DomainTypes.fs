@@ -73,21 +73,6 @@ module TestDataMap =
         /// Synonym for merge
         static member (|||) (a,b) = merge a b
 
-type SubjectWrapper<'T> =
-    {
-        ParentSubject : SubjectWrapper<'T> option
-        Initializer : 'T -> obj
-        mutable Instance : obj
-    }
-    with
-        static member create (f:'T->'a) parent = {
-            Initializer = (fun ctx -> (f ctx) :> obj)
-            ParentSubject = parent
-            Instance = null }
-        member self.Get ctx =
-            if self.Instance = null then self.Instance <- self.Initializer ctx
-            self.Instance
-
 [<AbstractClass>]
 type TestContext() =
     abstract member TryGet<'T> : string -> 'T option
