@@ -26,12 +26,11 @@ type TestContextData<'T> =
 type TestContextImpl(metaData:TestDataMap.T) =
     inherit TestContext()
 
-    let tmp = {
+    let data = ref {
         MetaData = metaData
         Data = metaData
         Disposables = []
         WrappedSubject = None }
-    let data = ref tmp
 
     member ctx.RegisterDisposable x = 
         match (x :> obj) with
