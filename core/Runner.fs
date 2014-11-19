@@ -66,11 +66,11 @@ module Runner =
                 { Example = example;
                   ContainingGroups = groupStack }
                 |> execExample
-                |> reporter.ReportExample example 
+                |> reporter.ReportExample (example |> Example.getDescriptor)
 
             let grp = groupStack |> List.head
             report 
-            |> reporter.BeginGroup grp
+            |> reporter.BeginGroup (grp |> ExampleGroup.getDescriptor)
             |> ExampleGroup.foldExamples (fun rep ex -> runExample ex rep) grp
             |> ExampleGroup.foldChildGroups (fun rep grp -> run (grp::groupStack) rep) grp
             |> reporter.EndGroup 

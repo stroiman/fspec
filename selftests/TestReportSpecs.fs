@@ -9,7 +9,6 @@ open ExampleHelper
 open Helpers
 open CustomMatchers
 
-let anExampleGroupNamed name = ExampleGroup.create name
 let aFailureWithMessage message = Failure {Message=message}
 let aFailure = aFailureWithMessage "dummy"
 
@@ -25,6 +24,10 @@ type TestContext with
 let setupReport f = before <| fun ctx ->
     let r = getSubject<TreeReporter.T> ctx
     r.BeginTestRun() |> (f r) |> r.EndTestRun |> ignore
+
+let anExampleNamed name = { Name = name; MetaData = TestDataMap.Zero }
+let anExample = anExampleNamed "Dummy"
+let anExampleGroupNamed = anExampleNamed
 
 let itBehavesLikeATestReporter<'T> () =
     let getSubject = getSubject<'T>

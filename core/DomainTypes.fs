@@ -89,6 +89,11 @@ type TestContext() =
 
 type TestFunc = TestContext -> unit
 
+type ExampleDescriptor = {
+    Name: string
+    MetaData: TestDataMap.T
+}
+
 module Example =
     [<ReferenceEqualityAttribute>]
     type T = {
@@ -97,10 +102,11 @@ module Example =
         MetaData: TestDataMap.T
     }
     let create name test = { Name = name; Test = test; MetaData = TestDataMap.Zero }
-    let addMetaData data ex = { ex with Name = ex.Name; MetaData = ex.MetaData.Merge data }
+    let addMetaData data ex : T = { ex with Name = ex.Name; MetaData = ex.MetaData.Merge data }
     let run context example = example.Test context
     let hasMetaData name ex = ex.MetaData.ContainsKey name
     let getMetaData ex = ex.MetaData
+    let getDescriptor ex : ExampleDescriptor = { Name = ex.Name; MetaData = ex.MetaData }
 
 module ExampleGroup =
     [<ReferenceEqualityAttribute>]
@@ -125,13 +131,14 @@ module ExampleGroup =
     let addSetup setup grp = { grp with Setups = setup::grp.Setups }
     let addTearDown tearDown grp = { grp with TearDowns = tearDown::grp.TearDowns }
     let addChildGroup child grp = { grp with ChildGroups = child::grp.ChildGroups }
-    let addMetaData data grp = { grp with Name = grp.Name; MetaData = grp.MetaData.Merge data }
+    let addMetaData data grp : T = { grp with Name = grp.Name; MetaData = grp.MetaData.Merge data }
     let foldExamples folder grp state = grp.Examples |> List.rev |> List.fold folder state
     let foldChildGroups folder grp state = grp.ChildGroups |> List.rev |> List.fold folder state
     let empty grp = match (grp.ChildGroups, grp.Examples) with
                     | ([],[]) -> true
                     | _ -> false
 
+    let getDescriptor ex : ExampleDescriptor = { Name = ex.Name; MetaData = ex.MetaData }
     let filterGroups (f:TestDataMap.T->bool) grps =
         let rec filterGroups metaData grps =
             let filterGroup grp =

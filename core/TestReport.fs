@@ -31,8 +31,8 @@ module Helper =
 
 
 type Reporter<'T> = {
-    BeginGroup : ExampleGroup.T -> 'T -> 'T
-    ReportExample: Example.T -> TestResultType -> 'T -> 'T
+    BeginGroup : ExampleDescriptor -> 'T -> 'T
+    ReportExample: ExampleDescriptor -> TestResultType -> 'T -> 'T
     EndTestRun: 'T -> 'T
     EndGroup: 'T -> 'T
     Success: 'T -> bool
@@ -50,13 +50,13 @@ module TreeReporterOptions =
 
 module TreeReporter =
     type ExecutedExample = {
-        Example: Example.T
+        Example: ExampleDescriptor
         Result : TestResultType
-        ContainingGroups: ExampleGroup.T List }
+        ContainingGroups: ExampleDescriptor List }
 
     type T = {
         ExecutedExamples: ExecutedExample list
-        Groups: ExampleGroup.T list }
+        Groups: ExampleDescriptor list }
     let Zero = { 
         Groups = []
         ExecutedExamples = [] }
