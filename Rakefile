@@ -1,4 +1,6 @@
 require 'rake/clean'
+require 'bundler/setup'
+require 'albacore'
 
 CLEAN.include("output/*.dll", "output/*.exe")
 
@@ -82,7 +84,15 @@ file 'output/fspec-runner.exe' => ['cli/Main.fs', 'output/FSpec.dll'] do |t|
   compile(t.name, t.prerequisites, :exe)
 end
 
-task :build => ['output/fspec-runner.exe','output/FSpec.AutoFoq.dll', 'output/FSpec.MbUnitWrapper.dll'] do
+desc 'restore all nugets as per the packages.config files'
+nugets_restore :restore do |p|
+  p.out = 'packages'
+  p.exe = 'nuget.exe'
+end
+
+desc 'Perform full build'
+build :build do |b|
+  b.sln = 'FSpec.sln'
 end
 
 task :test => ['output/fspec-runner.exe', 'output/FSpec.SelfTests.dll'] do
