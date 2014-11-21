@@ -1,6 +1,9 @@
 require 'rake/clean'
 require 'bundler/setup'
 require 'albacore'
+require 'albacore/tasks/versionizer'
+
+Albacore::Tasks::Versionizer.new :versioning
 
 CLEAN.include("output/*.dll", "output/*.exe", "output/*.mdb", "output/*.xml")
 
@@ -16,7 +19,7 @@ nugets_restore :restore do |p|
 end
 
 desc 'Perform full build'
-build :build do |b|
+build :build => [:versioning] do |b|
   b.sln = 'FSpec.sln'
 end
 
