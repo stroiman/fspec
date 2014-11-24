@@ -19,6 +19,7 @@ type Operation =
         | _ -> failwith "not supported"
     static member (==>) (md, op) = Operation.ApplyMetaData md op
 
+let focus = AddMetaDataOperation ("focus", true)
 let it name func = AddExampleOperation <| Example.create name func
 
 let exampleFromMatcher<'T> matchType (matcher : Matcher<'T>) =

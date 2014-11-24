@@ -18,6 +18,7 @@ let getSetups grp = grp.Setups
 let getTearDowns grp = grp.TearDowns
 let getExamples grp = grp.Examples
 let getChildGroups grp = grp.ChildGroups
+let getMetaData grp = grp.MetaData
 
 let itBehavesLikeAGroupWithChildGroup name =
     behavior [
@@ -110,6 +111,21 @@ let specs =
                         c.Subject.Apply getChildGroups
                         |> List.head
                     child.MetaData?answer |> should (be.equalTo 42)
+            ]
+
+            context "child group has 'focus' keyword" [
+                setGroup <|
+                    describe "grp" [
+                        focus
+                        context "child" []
+                    ]
+
+                it "should store a 'focus' metadata on the group" (fun c ->
+                    let child =
+                        c.Subject.Apply getChildGroups
+                        |> List.head
+                    child.MetaData?focus |> should (be.True))
+
             ]
 
             context "example has meta data applied" [
