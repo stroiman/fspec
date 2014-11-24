@@ -3,6 +3,7 @@ open FSpec
 open Dsl
 open Matchers
 open ExampleHelper
+open CustomMatchers
 
 let change f = fun (c:TestContext) -> c.Subject.Apply f
 

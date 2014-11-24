@@ -35,3 +35,12 @@ let failWithAssertionError expected =
                 info.Message |> applyMatcher matcher id
     createMatcher f
         (sprintf "fail assertion with message %A" expected)
+
+let haveMetaData k v =
+    let f a =
+        let x =
+            a.MetaData |> TestDataMap.tryGet k
+        match x with
+        | Some y -> y = v
+        | None -> false
+    createSimpleMatcher f

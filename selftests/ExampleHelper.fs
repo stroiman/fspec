@@ -51,14 +51,3 @@ let withAnExample = anExample |> ExampleGroup.addExample
 let run exampleGroup = 
     let reporter = Helpers.TestReporter.instance
     Runner.run reporter [exampleGroup]
-
-// ---- Custom matchers ----
-
-let haveMetaData k v =
-    let f a =
-        let x =
-            a.MetaData |> TestDataMap.tryGet k
-        match x with
-        | Some y -> y = v
-        | None -> false
-    createSimpleMatcher f
