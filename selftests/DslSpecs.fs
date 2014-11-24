@@ -113,6 +113,21 @@ let specs =
                     child.MetaData?answer |> should (be.equalTo 42)
             ]
 
+            context "child group has 'slow' keyword" [
+                setGroup <|
+                    describe "grp" [
+                        slow
+                        context "child" []
+                    ]
+
+                it "should store a 'slow' metadata on the group" (fun c ->
+                    let child =
+                        c.Subject.Apply getChildGroups
+                        |> List.head
+                    child.MetaData?slow |> should (be.True))
+
+            ]
+
             context "child group has 'focus' keyword" [
                 setGroup <|
                     describe "grp" [
