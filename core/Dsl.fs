@@ -17,7 +17,9 @@ type Operation =
         | AddExampleGroupOperation g ->
             g |> ExampleGroup.addMetaData metaData |> AddExampleGroupOperation
         | _ -> failwith "not supported"
-    static member (==>) (md, op) = Operation.ApplyMetaData md op
+    static member ( ==> ) (md, op) = Operation.ApplyMetaData md op
+    static member ( **> ) (md, op) = 
+        Operation.ApplyMetaData ([md] |> TestDataMap.create) op
 
 let focus = AddMetaDataOperation ("focus", true)
 let slow = AddMetaDataOperation ("slow", true)

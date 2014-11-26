@@ -99,6 +99,18 @@ let specs =
                     grp.MetaData?answer |> should (be.equalTo 42)
             ]
 
+            context "example group has meta data applied with new syntax" [
+                setGroup <|
+                    ("answer", 42) **>
+                    ("answer2", 43) **>
+                    describe "group" []
+
+                it "should store the meta data on the example group" <| fun c ->
+                    let grp = c.GetSubject<ExampleGroup.T> ()
+                    grp.MetaData?answer |> should (be.equalTo 42)
+                    grp.MetaData?answer2 |> should (be.equalTo 43)
+            ]
+
             context "child group has meta data applied" [
                 setGroup <|
                     describe "grp" [
