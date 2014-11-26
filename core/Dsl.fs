@@ -17,6 +17,7 @@ type Operation =
         | AddExampleGroupOperation g ->
             g |> ExampleGroup.addMetaData metaData |> AddExampleGroupOperation
         | _ -> failwith "not supported"
+    [<System.Obsolete("Use **> instead")>]
     static member ( ==> ) (md, op) = Operation.ApplyMetaData md op
     static member ( **> ) (md, op) = 
         Operation.ApplyMetaData ([md] |> TestDataMap.create) op

@@ -91,8 +91,8 @@ let specs =
         describe "metadata initialization" [
             context "example group has meta data applied" [
                 setGroup <|
-                    (("answer" ++ 42) ==>
-                     describe "group" [])
+                    ("answer", 42) **>
+                    describe "group" []
 
                 it "should store the meta data on the example group" <| fun c ->
                     let grp = c.GetSubject<ExampleGroup.T> ()
@@ -166,7 +166,7 @@ let specs =
                 yield context "using ++ and ==> operators" [
                     setGroup <|
                         describe "group" [
-                            ("answer" ++ 42) ==>
+                            ("answer", 42) **>
                             it "has metadata" pass
                         ]
                     itStoresMeaDataOnTheExample
