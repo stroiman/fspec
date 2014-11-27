@@ -4,6 +4,36 @@ open Dsl
 open Matchers
 open CustomMatchers
 
+type IntValues = {
+    actual: int
+    expected: int }
+
+let createMatcherTest (ctx:TestContext) f =
+    let actual = ctx.MetaData.Get<int> "actual"
+    fun () -> actual |> f ctx?matcher
+ 
+let itWorksAsAPassingMatcher =
+    examples [
+        it "succeeds when used with 'should'" (fun ctx ->
+            let test = createMatcherTest ctx should
+            test.Should succeed)
+        
+        it "fails when used with 'shouldNot'" (fun ctx ->
+            let test = createMatcherTest ctx shouldNot
+            test.Should fail)
+    ]
+ 
+let itWorksAsAFailingMatcher =
+    examples [
+        it "succeeds when used with 'shouldNot'" (fun ctx ->
+            let test = createMatcherTest ctx shouldNot
+            test.Should succeed)
+
+        it "fails when used with 'should'" (fun ctx ->
+            let test = createMatcherTest ctx should
+            test.Should fail)
+    ]
+
 let specs = [
     describe "System.Object extesions" [
         describe ".Should" [
@@ -57,24 +87,16 @@ let specs = [
             ]
         ]
 
-        describe "equal matcher" [
-            describe "should be.EqualTo" [
-                it "succeeds when equal" <| fun _ ->
-                    let test () = 5 |> should (equal 5)
-                    test.Should succeed
-
-                it "fails when not equal" <| fun _ ->
-                    let test () = 5 |> should (equal 6)
-                    test.Should (failWithAssertionError "5 was expected to equal 6")
+        ("matcher", be.equalTo 42) **>
+        describe "be.equalTo matcher" [
+            ("actual", 43) **>
+            context "when values are not equal" [
+                itWorksAsAFailingMatcher
             ]
 
-            describe "shouldNot equal" [
-                it "succeeds when not equal" <| fun _ ->
-                    5 |> shouldNot (equal 6)
-
-                it "fails when equal" <| fun _ ->
-                    let test () = 5 |> shouldNot (equal 5)
-                    test.Should (failWithAssertionError "5 was expected to not equal 5")
+            ("actual", 42) **>
+            context "when values are equal" [
+                itWorksAsAPassingMatcher
             ]
         ]
 
