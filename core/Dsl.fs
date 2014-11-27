@@ -68,4 +68,5 @@ let examples x = MultipleOperations x
 let behavior x = MultipleOperations x
 
 let (++) = TestDataMap.(++)
+[<System.Obsolete("Use **> instead")>]
 let (<<-) a b = AddMetaDataOperation(a,b)

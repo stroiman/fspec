@@ -104,7 +104,7 @@ let specs =
             context "child group has meta data applied" [
                 setGroup <|
                     describe "grp" [
-                        ("answer" <<- 42)
+                        ("answer", 42) **>
                         context "child" []
                     ]
 
@@ -157,15 +157,6 @@ let specs =
                     setGroup <|
                         describe "group" [
                             ("answer", 42) **>
-                            it "has metadata" pass
-                        ]
-                    itStoresMeaDataOnTheExample
-                ]
-
-                yield context "using <<- operator" [
-                    setGroup <|
-                        describe "group" [
-                            ("answer" <<- 42)
                             it "has metadata" pass
                         ]
                     itStoresMeaDataOnTheExample

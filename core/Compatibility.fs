@@ -1,4 +1,5 @@
 ﻿namespace FSpec
+#nowarn "0044" // We don't want warnings if this file refers to obsolete functions
 open System
 
 module Core =
@@ -28,6 +29,7 @@ module Core =
         let itShould<'T> = itShould<'T>
         [<Obsolete("Use types from FSpec.Dsl namespace instead of FSpec.Core.Dsl")>]
         let itShouldNot<'T> = itShouldNot<'T>
+        [<Obsolete("Use types from FSpec.Dsl namespace instead of FSpec.Core.Dsl")>]
         let (<<-) = (<<-)
 
     module MatchersV3 =
