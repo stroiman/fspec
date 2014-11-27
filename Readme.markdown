@@ -312,26 +312,25 @@ let specs =
             it "succeeds" (...)
         ]
 
-        ("existing_user" ++ createValidUser()) ==>
+        ("existing_user", createValidUser()) **>
         context "when a user has already been registered with that email" [
             it "fails" (...)
         ]
 
         context "an example with many pieces of metadata" [
-            ("data1" ++ 42 |||
-             "data2" ++ "Yummy" |||
-             "data3" ++ Some [1;2;3]) ==>
+            ("data1", 42) **>
+            ("data2", "Yummy") **>
+            ("data3", Some [1;2;3]) **>
             it "can easily specify a lot of metadata" (fun _ -> ())
         ]
     ]
 ```
 
+The funny looking _**>_ operator is chosen because it is right-to-left
+associative, allowing us to reduce the required no of parenthesis.
+
 The metadata getter is generic, but will fail at runtime if the actual data is
 not of the correct type.
-
-The _++_ operator combines creates a collection of metadata, and the _|||_
-operator combines two collections of metadata. The _==>_ operator passes a
-collection of metadata to the following example or example group.
 
 Metadata with the same name on a child example group will override the value of
 the parent group, and metadata on an example will override that of the group.

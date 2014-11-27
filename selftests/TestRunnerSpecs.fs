@@ -44,22 +44,22 @@ let specs =
                     |> withExamples [ c.MetaData?example ]
                     |> doRun
 
-                ("example" ++ aPassingExample) ==>
+                ("example", aPassingExample) **>
                 context "example group contains one passing example" [
                     itReportsExactlyOneExample (fun r -> r = Success)
                 ]
 
-                ("example" ++ aPendingExample) ==>
+                ("example", aPendingExample) **>
                 context "example group contains one pending example" [
                     itReportsExactlyOneExample (fun r -> r = Pending)
                 ]
 
-                ("example" ++ aFailingExample) ==>
+                ("example", aFailingExample) **>
                 context "example group contains one failing example" [
                     itReportsExactlyOneExample (itIsFailure)
                 ]
 
-                ("example" ++ anExceptionThrowingExample) ==>
+                ("example", anExceptionThrowingExample) **>
                 context "example throw exception" [
                     itReportsExactlyOneExample (itIsError)
                 ]
@@ -153,22 +153,22 @@ let specs =
                         ])
                     |> runExamples
 
-                ("addChildGroupMetaData" ++ false |||
-                 "addExampleMetaData" ++ false) ==>
+                ("addChildGroupMetaData", false) **>
+                ("addExampleMetaData", false) **>
                 context "test contains no metadata" [
                     it "uses metadata from setup" <| fun ctx ->
                         ctx?source.Should (equal "parent group")
                 ]   
 
-                ("addChildGroupMetaData" ++ false |||
-                 "addExampleMetaData" ++ true) ==>
+                ("addChildGroupMetaData", false) **>
+                ("addExampleMetaData", true) **>
                 context "test overrides same metadata" [
                     it "uses the metadata specified in test" <| fun ctx ->
                         ctx?source.Should (equal "example")
                 ]
 
-                ("addChildGroupMetaData" ++ true |||
-                 "addExampleMetaData" ++ false) ==>
+                ("addChildGroupMetaData", true) **>
+                ("addExampleMetaData", false) **>
                 context "nested example group overrides metadata" [
                     it "uses the metadata from the child group" <| fun ctx ->
                         ctx?source.Should (equal "child group")

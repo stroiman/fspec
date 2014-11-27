@@ -71,6 +71,7 @@ module TestDataMap =
         static member (?) (self,name) = get name self
 
         /// Synonym for merge
+        [<System.Obsolete("Use the **> operator instead")>]
         static member (|||) (a,b) = merge a b
 
 [<AbstractClass>]
