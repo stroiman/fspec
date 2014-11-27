@@ -92,16 +92,6 @@ let specs =
             context "example group has meta data applied" [
                 setGroup <|
                     ("answer", 42) **>
-                    describe "group" []
-
-                it "should store the meta data on the example group" <| fun c ->
-                    let grp = c.GetSubject<ExampleGroup.T> ()
-                    grp.MetaData?answer |> should (be.equalTo 42)
-            ]
-
-            context "example group has meta data applied with new syntax" [
-                setGroup <|
-                    ("answer", 42) **>
                     ("answer2", 43) **>
                     describe "group" []
 
@@ -163,7 +153,7 @@ let specs =
                             |> List.head
                         example.MetaData?answer |> should (be.equalTo 42)
 
-                yield context "using ++ and ==> operators" [
+                yield context "using **> operator" [
                     setGroup <|
                         describe "group" [
                             ("answer", 42) **>
