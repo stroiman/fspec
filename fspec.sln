@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSpec", "core\FSpec.fsproj", "{3A1228A7-F39E-49FD-974C-47ABB1CABA42}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "fspec.selftests", "selftests\fspec.selftests.fsproj", "{8272D347-F66A-44F1-B5B1-BC7FE2812F47}"
