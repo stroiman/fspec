@@ -47,3 +47,4 @@ nugets_pack :pack => ['output/pkg', :versioning, :build] do |p|
 end
 
 task :default => [:build, :test]
+task :ci => [:restore, :pack]
