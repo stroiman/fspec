@@ -4,10 +4,6 @@ open Dsl
 open Matchers
 open CustomMatchers
 
-type IntValues = {
-    actual: int
-    expected: int }
-
 let createMatcherTest (ctx:TestContext) f =
     let actual = ctx.MetaData.Get<int> "actual"
     fun () -> actual |> f ctx?matcher
