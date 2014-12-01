@@ -11,7 +11,6 @@ def windows?
   RUBY_PLATFORM =~ /mingw/i 
 end
 
-
 desc 'restore all nugets as per the packages.config files'
 nugets_restore :restore do |p|
   p.out = 'packages'
