@@ -100,14 +100,22 @@ let specs = [
             ]
         ]
 
-        describe "greaterThan matcher" [
-            it "succeeds when value is greater than expected" <| fun _ ->
-                let test () = 5 |> should (be.greaterThan 4)
-                test.Should succeed
+        ("matcher", be.greaterThan 42) **>
+        describe "be.greaterThan matcher" [
+            ("actual", 41) **>
+            context "when actual is less than expected" [
+                itWorksAsAFailingMatcher
+            ]
+            
+            ("actual", 42) **>
+            context "when actual is equal to expected" [
+                itWorksAsAFailingMatcher
+            ]
 
-            it "fails when value is equal to expected" <| fun _ ->
-                let test () = 5 |> should (be.greaterThan 5)
-                test.Should fail
+            ("actual", 43) **>
+            context "when actual is equal to expected" [
+                itWorksAsAPassingMatcher
+            ]
         ]
 
         describe "Regex matcher" [
