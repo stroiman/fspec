@@ -4,31 +4,32 @@ open Dsl
 open Matchers
 open CustomMatchers
 
-let createMatcherTest (ctx:TestContext) f =
-    let actual = ctx.MetaData.Get<int> "actual"
-    fun () -> actual |> f ctx?matcher
+type MatchOf<'T> =
+    static member createMatcherTest (ctx:TestContext) f =
+        let actual = ctx.MetaData.Get<'T> "actual"
+        fun () -> actual |> f ctx?matcher
  
-let itWorksAsAPassingMatcher =
-    examples [
-        it "succeeds when used with 'should'" (fun ctx ->
-            let test = createMatcherTest ctx should
-            test.Should succeed)
-        
-        it "fails when used with 'shouldNot'" (fun ctx ->
-            let test = createMatcherTest ctx shouldNot
-            test.Should fail)
-    ]
- 
-let itWorksAsAFailingMatcher =
-    examples [
-        it "succeeds when used with 'shouldNot'" (fun ctx ->
-            let test = createMatcherTest ctx shouldNot
-            test.Should succeed)
+    static member ShouldPass =
+        examples [
+            it "succeeds when used with 'should'" (fun ctx ->
+                let test = MatchOf<'T>.createMatcherTest ctx should
+                test.Should succeed)
+            
+            it "fails when used with 'shouldNot'" (fun ctx ->
+                let test = MatchOf<'T>.createMatcherTest ctx shouldNot
+                test.Should fail)
+        ]
 
-        it "fails when used with 'should'" (fun ctx ->
-            let test = createMatcherTest ctx should
-            test.Should fail)
-    ]
+    static member ShouldFail =
+        examples [
+            it "succeeds when used with 'shouldNot'" (fun ctx ->
+                let test = MatchOf<'T>.createMatcherTest ctx shouldNot
+                test.Should succeed)
+
+            it "fails when used with 'should'" (fun ctx ->
+                let test = MatchOf<'T>.createMatcherTest ctx should
+                test.Should fail)
+        ]
 
 let specs = [
     describe "System.Object extesions" [
@@ -87,12 +88,12 @@ let specs = [
         describe "be.equalTo matcher" [
             ("actual", 43) **>
             context "when values are not equal" [
-                itWorksAsAFailingMatcher
+                MatchOf<int>.ShouldFail
             ]
 
             ("actual", 42) **>
             context "when values are equal" [
-                itWorksAsAPassingMatcher
+                MatchOf<int>.ShouldPass
             ]
         ]
 
@@ -100,17 +101,17 @@ let specs = [
         describe "be.greaterThan matcher" [
             ("actual", 41) **>
             context "when actual is less than expected" [
-                itWorksAsAFailingMatcher
+                MatchOf<int>.ShouldFail
             ]
             
             ("actual", 42) **>
             context "when actual is equal to expected" [
-                itWorksAsAFailingMatcher
+                MatchOf<int>.ShouldFail
             ]
 
             ("actual", 43) **>
             context "when actual is equal to expected" [
-                itWorksAsAPassingMatcher
+                MatchOf<int>.ShouldPass
             ]
         ]
 
