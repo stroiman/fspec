@@ -146,20 +146,18 @@ let specs =
             ]
 
             context "example has meta data applied" [
-                let itStoresMeaDataOnTheExample = 
-                    it "should store the meta data on the example" <| fun c ->
-                        let example =
-                            c.Subject.Apply getExamples
-                            |> List.head
-                        example.MetaData?answer |> should (be.equalTo 42)
-
-                yield context "using **> operator" [
+                context "using **> operator" [
                     setGroup <|
                         describe "group" [
                             ("answer", 42) **>
                             it "has metadata" pass
                         ]
-                    itStoresMeaDataOnTheExample
+
+                    it "stores the meta data on the example" <| fun c ->
+                        let example =
+                            c.Subject.Apply getExamples
+                            |> List.head
+                        example.MetaData?answer |> should (be.equalTo 42)
                 ]
             ]
         ]
