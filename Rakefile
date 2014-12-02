@@ -1,15 +1,16 @@
 #encoding: utf-8
+require 'xsemver'
 require 'rake/clean'
 require 'bundler/setup'
 require 'albacore'
 require 'albacore/tasks/versionizer'
-#
-# Albacore uses the Jenkins supplied BUILD_NUMBER for PATCH
+
+# Avoid that Albacore uses the Jenkins supplied BUILD_NUMBER for PATCH
 ENV['BUILD_NUMBER'] = nil 
 
 Albacore::Tasks::Versionizer.new :versioning
 
-CLEAN.include("output/*.dll", "output/*.exe", "output/*.mdb", "output/*.xml")
+CLEAN.include("output/*.dll", "output/*.exe", "output/*.mdb", "output/*.xml", "bin/**/*.*", "obj/**/*.*")
 
 def windows?
   RUBY_PLATFORM =~ /mingw/i 
@@ -21,8 +22,37 @@ nugets_restore :restore do |p|
   p.exe = 'nuget.exe'
 end
 
+asmver :asmver_fspec do |a|
+  a.file_path  = 'core/AssemblyInfo.fs' 
+  a.namespace  = 'FSpec'
+  a.attributes assembly_title: 'FSpec',
+    assembly_copyright: "(c) #{Time.now.year} by Peter Strøiman",
+    assembly_version: ENV['LONG_VERSION'],
+    assembly_file_version: ENV['LONG_VERSION']
+end
+
+asmver :asmver_fspec_autofoq do |a|
+  a.file_path  = 'FSpec.AutoFoq/AssemblyInfo.fs' 
+  a.namespace  = 'FSpec'
+  a.attributes assembly_title: 'FSpec', 
+    assembly_copyright: "(c) #{Time.now.year} by Peter Strøiman",
+    assembly_version: ENV['LONG_VERSION'],
+    assembly_file_version: ENV['LONG_VERSION']
+end
+
+asmver :asmver_fspec_mbunitwrapper do |a|
+  a.file_path  = 'FSpec.MbUnitWrapper/AssemblyInfo.fs' 
+  a.namespace  = 'FSpec'
+  a.attributes assembly_title: 'FSpec',
+    assembly_copyright: "(c) #{Time.now.year} by Peter Strøiman",
+    assembly_version: ENV['LONG_VERSION'],
+    assembly_file_version: ENV['LONG_VERSION']
+end
+
+task :asmver_files => [:asmver_fspec, :asmver_fspec_autofoq, :asmver_fspec_mbunitwrapper] 
+
 desc 'Perform full build'
-build :build => [:versioning] do |b|
+build :build => [:versioning, :asmver_files] do |b|
   b.sln = 'FSpec.sln'
 end
 
@@ -46,5 +76,29 @@ task :push => [:pack] do
   system "mono nuget.exe push FSpec.MbUnitWrapper.#{ENV['NUGET_VERSION']}.nuget -ApiKey #{ENV['NUGET_API_KEY']}"
 end
 
+task :increment_patch do
+  v = XSemVer::SemVer.find
+  v.minor += 1
+  v.save
+  Rake::Task["versioning"].execute
+end
+
+task :increment_minor do
+  v = XSemVer::SemVer.find
+  v.minor += 1
+  v.save
+  Rake::Task["versioning"].execute
+end
+
+task :commit do
+  tag_name = "v-#{ENV['NUGET_VERSION']}"
+  system "git add ."
+  system "git ci -m \"#{tag_name}\""
+  system "git tag #{tag_name}"
+  #system "git push"
+  #system "git push --tags"
+end
+
 task :default => [:build, :test]
 task :ci => [:restore, :pack]
+task :create_minor => [:increment_minor, :ci, :commit]
