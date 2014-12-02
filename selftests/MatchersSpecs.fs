@@ -115,10 +115,12 @@ let specs = [
             ]
         ]
 
-        describe "Regex matcher" [
-            it "succeeds when regular expression is a match" <| fun _ ->
-                let test () = "abcd" |> should (be.string.matching "bcd")
-                test.Should succeed
+        ("matcher", be.string.matching "^ab*c$") **>
+        describe "be.string.matching" [
+            ("actual", "abbbc") **>
+            context "when actual is a string matching the pattern" [
+                MatchOf<string>.ShouldPass
+            ]
         ]
 
         describe "True/False matchers" [
