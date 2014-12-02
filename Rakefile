@@ -34,20 +34,16 @@ end
 
 directory 'output/pkg'
 
-nugets_pack :pack => ['output/pkg', :versioning, :build] do |p|
-  p.files = FileList['core/*.{fsproj,nuspec}']
-  p.out = 'output/pkg'
-  p.exe = 'nuget.exe'
-  p.with_metadata do |m|
-    m.version = ENV['NUGET_VERSION']
-    m.authors = 'Peter Stroiman'
-    m.license_url = 'https://raw.githubusercontent.com/PeteProgrammer/fspec/master/LICENSE'
-    m.project_url = 'https://github.com/PeteProgrammer/fspec'
-    m.summary = 'An F# based context/specification test framework'
-    m.description = 'A context/specification test framework, heavily inspired by RSpec'
-    m.copyright = 'Copyright 2014'
-    m.tags = 'tdd unit test testing unittest unittesting bdd'
-  end
+task :pack => ['output/pkg', :versioning] do
+  system "mono nuget.exe pack fspec.nuspec -properties version=#{ENV['NUGET_VERSION']}"
+  system "mono nuget.exe pack FSpec.MbUnitWrapper.nuspec -properties version=#{ENV['NUGET_VERSION']}"
+  system "mono nuget.exe pack FSpec.AutoFoq.nuspec -properties version=#{ENV['NUGET_VERSION']}"
+end
+
+task :push => [:pack] do
+  system "mono nuget.exe push FSpec.#{ENV['NUGET_VERSION']}.nuget -ApiKey #{ENV['NUGET_API_KEY']}"
+  system "mono nuget.exe push FSpec.AutoFoq.#{ENV['NUGET_VERSION']}.nuget -ApiKey #{ENV['NUGET_API_KEY']}"
+  system "mono nuget.exe push FSpec.MbUnitWrapper.#{ENV['NUGET_VERSION']}.nuget -ApiKey #{ENV['NUGET_API_KEY']}"
 end
 
 task :default => [:build, :test]

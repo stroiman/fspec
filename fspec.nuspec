@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>FSpec</id>
-    <version>@build.number@</version>
+    <version>$version$</version>
     <authors>Peter Stroiman</authors>
     <owners>Peter Stroiman</owners>
     <licenseUrl>https://raw.githubusercontent.com/PeteProgrammer/fspec/master/LICENSE</licenseUrl>
@@ -16,9 +16,9 @@
     <!--<releaseNotes>Summary of changes made in this release of the package.</releaseNotes>-->
     <copyright>Copyright 2014</copyright>
     <tags>tdd unittesting bdd</tags>
-    <references>
-      <reference file="FSpec.dll" />
-    </references>
+    <!--<references>-->
+      <!--<reference file="FSpec.dll" />-->
+    <!--</references>-->
   </metadata>
   <files>
     <file src="output/FSpec.dll" target="lib/net40/FSpec.dll" />

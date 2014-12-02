@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>FSpec.MbUnitWrapper</id>
-    <version>@build.number@</version>
+    <version>$version$</version>
     <authors>Peter Stroiman</authors>
     <owners>Peter Stroiman</owners>
     <licenseUrl>https://raw.githubusercontent.com/PeteProgrammer/fspec/master/LICENSE</licenseUrl>
@@ -18,15 +18,12 @@
     <!--<releaseNotes>Summary of changes made in this release of the package.</releaseNotes>-->
     <copyright>Copyright 2014</copyright>
     <tags>tdd unittesting bdd mocking mock foq fspec</tags>
-    <references>
-      <reference file="FSpec.MbUnitWrapper.dll" />
-    </references>
     <dependencies>
-      <dependency id="FSpec" version="@build.number@" />
+      <dependency id="FSpec" version="$version$" />
       <dependency id="mbunit" />
     </dependencies>
   </metadata>
   <files>
-    <file src="output/FSpec.MbUnitWrapper.dll" target="lib/net40/FSpec.MbUnitWrapper.dll" />
+    <file src="output/FSpec.MbUnitWrapper.dll" target="lib/net40" />
   </files>
 </package>
