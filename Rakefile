@@ -3,6 +3,9 @@ require 'rake/clean'
 require 'bundler/setup'
 require 'albacore'
 require 'albacore/tasks/versionizer'
+#
+# Albacore uses the Jenkins supplied BUILD_NUMBER for PATCH
+ENV['BUILD_NUMBER'] = nil 
 
 Albacore::Tasks::Versionizer.new :versioning
 
