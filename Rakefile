@@ -95,10 +95,11 @@ task :commit do
   system "git add ."
   system "git ci -m \"#{tag_name}\""
   system "git tag #{tag_name}"
-  #system "git push"
-  #system "git push --tags"
+  system "git push"
+  system "git push --tags"
 end
 
 task :default => [:build, :test]
 task :ci => [:restore, :pack]
-task :create_minor => [:increment_minor, :ci, :commit]
+#task :create_minor => [:increment_minor, :ci, :commit]
+task :create_version => [:ci, :commit]
