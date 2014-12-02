@@ -94,7 +94,7 @@ task :commit do
   tag_name = "v-#{ENV['NUGET_VERSION']}"
   system "git add ."
   system "git ci -m \"#{tag_name}\""
-  system "git tag #{tag_name}"
+  system "git tag -f #{tag_name}"
 end
 
 task :default => [:build, :test]
