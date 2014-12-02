@@ -7,10 +7,10 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>c5c98d42-1ffc-40ac-ac07-a9184acc2a7d</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>fspec.gallioWrapper</RootNamespace>
-    <AssemblyName>fspec.gallioWrapper</AssemblyName>
+    <RootNamespace>FSpec.MbUnitWrapper</RootNamespace>
+    <AssemblyName>FSpec.MbUnitWrapper</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <Name>fspec.gallioWrapper</Name>
+    <Name>FSpec.MbUnitWrapper</Name>
     <TargetFSharpCoreVersion>4.3.0.0</TargetFSharpCoreVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -21,7 +21,7 @@
     <OutputPath>..\output</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <DocumentationFile>..\output\fspec.gallioWrapper.XML</DocumentationFile>
+    <DocumentationFile>..\output\FSpec.MbUnitWrapper.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -30,7 +30,7 @@
     <OutputPath>..\output\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <DocumentationFile>..\output\Release\fspec.gallioWrapper.XML</DocumentationFile>
+    <DocumentationFile>..\output\Release\FSpec.MbUnitWrapper.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
