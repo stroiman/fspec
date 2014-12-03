@@ -102,4 +102,4 @@ end
 task :default => [:build, :test]
 task :ci => [:restore, :build, :pack]
 #task :create_minor => [:increment_minor, :ci, :commit]
-task :create_version => [:ci, :push, :commit]
+task :create_version => [:ci, :commit, :push]
