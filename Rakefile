@@ -1,94 +1,105 @@
+#encoding: utf-8
+require 'xsemver'
 require 'rake/clean'
+require 'bundler/setup'
+require 'albacore'
+require 'albacore/tasks/versionizer'
 
-CLEAN.include("output/*.dll", "output/*.exe")
+# Avoid that Albacore uses the Jenkins supplied BUILD_NUMBER for PATCH
+ENV['BUILD_NUMBER'] = nil 
+
+Albacore::Tasks::Versionizer.new :versioning
+
+CLEAN.include("output/*.dll", "output/*.exe", "output/*.mdb", "output/*.xml", "bin/**/*.*", "obj/**/*.*")
 
 def windows?
   RUBY_PLATFORM =~ /mingw/i 
 end
 
-def compile(output_file, prerequisites, target)
-  dir = File.dirname(output_file)
-  Dir.mkdir(dir) unless Dir.exists?(dir)
-  fs_files = prerequisites.select {|x| File.extname(x) == '.fs'}
-  dll_files = prerequisites.select {|x| File.extname(x) == '.dll'}
-  package_files = dll_files.select {|x| x.start_with? "package"}
-  cp package_files, 'output/'
-  reference_args = dll_files.map {|x| "--reference:#{x}" }
-  if windows?
-    fsc = 'fsc'
-  else
-    fsc = 'fsharpc'
-  end
-  sh "#{fsc} #{fs_files.join(" ")} --out:#{output_file} #{reference_args.join(" ")} --target:#{target}"
+desc 'restore all nugets as per the packages.config files'
+nugets_restore :restore do |p|
+  p.out = 'packages'
+  p.exe = 'nuget.exe'
 end
 
-file 'output/FSpec.dll' => [
-    'core/DomainTypes.fs',
-    'core/TestContext.fs',
-    'core/TestReport.fs', 
-    'core/Runner.fs',
-    'core/Matchers.fs', 
-    'core/Dsl.fs',
-    'core/TestDiscovery.fs',
-    'core/Compatibility.fs',
-    'core/AssemblyInfo.fs'
-    ] do |t|
-  compile(t.name, t.prerequisites, :library)
+asmver :asmver_fspec do |a|
+  a.file_path  = 'core/AssemblyInfo.fs' 
+  a.namespace  = 'FSpec'
+  a.attributes assembly_title: 'FSpec',
+    assembly_copyright: "(c) #{Time.now.year} by Peter Strøiman",
+    assembly_version: ENV['LONG_VERSION'],
+    assembly_file_version: ENV['LONG_VERSION']
 end
 
-file 'output/FSpec.MbUnitWrapper.dll' => [
-    'FSpec.MbUnitWrapper/TestFactory.fs',
-    'FSpec.MbUnitWrapper/AssemblyInfo.fs',
-    'output/FSpec.dll',
-    'packages/mbunit.3.3.454.0/lib/net40/Gallio.dll',
-    'packages/mbunit.3.3.454.0/lib/net40/Gallio40.dll',
-    'packages/mbunit.3.3.454.0/lib/net40/MbUnit.dll',
-    'packages/mbunit.3.3.454.0/lib/net40/MbUnit40.dll',
-    ] do |t|
-  compile(t.name, t.prerequisites, :library)
+asmver :asmver_fspec_autofoq do |a|
+  a.file_path  = 'FSpec.AutoFoq/AssemblyInfo.fs' 
+  a.namespace  = 'FSpec'
+  a.attributes assembly_title: 'FSpec', 
+    assembly_copyright: "(c) #{Time.now.year} by Peter Strøiman",
+    assembly_version: ENV['LONG_VERSION'],
+    assembly_file_version: ENV['LONG_VERSION']
 end
 
-file 'output/FSpec.AutoFoq.dll' => [
-    'FSpec.AutoFoq/FoqMockingKernel.fs',
-    'FSpec.AutoFoq/TestContext.fs',
-    'FSpec.AutoFoq/AssemblyInfo.fs',
-    'output/FSpec.dll',
-    'packages/Ninject.MockingKernel.3.2.0.0/lib/net45-full/Ninject.MockingKernel.dll',
-    'packages/Ninject.3.2.0.0/lib/net45-full/Ninject.dll',
-    'packages/Foq.1.6/Lib/net45/Foq.dll'
-    ] do |t|
-  compile(t.name, t.prerequisites, :library)
+asmver :asmver_fspec_mbunitwrapper do |a|
+  a.file_path  = 'FSpec.MbUnitWrapper/AssemblyInfo.fs' 
+  a.namespace  = 'FSpec'
+  a.attributes assembly_title: 'FSpec',
+    assembly_copyright: "(c) #{Time.now.year} by Peter Strøiman",
+    assembly_version: ENV['LONG_VERSION'],
+    assembly_file_version: ENV['LONG_VERSION']
 end
 
-file 'output/FSpec.SelfTests.dll' => [
-    'selftests/Helpers.fs',
-    'selftests/ExampleHelper.fs',
-    'selftests/CustomMatchers.fs',
-    'selftests/DomainTypesSpecs.fs',
-    'selftests/RunnerSpecs.fs', 
-    'selftests/TestRunnerSpecs.fs',
-    'selftests/MatchersSpecs.fs',
-    'selftests/TestReportSpecs.fs',
-    'selftests/MetaDataSpecs.fs',
-    'selftests/DslSpecs.fs',
-    'selftests/QuotationExampleSpecs.fs',
-    'selftests/TestContextSpecs.fs',
-    'output/FSpec.dll',
-    ] do |t|
-  compile(t.name, t.prerequisites, :library)
+task :asmver_files => [:asmver_fspec, :asmver_fspec_autofoq, :asmver_fspec_mbunitwrapper] 
+
+desc 'Perform full build'
+build :build => [:versioning, :asmver_files] do |b|
+  b.sln = 'FSpec.sln'
 end
 
-file 'output/fspec-runner.exe' => ['cli/Main.fs', 'output/FSpec.dll'] do |t|
-  compile(t.name, t.prerequisites, :exe)
-end
-
-task :build => ['output/fspec-runner.exe','output/FSpec.AutoFoq.dll', 'output/FSpec.MbUnitWrapper.dll'] do
-end
-
-task :test => ['output/fspec-runner.exe', 'output/FSpec.SelfTests.dll'] do
+task :test do
   executer = ""
   executer = "mono " unless windows?
   sh("#{executer}output/fspec-runner.exe output/FSpec.SelfTests.dll")
 end
 
+directory 'output/pkg'
+
+task :pack => ['output/pkg', :versioning] do
+  system "mono nuget.exe pack fspec.nuspec -properties version=#{ENV['NUGET_VERSION']}"
+  system "mono nuget.exe pack FSpec.MbUnitWrapper.nuspec -properties version=#{ENV['NUGET_VERSION']}"
+  system "mono nuget.exe pack FSpec.AutoFoq.nuspec -properties version=#{ENV['NUGET_VERSION']}"
+end
+
+task :push => [:pack] do
+  system "mono nuget.exe push FSpec.#{ENV['NUGET_VERSION']}.nuget -ApiKey #{ENV['NUGET_API_KEY']}"
+  system "mono nuget.exe push FSpec.AutoFoq.#{ENV['NUGET_VERSION']}.nuget -ApiKey #{ENV['NUGET_API_KEY']}"
+  system "mono nuget.exe push FSpec.MbUnitWrapper.#{ENV['NUGET_VERSION']}.nuget -ApiKey #{ENV['NUGET_API_KEY']}"
+end
+
+task :increment_patch do
+  v = XSemVer::SemVer.find
+  v.minor += 1
+  v.save
+  Rake::Task["versioning"].execute
+end
+
+task :increment_minor do
+  v = XSemVer::SemVer.find
+  v.minor += 1
+  v.save
+  Rake::Task["versioning"].execute
+end
+
+task :commit do
+  tag_name = "v-#{ENV['NUGET_VERSION']}"
+  system "git add ."
+  system "git ci -m \"#{tag_name}\""
+  system "git tag -f #{tag_name}"
+  system "git push origin head:master"
+  system "git push --tags"
+end
+
 task :default => [:build, :test]
+task :ci => [:restore, :build, :pack]
+#task :create_minor => [:increment_minor, :ci, :commit]
+task :create_version => [:ci, :commit]

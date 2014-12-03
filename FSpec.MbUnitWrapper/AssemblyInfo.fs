@@ -1,10 +1,9 @@
-﻿namespace System
+namespace FSpec
 open System.Reflection
-
-[<assembly: AssemblyTitleAttribute("FSpec.MbUnitWrapper")>]
-[<assembly: AssemblyVersionAttribute("0.3.1")>]
-[<assembly: AssemblyFileVersionAttribute("0.3.1")>]
-do ()
-
-module internal AssemblyVersionInformation =
-    let [<Literal>] Version = "0.3.1"
+open System.Runtime.CompilerServices
+open System.Runtime.InteropServices
+[<assembly: AssemblyTitle("FSpec")>]
+[<assembly: AssemblyCopyright("(c) 2014 by Peter Strøiman")>]
+[<assembly: AssemblyVersion("0.3.1.0")>]
+[<assembly: AssemblyFileVersion("0.3.1.0")>]
+()
