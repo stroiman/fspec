@@ -5,116 +5,117 @@ open Matchers
 open ExampleHelper
 open ExampleGroup
 
-let callList = ref []
-let actualCallList () = !callList |> List.rev
-let clearCallList _ = callList := []
+type TestContext
+    with
+        member self.CallList 
+            with get() = self.GetOrDefault<string list> "call_list" (fun _ -> [])
+            and set (value : List<string>) = self?call_list <- value
 
-let record name = 
-    fun _ -> callList := name::!callList
+let recordIn (ctx:TestContext) name =
+    fun _ -> ctx.CallList <- (name :: ctx.CallList)
 
-let shouldRecord expected grp =
+let shouldRecordIn (ctx:TestContext) expected grp =
     grp |> run |> ignore
-    actualCallList() |> should (equal expected)
+    ctx.CallList |> List.rev |> should (equal expected)
 
 let specs =
     describe "Test runner" [
-        before <| clearCallList
         describe "execution order" [
 
             describe "of examples" [
-                it "executes examples in the order they appear" <| fun _ ->
+                it "executes examples in the order they appear" <| fun ctx ->
                     anExampleGroup
-                    |> withExampleCode (record "test 1")
-                    |> withExampleCode (record "test 2")
-                    |> shouldRecord ["test 1"; "test 2"]
+                    |> withExampleCode (recordIn ctx "test 1")
+                    |> withExampleCode (recordIn ctx "test 2")
+                    |> shouldRecordIn ctx ["test 1"; "test 2"]
 
-                it "executes child groups in the order they appear" (fun _ ->
+                it "executes child groups in the order they appear" (fun ctx ->
                     anExampleGroup
                     |> withNestedGroup (
-                        withExampleCode (record "test 1"))
+                        withExampleCode (recordIn ctx "test 1"))
                     |> withNestedGroup (
-                        withExampleCode (record "test 2"))
-                    |> shouldRecord ["test 1"; "test 2"]
+                        withExampleCode (recordIn ctx "test 2"))
+                    |> shouldRecordIn ctx ["test 1"; "test 2"]
                 )
             ]
 
             describe "of setup and teardown" [
-                it "runs setup/teardown once for each test" <| fun _ ->
+                it "runs setup/teardown once for each test" <| fun ctx ->
                     anExampleGroup
-                    |> withSetupCode (record "setup")
-                    |> withTearDownCode (record "tear down")
-                    |> withExampleCode (record "test 1")
-                    |> withExampleCode (record "test 2")
-                    |> shouldRecord
+                    |> withSetupCode (recordIn ctx "setup")
+                    |> withTearDownCode (recordIn ctx "tear down")
+                    |> withExampleCode (recordIn ctx "test 1")
+                    |> withExampleCode (recordIn ctx "test 2")
+                    |> shouldRecordIn ctx
                         [ "setup"; "test 1"; "tear down";
                           "setup"; "test 2"; "tear down"]
                     
                 describe "setup" [
-                    it "is executed before the example" <| fun _ ->
+                    it "is executed before the example" <| fun ctx ->
                         anExampleGroup
-                        |> withSetupCode (record "setup")
-                        |> withExampleCode (record "test")
-                        |> shouldRecord ["setup"; "test"]
+                        |> withSetupCode (recordIn ctx "setup")
+                        |> withExampleCode (recordIn ctx "test")
+                        |> shouldRecordIn ctx ["setup"; "test"]
 
-                    it "is executed for example in child group" <| fun _ ->
+                    it "is executed for example in child group" <| fun ctx ->
                         anExampleGroup
-                        |> withSetupCode (record "outer setup")
+                        |> withSetupCode (recordIn ctx "outer setup")
                         |> withNestedGroup (
-                            withSetupCode (record "inner setup")
-                            >> withExampleCode (record "test"))
-                        |> shouldRecord [ "outer setup"; "inner setup"; "test" ]
+                            withSetupCode (recordIn ctx "inner setup")
+                            >> withExampleCode (recordIn ctx "test"))
+                        |> shouldRecordIn ctx [ "outer setup"; "inner setup"; "test" ]
 
-                    it "is not executed for subling group examples" <| fun _ ->
+                    it "is not executed for subling group examples" <| fun ctx ->
                         anExampleGroup
                         |> withNestedGroup (
-                            withSetupCode (record "setup"))
+                            withSetupCode (recordIn ctx "setup"))
                         |> withNestedGroup (
-                            withExampleCode (record "sibling test"))
-                        |> shouldRecord ["sibling test"]
+                            withExampleCode (recordIn ctx "sibling test"))
+                        |> shouldRecordIn ctx ["sibling test"]
 
-                    it "is executed in the order they appear" <| fun _ ->
+                    it "is executed in the order they appear" <| fun ctx ->
                         anExampleGroup
-                        |> withSetupCode (record "setup 1")
-                        |> withSetupCode (record "setup 2")
+                        |> withSetupCode (recordIn ctx "setup 1")
+                        |> withSetupCode (recordIn ctx "setup 2")
                         |> withAnExample
-                        |> shouldRecord ["setup 1";"setup 2"]
+                        |> shouldRecordIn ctx ["setup 1";"setup 2"]
                 ]
 
                 describe "tear down" [
-                    it "is executed after the example" <| fun _ ->
+                    it "is executed after the example" <| fun ctx ->
                         anExampleGroup
-                        |> withTearDownCode (record "tearDown")
-                        |> withExampleCode (record "test")
-                        |> shouldRecord ["test"; "tearDown"]
+                        |> withTearDownCode (recordIn ctx "tearDown")
+                        |> withExampleCode (recordIn ctx "test")
+                        |> shouldRecordIn ctx ["test"; "tearDown"]
 
-                    it "is executed if example fails" <| fun _ ->
+                    it "is executed if example fails" <| fun ctx ->
                         anExampleGroup
-                        |> withTearDownCode (record "tearDown")
+                        |> withTearDownCode (recordIn ctx "tearDown")
                         |> withExamples [ aFailingExample ]
-                        |> shouldRecord ["tearDown"]
+                        |> shouldRecordIn ctx ["tearDown"]
 
-                    it "is executed for example in child group" <| fun _ ->
+                    it "is executed for example in child group" <| fun ctx ->
                         anExampleGroup
-                        |> withTearDownCode (record "outer tear down")
+                        |> withTearDownCode (recordIn ctx "outer tear down")
                         |> withNestedGroup (
-                            withTearDownCode (record "inner tear down")
-                            >> withExampleCode (record "test"))
-                        |> shouldRecord ["test"; "inner tear down"; "outer tear down"]
+                            withTearDownCode (recordIn ctx "inner tear down")
+                            >> withExampleCode (recordIn ctx "test"))
+                        |> shouldRecordIn ctx ["test"; "inner tear down"; "outer tear down"]
 
-                    it "is not executed for sibling group examples" <| fun _ ->
+                    it "is not executed for sibling group examples" <| fun ctx ->
                         anExampleGroup
                         |> withNestedGroup (
-                            withTearDownCode (record "tearDown"))
+                            withTearDownCode (recordIn ctx "tearDown"))
                         |> withNestedGroup (
-                            withExampleCode (record "sibling test"))
-                        |> shouldRecord ["sibling test"]
+                            withExampleCode (recordIn ctx "sibling test"))
+                        |> shouldRecordIn ctx ["sibling test"]
                     
-                    it "runs in the order it appears" <| fun _ ->
+                    it "runs in the order it appears" <| fun ctx ->
                         anExampleGroup
-                        |> withTearDownCode (record "teardown 1")
-                        |> withTearDownCode (record "teardown 2")
+                        |> withTearDownCode (recordIn ctx "teardown 1")
+                        |> withTearDownCode (recordIn ctx "teardown 2")
                         |> withAnExample
-                        |> shouldRecord ["teardown 1";"teardown 2"]
+                        |> shouldRecordIn ctx ["teardown 1";"teardown 2"]
                 ]
             ]
         ]
@@ -162,52 +163,52 @@ let specs =
         
         describe "example filtering" [
             context "with default configuration" [
-                it "runs examples with the 'focus' metadata" <| fun _ ->
+                it "runs examples with the 'focus' metadata" <| fun ctx ->
                     anExampleGroup
                     |> withExamples [
-                        anExampleWithCode (record "ex1") 
+                        anExampleWithCode (recordIn ctx "ex1") 
                             |> withExampleMetaData ("focus", true)
-                        anExampleWithCode (record "ex2") ]
-                    |> shouldRecord ["ex1"]
+                        anExampleWithCode (recordIn ctx "ex2") ]
+                    |> shouldRecordIn ctx ["ex1"]
 
-                it "runs example groups with the 'focus' metadata" <| fun _ ->
+                it "runs example groups with the 'focus' metadata" <| fun ctx ->
                     anExampleGroup
                     |> withNestedGroup(
                         withMetaData ("focus", true)
                         >> withExamples [
-                            anExampleWithCode (record "ex1")])
+                            anExampleWithCode (recordIn ctx "ex1")])
                     |> withNestedGroup(
                         withExamples [
-                            anExampleWithCode (record "ex2") ])
-                    |> shouldRecord ["ex1"]
+                            anExampleWithCode (recordIn ctx "ex2") ])
+                    |> shouldRecordIn ctx ["ex1"]
 
-                it "runs example groups with 'focus' several levels up" <| fun _ ->
+                it "runs example groups with 'focus' several levels up" <| fun ctx ->
                     anExampleGroup
                     |> withNestedGroup(
                         withMetaData ("focus", true)
                         >> withNestedGroup(
                             withExamples [
-                                anExampleWithCode (record "ex1")]))
+                                anExampleWithCode (recordIn ctx "ex1")]))
                     |> withNestedGroup(
                         withNestedGroup(
                             withExamples [
-                                anExampleWithCode (record "ex2") ]))
-                    |> shouldRecord ["ex1"]
+                                anExampleWithCode (recordIn ctx "ex2") ]))
+                    |> shouldRecordIn ctx ["ex1"]
 
-                it "runs all examples if none are focused" <| fun _ ->
+                it "runs all examples if none are focused" <| fun ctx ->
                     anExampleGroup
                     |> withExamples [
-                        anExampleWithCode (record "ex1") 
-                        anExampleWithCode (record "ex2") ]
-                    |> shouldRecord ["ex1";"ex2"]
+                        anExampleWithCode (recordIn ctx "ex1") 
+                        anExampleWithCode (recordIn ctx "ex2") ]
+                    |> shouldRecordIn ctx ["ex1";"ex2"]
 
-                it "excludes example with 'slow' metadata" <| fun _ ->
+                it "excludes example with 'slow' metadata" <| fun ctx ->
                     anExampleGroup
                     |> withExamples [
-                        anExampleWithCode (record "ex1") 
+                        anExampleWithCode (recordIn ctx "ex1") 
                             |> withExampleMetaData ("slow", true)
-                        anExampleWithCode (record "ex2") ]
-                    |> shouldRecord ["ex2"]
+                        anExampleWithCode (recordIn ctx "ex2") ]
+                    |> shouldRecordIn ctx ["ex2"]
 
             ]
         ]
