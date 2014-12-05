@@ -13,7 +13,7 @@ module Helpers =
         abstract member Save : TestEntity -> unit
 
     type TestApplicationService(dataAccess : ITestDataAccess) =
-        member __.Get (id:int) = ()
+        member __.Get (id:int) = dataAccess.Load id
         member __.Save entity = dataAccess.Save entity
 open Helpers
 
@@ -25,8 +25,7 @@ let specs =
                     mock.Setup(fun x -> <@ x.Load 42 @>)
                         .Returns(entity))
             let service = ctx.GetInstance<TestApplicationService>()
-            let entity = service.Get 42
-            entity.Should (equal entity)
+            service.Get 42 |> should (be.equalTo entity)
 
         it "allows you to inject a configured mock" <| fun ctx ->
             let entity = TestEntity.createWithId 42
