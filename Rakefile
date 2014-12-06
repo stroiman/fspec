@@ -70,10 +70,14 @@ task :pack => ['output/pkg', :versioning] do
   system "mono nuget.exe pack FSpec.AutoFoq.nuspec -properties version=#{ENV['NUGET_VERSION']}"
 end
 
+def push_package(package_name)
+  system "mono nuget push #{package_name}.#{ENV['NUGET_VERSION']}.nuget #{ENV['MYGET_API_KEY']} -Source https://www.myget.org/F/fspec-prereleases/api/v2/package"
+end
+
 task :push => [:pack] do
-  system "mono nuget.exe push FSpec.#{ENV['NUGET_VERSION']}.nupkg -ApiKey #{ENV['NUGET_API_KEY']}"
-  system "mono nuget.exe push FSpec.AutoFoq.#{ENV['NUGET_VERSION']}.nupkg -ApiKey #{ENV['NUGET_API_KEY']}"
-  system "mono nuget.exe push FSpec.MbUnitWrapper.#{ENV['NUGET_VERSION']}.nupkg -ApiKey #{ENV['NUGET_API_KEY']}"
+  push_package "FSpec"
+  push_package "FSpec.AutoFoq"
+  push_package "FSpec.MbUnitWrapper"
 end
 
 task :increment_patch do
