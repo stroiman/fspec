@@ -50,6 +50,7 @@
   <Import Project="$(FSharpTargetsPath)" Condition="Exists('$(FSharpTargetsPath)')" />
   <ItemGroup>
     <Compile Include="Helpers.fs" />
+    <Compile Include="AsyncSpecs.fs" />
     <Compile Include="ExampleHelper.fs" />
     <Compile Include="CustomMatchers.fs" />
     <Compile Include="DomainTypesSpecs.fs" />

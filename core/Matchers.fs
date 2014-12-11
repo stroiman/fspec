@@ -177,3 +177,10 @@ type System.Object with
 
     member self.Apply<'T,'U> (f : 'T -> 'U) =
         self :?> 'T |> f
+
+type Async<'T> with
+    member self.Should<'T> (matcher : Matcher<'T>) =
+        Async.RunSynchronously(self,5000).Should matcher
+
+    member self.ShouldNot<'T> (matcher : Matcher<'T>) =
+        Async.RunSynchronously(self,5000).ShouldNot matcher
