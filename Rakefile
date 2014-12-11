@@ -71,7 +71,7 @@ task :pack => ['output/pkg', :versioning] do
 end
 
 def push_package(package_name)
-  system "mono nuget.exe push #{package_name}.#{ENV['NUGET_VERSION']}.nuget #{ENV['MYGET_API_KEY']} -Source https://www.myget.org/F/fspec-prereleases/api/v2/package"
+  system "mono nuget.exe push #{package_name}.#{ENV['NUGET_VERSION']}.nupkg #{ENV['MYGET_API_KEY']} -Source https://www.myget.org/F/fspec-prereleases/api/v2/package"
 end
 
 task :push => [:pack] do
