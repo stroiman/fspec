@@ -33,12 +33,6 @@ def windows?
   RUBY_PLATFORM =~ /mingw/i 
 end
 
-desc 'restore all nugets as per the packages.config files'
-nugets_restore :restore do |p|
-  p.out = 'packages'
-  p.exe = 'nuget.exe'
-end
-
 asmver :asmver_fspec do |a|
   a.file_path  = 'core/AssemblyInfo.fs' 
   a.namespace  = 'FSpec'
@@ -69,7 +63,7 @@ end
 task :asmver_files => [:asmver_fspec, :asmver_fspec_autofoq, :asmver_fspec_mbunitwrapper] 
 
 desc 'Perform full build'
-build :build => ["paket:restore", :versioning, :asmver_files] do |b|
+build :build => [:versioning, :asmver_files] do |b|
   b.sln = 'FSpec.sln'
 end
 
@@ -121,6 +115,6 @@ task :commit do
 end
 
 task :default => [:build, :test]
-task :ci => [:restore, :build, :pack]
+task :ci => ["paket:restore", :build, :pack]
 #task :create_minor => [:increment_minor, :ci, :commit]
 task :create_version => [:ci, :commit, :push]
