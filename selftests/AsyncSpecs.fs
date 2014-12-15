@@ -4,6 +4,7 @@ open FSpec.Dsl
 open FSpec.Matchers
 
 let specs =
+    ("slow", true) **>
     describe "Async matchers" [
         describe "Async<'T>.Should" [
             it "waits for a result" (fun _ ->
