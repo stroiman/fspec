@@ -5,6 +5,12 @@ open FSpec.Matchers
 open Main
 
 module Helpers =
+    let join separator (s:string list) = System.String.Join(" ", s |> List.toArray)
+
+    let withArguments args specs =
+        ("input", args) **> 
+        context (sprintf "when called with '%s'" (args |> join " ")) specs
+
     let parse (matcher : Matcher<ParsedArguments>) =
         let f =
             function
@@ -39,13 +45,11 @@ let specs =
             |> List.toArray
             |> parseArguments)
 
-        ("input", ["assembly1.dll"; "assembly2.dll"]) **>
-        context "Called with two assembly files" [
+        withArguments ["assembly1.dll"; "assembly2.dll"] [
             itShould (parse (withAssemblies (equal ["assembly1.dll"; "assembly2.dll"])))
         ]
 
-        ("input", ["--invalid-arguments-not-supported"]) **>
-        context "Called with invalid args" [
+        withArguments ["--invalid-arguments-not-supported"] [
             itShould (printMessage (be.string.containing "FSpec"))
         ]
     ]
