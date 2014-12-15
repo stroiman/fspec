@@ -1,6 +1,6 @@
 source https://www.nuget.org/api/v2/
 
-nuget Foq 1.6
-nuget mbunit 3.3.454.0
-nuget Ninject 3.2.0.0
-nuget Ninject.MockingKernel 3.2.0.0
+nuget Foq
+nuget mbunit
+nuget Ninject
+nuget Ninject.MockingKernel
