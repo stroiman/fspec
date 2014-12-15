@@ -1,6 +1,4 @@
 *.swp
-*.exe
-*.dll
 .DS_Store
 bin
 obj
@@ -13,3 +11,4 @@ _NCrunch_*
 *.ncrunchproject
 *.ncrunchsolution
 output
+paket.exe

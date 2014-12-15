@@ -11,6 +11,19 @@ ENV['BUILD_NUMBER'] = nil
 Albacore::Tasks::Versionizer.new :versioning
 
 CLEAN.include("output/*.dll", "output/*.exe", "output/*.mdb", "output/*.xml", "bin/**/*.*", "obj/**/*.*")
+def run_assembly cmd
+  system cmd or raise "Error running #{cmd}"
+end
+
+namespace :paket do
+  file '.paket/paket.exe' do
+    run_assembly ".paket/paket.bootstrapper.exe"
+  end
+
+  task :restore => '.paket/paket.exe' do
+    run_assembly '.paket/paket.exe restore'
+  end
+end
 
 def windows?
   RUBY_PLATFORM =~ /mingw/i 
@@ -52,7 +65,7 @@ end
 task :asmver_files => [:asmver_fspec, :asmver_fspec_autofoq, :asmver_fspec_mbunitwrapper] 
 
 desc 'Perform full build'
-build :build => [:versioning, :asmver_files] do |b|
+build :build => ["paket:restore", :versioning, :asmver_files] do |b|
   b.sln = 'FSpec.sln'
 end
 

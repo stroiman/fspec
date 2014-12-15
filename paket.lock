@@ -1,0 +1,8 @@
+NUGET
+  remote: https://www.nuget.org/api/v2
+  specs:
+    Foq (1.6)
+    mbunit (3.3.454.0)
+    Ninject (3.2.0.0)
+    Ninject.MockingKernel (3.2.0.0)
+      Ninject (>= 3.2.0.0 <  3.3.0.0)
