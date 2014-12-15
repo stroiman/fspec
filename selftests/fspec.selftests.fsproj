@@ -71,6 +71,11 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
+    <ProjectReference Include="..\cli\FSpec.Runner.fsproj">
+      <Name>FSpec.Runner</Name>
+      <Project>{4136d8b8-c7d8-4d6b-b734-3c5809193ce1}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\core\FSpec.fsproj">
       <Name>FSpec</Name>
       <Project>{3a1228a7-f39e-49fd-974c-47abb1caba42}</Project>
