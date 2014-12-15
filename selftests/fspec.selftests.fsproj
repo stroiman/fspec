@@ -61,6 +61,7 @@
     <Compile Include="MetaDataSpecs.fs" />
     <Compile Include="DslSpecs.fs" />
     <Compile Include="QuotationExampleSpecs.fs" />
+    <Compile Include="CommandLineParserSpecs.fs" />
     <Compile Include="TestContextSpecs.fs" />
   </ItemGroup>
   <ItemGroup>
