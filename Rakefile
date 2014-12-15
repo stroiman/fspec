@@ -23,6 +23,10 @@ namespace :paket do
   task :restore => '.paket/paket.exe' do
     run_assembly '.paket/paket.exe restore'
   end
+
+  task :update => '.paket/paket.exe' do
+    run_assembly '.paket/paket.exe update'
+  end
 end
 
 def windows?
