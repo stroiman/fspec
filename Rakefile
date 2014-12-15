@@ -67,6 +67,14 @@ build :build => [:versioning, :asmver_files] do |b|
   b.sln = 'FSpec.sln'
 end
 
+namespace :guard do
+  build :build do |b|
+    b.sln = 'FSpec.sln'
+  end
+
+  task :default => [:build, :test]
+end
+
 task :test do
   executer = ""
   executer = "mono " unless windows?
