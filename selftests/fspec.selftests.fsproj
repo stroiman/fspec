@@ -64,11 +64,6 @@
     <Compile Include="TestContextSpecs.fs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\FSpec.MbUnitWrapper\FSpec.MbUnitWrapper.fsproj">
-      <Name>FSpec.MbUnitWrapper</Name>
-      <Project>{c5c98d42-1ffc-40ac-ac07-a9184acc2a7d}</Project>
-      <Private>True</Private>
-    </ProjectReference>
     <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <Private>True</Private>
     </Reference>
@@ -79,11 +74,6 @@
     <ProjectReference Include="..\core\FSpec.fsproj">
       <Name>FSpec</Name>
       <Project>{3a1228a7-f39e-49fd-974c-47abb1caba42}</Project>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\FSpec.AutoFoq\FSpec.AutoFoq.fsproj">
-      <Name>FSpec.AutoFoq</Name>
-      <Project>{555ae588-7391-4d6d-8ef0-9d249d91bcb8}</Project>
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
