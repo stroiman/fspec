@@ -72,7 +72,37 @@ namespace :guard do
     b.sln = 'FSpec.sln'
   end
 
-  task :default => [:build, :test]
+  build :core_build do |b|
+    b.file = 'core/FSpec.fsproj'
+  end
+
+  build :cli_build do |b|
+    b.file = 'cli/FSpec.Runner.fsproj'
+  end
+
+  build :auto_foq_build do |b|
+    b.file = 'FSpec.AutoFoq/FSpec.AutoFoq.fsproj'
+  end
+
+  build :mbunit_wrapper_build do |b|
+    b.file = 'FSpec.MbUnitWrapper/FSpec.MbUnitWrapper.fsproj'
+    Rake::Task["test"].execute
+  end
+
+  build :test_extras_build do |b|
+    b.file = 'FSpec.Extras.SelfTests/FSpec.Extras.SelfTests.fsproj'
+  end
+
+  build :selftests_build do |b|
+    b.file = 'selftests/fspec.selftests.fsproj'
+  end
+
+  task :core => [:core_build, :test]
+  task :cli => [:cli_build, :test]
+  task :selftests => [:selftests_build, :test]
+  task :auto_foq => [:auto_foq_build, :test]
+  task :mbunit_wrapper => [:mbunit_wrapper_build, :test]
+  task :test_extras => [:test_extras_build, :test]
 end
 
 task :test do
