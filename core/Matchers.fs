@@ -90,7 +90,7 @@ module be =
         let containing expected =
             createBoolMatcher
                 (fun (a:string) -> a.Contains(expected))
-                (sprintf "contain %s" expected)
+                (sprintf "contain '%s'" expected)
 
         let matching pattern =
             let regex = System.Text.RegularExpressions.Regex pattern
