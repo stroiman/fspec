@@ -22,8 +22,7 @@ let beSuccess = beExampleWithResult (fun r -> r = Success)
 let runExamples grp = grp |> run |> ignore
 
 let doRun grp =
-    let reporter = TestReporter.instance
-    let data = Runner.doRun grp reporter (reporter.BeginTestRun())
+    let data = ExampleHelper.run grp
     data.CallList |> List.rev
     
 let itReportsExactlyOneExample f = 
