@@ -1,4 +1,5 @@
 ﻿module XmlHelpers
+open FSpec.Matchers
 open System.Xml
 open System.Xml.Schema
 open System.Reflection
@@ -7,11 +8,11 @@ let assembly = Assembly.GetExecutingAssembly()
 let resourceName = "JUnit.xsd"
 let openSchemaStream () = assembly.GetManifestResourceStream(resourceName)
 
-let isValidJUnitXml xml =
-  let valid = ref true
+let validateJUnitXml xml =
+  let messages = ref []
   let eventHandler (sender:obj) (e:ValidationEventArgs) =
     let invalidate () =
-      valid := false
+      messages := e.Message :: !messages
       printfn "XML error: %s" e.Message
     match e.Severity with
     | XmlSeverityType.Error -> invalidate()
@@ -23,5 +24,12 @@ let isValidJUnitXml xml =
   document.LoadXml xml
   document.Schemas.Add("", reader) |> ignore
   document.Validate(new ValidationEventHandler(eventHandler))
-  !valid
+  !messages
 
+let beValidJUnitXml =
+  let f actual =
+    let issues = validateJUnitXml actual
+    match issues with
+    | [] -> MatchSuccess ""
+    | _ -> MatchFail issues
+  createMatcher f "be valid JUnit xml"
