@@ -50,6 +50,7 @@
   <Import Project="$(FSharpTargetsPath)" Condition="Exists('$(FSharpTargetsPath)')" />
   <ItemGroup>
     <Compile Include="Helpers.fs" />
+    <Compile Include="XmlHelpers.fs" />
     <Compile Include="AsyncSpecs.fs" />
     <Compile Include="ExampleHelper.fs" />
     <Compile Include="CustomMatchers.fs" />
@@ -63,7 +64,9 @@
     <Compile Include="QuotationExampleSpecs.fs" />
     <Compile Include="CommandLineParserSpecs.fs" />
     <Compile Include="TestContextSpecs.fs" />
+    <Compile Include="JUnitFormatterSpecs.fs" />
     <Compile Include="IntegrationTests.fs" />
+    <EmbeddedResource Include="JUnit.xsd" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
@@ -83,6 +86,7 @@
       <Project>{3a1228a7-f39e-49fd-974c-47abb1caba42}</Project>
       <Private>True</Private>
     </ProjectReference>
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
