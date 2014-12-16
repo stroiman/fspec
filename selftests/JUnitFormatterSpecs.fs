@@ -9,6 +9,6 @@ let specs =
   describe "JUnitFormatter" [
     it "creates valid xml" (fun _ ->
       let result = JUnitFormatter.run ()
-      isValidJUnitXml result |> should (equal true)
+      result.Should beValidJUnitXml
     )
   ]
