@@ -52,7 +52,6 @@
     <Compile Include="DomainTypes.fs" />
     <Compile Include="TestContext.fs" />
     <Compile Include="TestReport.fs" />
-    <Compile Include="JUnitFormatter.fs" />
     <Compile Include="Runner.fs" />
     <Compile Include="Matchers.fs" />
     <Compile Include="Dsl.fs" />
