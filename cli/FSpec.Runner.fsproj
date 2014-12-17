@@ -48,6 +48,7 @@
     <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="JUnitFormatter.fs" />
     <Compile Include="Main.fs" />
   </ItemGroup>
   <ItemGroup>
