@@ -152,7 +152,7 @@ task :commit do
   system "git push --tags"
 end
 
-task :default => [:build, :test]
+task :default => ["guard:build", :test]
 task :ci => ["paket:restore", :build, :pack]
 #task :create_minor => [:increment_minor, :ci, :commit]
 task :create_version => [:ci, :commit, :push]
