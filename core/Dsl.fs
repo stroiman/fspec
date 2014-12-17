@@ -21,6 +21,8 @@ type Operation =
     static member ( ==> ) (md, op) = Operation.ApplyMetaData md op
     static member ( **> ) (md, op) = 
         Operation.ApplyMetaData ([md] |> TestDataMap.create) op
+    static member ( ~+ ) (op:Operation) =
+        Operation.ApplyMetaData ([("focus", true)] |> TestDataMap.create) op
 
 let focus = AddMetaDataOperation ("focus", true)
 let slow = AddMetaDataOperation ("slow", true)

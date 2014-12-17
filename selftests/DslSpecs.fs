@@ -142,7 +142,19 @@ let specs =
                         c.Subject.Apply getChildGroups
                         |> List.head
                     child.MetaData?focus |> should (be.True))
+            ]
 
+            context "child group has a !" [
+                setGroup <|
+                    describe "grp" [
+                        +context "child" []
+                    ]
+
+                it "should store a 'focus' metadata on the group" (fun c ->
+                    let child =
+                        c.Subject.Apply getChildGroups
+                        |> List.head
+                    child.MetaData?focus |> should (be.True))
             ]
 
             context "example has meta data applied" [
