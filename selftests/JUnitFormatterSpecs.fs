@@ -18,6 +18,13 @@ let withOneTestSuite : Matcher<XElement> =
     | _ -> MatchFail actual
   createMatcher f "with one test suite"
 
+let withOneTestCase : Matcher<XElement> =
+  let f (actual : XElement) =
+    match actual.Elements(xname "testcase") |> List.ofSeq with
+    | [e] -> MatchSuccess e
+    | _ -> MatchFail actual
+  createMatcher f "with one test case"
+
 let withAttribute name : Matcher<XElement> =
   let f (actual : XElement) =
     match actual.Attribute(xname name) with
@@ -25,8 +32,12 @@ let withAttribute name : Matcher<XElement> =
     | x -> MatchSuccess x.Value
   createMatcher f (sprintf "with attribute '%s'" name)
 
+let withNameAttribute = withAttribute "name"
+let beJunitWithOneTestSuite =
+  beXml |>> withRootElement "testsuites" |>> withOneTestSuite
+
 let specs =
-  describe "JUnitFormatter" [
+  +describe "JUnitFormatter" [
     it "creates valid xml" (fun _ ->
       let result = JUnitFormatter.run ()
       result.Should beValidJUnitXml
@@ -39,10 +50,11 @@ let specs =
       )
 
       it "creates a 'testsuite' element with one 'testcase' element" (fun ctx ->
-        let report = ExampleGroupReport (desc "group", [ExampleReport (desc "example", Success)])
-        let junitReport = JUnitFormatter.createJUnitReport report
-        let withNameAttribute = withAttribute "name"
-        ctx.Subject.Should (beXml |>> withRootElement "testsuites" |>> withOneTestSuite |>> withNameAttribute |>> equal "group")
+        ctx.Subject.Should (beJunitWithOneTestSuite |>> withNameAttribute |>> equal "group")
+      )
+
+      it "creates a 'testcase'" (fun ctx ->
+        ctx.Subject.Should (beJunitWithOneTestSuite |>> withOneTestCase |>> withNameAttribute |>> equal "example")
       )
 
       itShould beValidJUnitXml
