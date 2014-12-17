@@ -71,6 +71,14 @@ let equal expected =
 module be =
     let equalTo = equal
 
+    let ofType<'T> () =
+        let f (actual:obj) =
+            match actual with
+            | :? 'T as x -> MatchSuccess x
+            | null -> MatchFail null
+            | _ as x -> MatchFail (x.GetType())
+        createMatcher f (sprintf "be of type %s" (typeof<'T>.Name))
+
     let greaterThan expected =
         createBoolMatcher
             (fun a -> a > expected)

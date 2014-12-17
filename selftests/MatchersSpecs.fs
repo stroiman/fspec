@@ -31,6 +31,11 @@ type MatchOf<'T> =
                 test.Should fail)
         ]
 
+    static member ShouldFailWith message =
+        it "fails when used with 'should'" (fun ctx ->
+            let test = MatchOf<'T>.createMatcherTest ctx should
+            test.Should (failWithAssertionError message))
+
 let specs = [
     describe "System.Object extesions" [
         describe ".Should" [
@@ -205,6 +210,21 @@ let specs = [
                     let f () = raise (new System.Exception("custom msg"))
                     let test () = f |> should (throwException.withMessageContaining "wrong msg")
                     test.Should (failWithAssertionError "was expected to throw exception")
+            ]
+        ]
+
+        ("matcher", be.ofType<int>() ) **>
+        describe "be.ofType<'T> matcher" [
+            ("actual", 42) **>
+            context "when value is an int" [
+                MatchOf<obj>.ShouldPass
+            ]
+
+            ("actual", "foo") **>
+            context "when value is a string" [
+                MatchOf<obj>.ShouldFail
+
+                MatchOf<obj>.ShouldFailWith "be of type Int32 but was System.String"
             ]
         ]
     ]
