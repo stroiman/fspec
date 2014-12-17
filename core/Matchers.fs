@@ -192,3 +192,10 @@ type Async<'T> with
 
     member self.ShouldNot<'T> (matcher : Matcher<'T>) =
         Async.RunSynchronously(self,5000).ShouldNot matcher
+
+let ( |>> ) (a : Matcher<'a>) (b: Matcher<'b>) =
+    let f actual =
+        match a.ApplyActual id actual with
+        | MatchSuccess x -> b.ApplyActual id (x :?> 'b)
+        | x -> x
+    createMatcher f (sprintf "%s %s" a.FailureMsgForShould b.FailureMsgForShould)

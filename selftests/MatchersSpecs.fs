@@ -227,5 +227,23 @@ let specs = [
                 MatchOf<obj>.ShouldFailWith "be of type Int32 but was System.String"
             ]
         ]
+
+        ("matcher", (be.ofType<int>()) |>> (be.equalTo 42)) **>
+        describe "Matcher combinators" [
+            ("actual", 42) **>
+            context "when value matches both matchers" [
+                MatchOf<obj>.ShouldPass
+            ]
+
+            ("actual", 43) **>
+            context "when value matches first, but fails last matcher" [
+                MatchOf<obj>.ShouldFail
+            ]
+
+            ("actual", "foo") **>
+            context "when value fails first matcher" [
+                MatchOf<obj>.ShouldFail
+            ]
+        ]
     ]
 ]
