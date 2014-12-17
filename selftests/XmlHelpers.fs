@@ -36,6 +36,15 @@ let beValidJUnitXml =
     | _ -> MatchFail issues
   createMatcher f "be valid JUnit xml"
 
+let beXml =
+  let f (actual : string) =
+    try
+      let doc = XDocument.Parse actual
+      MatchSuccess doc
+    with
+      | _ -> MatchFail actual
+  createMatcher f "be a well-formed xml document"
+
 let withRootElement name =
   let f (actual : XDocument) =
     let root = actual.Root
