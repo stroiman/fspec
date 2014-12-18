@@ -38,11 +38,6 @@ let beJunitWithOneTestSuite =
 
 let specs =
   +describe "JUnitFormatter" [
-    it "creates valid xml" (fun _ ->
-      let result = JUnitFormatter.run ()
-      result.Should beValidJUnitXml
-    )
-
     ("input", ExampleGroupReport (desc "group", [ExampleReport (desc "example", Success)]) )**>
     context "Test contains one group with one test" [
       subject (fun ctx ->

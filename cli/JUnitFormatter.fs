@@ -8,12 +8,6 @@ type Report =
 let xname = XName.Get
 
 module JUnitFormatter =
-  let run () = 
-    let suite = XElement(xname "testsuite", "")
-    let elms = XElement(xname "testsuites", XElement(xname "testsuite", "")) :> obj
-    let doc = XDocument( XDeclaration("1.0", "UTF-8", "yes"), [| elms |])
-    doc.ToString ()
-
   let rec createElement report =
     match report with
     | ExampleGroupReport (desc, xs) ->
