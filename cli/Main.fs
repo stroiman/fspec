@@ -14,6 +14,9 @@ type Options () =
     [<Option("hide-successful-tests", HelpText = "Don't write successful tests to the console")>]
     member val HideSuccessfulTests = false with get, set
 
+    [<Option("output-file", HelpText="Write output as JUnit xml format")>]
+    member val OutputFile = "" with get, set
+
     [<HelpOption>]
     member this.GetUsage () : string = //HelpText.AutoBuild(this).ToString()
       let t = new HelpText()
@@ -27,6 +30,7 @@ type ReportingLevel =
 
 type ParsedArguments = {
     ConsoleOutput : ReportingLevel
+    OutputFile : string option 
     AssemblyFiles : string list }
 
 type ArgumentParseResult =
@@ -40,13 +44,19 @@ let parseArguments args =
     match parser.ParseArguments(args, options) with
     | false -> Fail (options.GetUsage())
     | true -> 
+        let outputFile = 
+          match options.OutputFile with
+          | "" -> None
+          // Check for null because value comes from outside component
+          | null -> failwith "Null was not expected here" 
+          | x -> Some x
         let consoleOutput = match options.HideSuccessfulTests with
                             | true -> HideSuccesfullTests
                             | false -> ShowAllTests
         Success { 
             ConsoleOutput = consoleOutput
+            OutputFile = outputFile
             AssemblyFiles = List.ofSeq options.AssemblyFiles }
-
 
 open RunnerHelper
 

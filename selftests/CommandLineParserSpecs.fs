@@ -33,6 +33,8 @@ module Helpers =
                 | Success x -> MatchResult.MatchFail x
                 | Fail x -> m.ApplyActual id x
         createMatcher f (sprintf "print message %s" m.ExpectationMsgForShould)
+
+    let withOutputFile m = createCompoundMatcher m (fun x -> x.OutputFile) (sprintf "with output file %s" m.ExpectationMsgForShould)
 open Helpers
 
 let mainSpecs =
@@ -68,6 +70,16 @@ let specs =
 
             withArguments ["--hide-successful-tests"; "dummy.dll"] [
                 itShould (parse (withConsoleOutput (equal HideSuccesfullTests)))
+            ]
+        ]
+
+        describe "Parse output file" [
+            withArguments ["assembly.dll"] [
+                itShould (parse (withOutputFile (equal (None))))
+            ]
+
+            withArguments ["--output-file"; "results.xml"; "assembly.dll"] [
+                itShould (parse (withOutputFile (equal (Some "results.xml"))))
             ]
         ]
     ]
