@@ -16,7 +16,13 @@ module JUnitFormatter =
       let children = xs |> List.map createElement
       XElement(xname "testsuite", "", attribute, attribute2, children)
     | ExampleReport (desc,result) -> 
-      XElement(xname "testcase", XAttribute(xname "name", desc.Name))
+      let children =
+        match result with
+        | Failure _ -> [XElement(xname "failure", "")]
+        | Pending -> [XElement(xname "skipped", "")]
+        | Error _ -> [XElement(xname "error", "")]
+        | _ -> []
+      XElement(xname "testcase", XAttribute(xname "name", desc.Name), children)
 
   let createJUnitReport report =
     let suite = createElement report
