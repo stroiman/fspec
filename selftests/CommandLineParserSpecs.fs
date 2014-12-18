@@ -25,6 +25,8 @@ module Helpers =
                 | Success x -> MatchResult.MatchFail x
                 | Fail x -> m.ApplyActual id x
         createMatcher f (sprintf "print message %s" m.FailureMsgForShould)
+
+    let withOutputFile m = createCompoundMatcher m (fun x -> x.OutputFile) (sprintf "with output file %s" m.FailureMsgForShould)
 open Helpers
 
 let mainSpecs =
@@ -51,5 +53,15 @@ let specs =
 
         withArguments ["--invalid-arguments-not-supported"] [
             itShould (printMessage (be.string.containing "FSpec"))
+        ]
+
+        describe "Parse output file" [
+          withArguments ["assembly.dll"] [
+            itShould (parse (withOutputFile (equal (None))))
+          ]
+
+          withArguments ["--output-file"; "results.xml"; "assembly.dll"] [
+            itShould (parse (withOutputFile (equal (Some "results.xml"))))
+          ]
         ]
     ]

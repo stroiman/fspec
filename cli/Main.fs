@@ -11,6 +11,9 @@ type Options () =
     [<ValueList(typeof<L<string>>)>]
     member val AssemblyFiles : L<string> = (null :> L<string>) with get, set
 
+    [<Option("output-file", HelpText="Write output as JUnit xml format")>]
+    member val OutputFile = "" with get, set
+
     [<HelpOption>]
     member this.GetUsage () : string = //HelpText.AutoBuild(this).ToString()
       let t = new HelpText()
@@ -19,7 +22,8 @@ type Options () =
       t.ToString()
 
 type ParsedArguments = {
-    AssemblyFiles : string list }
+    AssemblyFiles : string list;
+    OutputFile : string option }
 
 type ArgumentParseResult =
     | Success of ParsedArguments
@@ -30,7 +34,16 @@ let parseArguments args =
     let parser = new CommandLine.Parser()
     match parser.ParseArguments(args, options) with
     | false -> Fail (options.GetUsage())
-    | true -> Success { AssemblyFiles = List.ofSeq options.AssemblyFiles }
+    | true -> 
+        let outputFile = 
+          match options.OutputFile with
+          | "" -> None
+          // Check for null because value comes from outside component
+          | null -> failwith "Null was not expected here" 
+          | x -> Some x
+        Success { 
+          AssemblyFiles = List.ofSeq options.AssemblyFiles; 
+          OutputFile = outputFile }
 
 [<EntryPoint>]
 let main args =
