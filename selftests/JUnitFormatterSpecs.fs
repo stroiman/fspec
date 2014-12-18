@@ -36,8 +36,8 @@ let withAttribute name : Matcher<XElement> =
   createMatcher f (sprintf "with attribute '%s'" name)
 
 let withNameAttribute = withAttribute "name"
-let beJunitWithOneTestSuite =
-  beXml |>> withRootElement "testsuites" |>> withOneTestSuite
+let beJUnitWithTestSuitesRoot = beXml |>> withRootElement "testsuites"
+let beJunitWithOneTestSuite = beJUnitWithTestSuitesRoot |>> withOneTestSuite
 let beJUnitXmlWithOneTestCase = beJunitWithOneTestSuite |>> withOneTestCase
 
 let withErrorElement : Matcher<XElement> = withSingleElement "error"
@@ -45,7 +45,9 @@ let withFailureElement : Matcher<XElement> = withSingleElement "failure"
 let withSkippedElement : Matcher<XElement> = withSingleElement "skipped"
 
 let specs =
-  +describe "JUnitFormatter" [
+  describe "JUnitFormatter" [
+    subject (fun ctx -> JUnitFormatter.createJUnitReport ctx?input )
+
     context "Test contains one group with one test" [
       before (fun ctx ->
         let result = ctx.GetOrDefault "test_result" (fun _ -> Success)
@@ -53,8 +55,6 @@ let specs =
           ExampleGroupReport (desc "group", [ExampleReport (desc "example", result)]) 
       )
       
-      subject (fun ctx -> JUnitFormatter.createJUnitReport ctx?input )
-
       it "creates a 'testsuite' element with one 'testcase' element" (fun ctx ->
         ctx.Subject.Should (beJunitWithOneTestSuite |>> withNameAttribute |>> equal "group")
       )
@@ -102,5 +102,22 @@ let specs =
         itShould beValidJUnitXml
       ]
       itShould beValidJUnitXml
+    ]
+
+    context "Result contains many tests" [
+      before (fun ctx ->
+        ctx?input <-
+          ExampleGroupReport (desc "Parent", 
+            [
+              ExampleGroupReport (desc "Group1", 
+                [ ExampleReport(desc "ex1", Success) ]);
+              ExampleGroupReport (desc "Group2", 
+                [ ExampleReport(desc "ex2", Success); 
+                  ExampleReport(desc "ex3", Success) ])
+            ]) )
+
+      it "write the no of tests to the testsuites element" (fun ctx ->
+        ctx.Subject.Should (beJunitWithOneTestSuite |>> withAttribute "tests" |>> equal "3")
+      )
     ]
   ]
