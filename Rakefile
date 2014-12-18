@@ -108,7 +108,7 @@ end
 task :test do
   executer = ""
   executer = "mono " unless windows?
-  sh("#{executer}output/fspec-runner.exe output/FSpec.SelfTests.dll")
+  sh("#{executer}output/fspec-runner.exe --output-file TestResult.xml output/FSpec.SelfTests.dll")
 end
 
 directory 'output/pkg'

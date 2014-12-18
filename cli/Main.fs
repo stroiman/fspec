@@ -4,6 +4,7 @@ open FSpec
 open FSpec.TestDiscovery
 open CommandLine
 open CommandLine.Text
+open Formatters
 
 type L<'T> = System.Collections.Generic.List<'T>
 
@@ -45,6 +46,23 @@ let parseArguments args =
           AssemblyFiles = List.ofSeq options.AssemblyFiles; 
           OutputFile = outputFile }
 
+let createJunitResultFile fileName (report : TreeReporter.T) =
+  match fileName with
+  | None -> ()
+  | Some path -> 
+        let currentDir = System.IO.Directory.GetCurrentDirectory()
+        let path' = System.IO.Path.Combine(currentDir, path)
+        report.ExecutedExamples
+        |> List.map (fun x -> 
+            let suiteName = 
+              x.ContainingGroups
+              |> List.map (fun x -> x.Name)
+              |> fun x -> System.String.Join(" ", x)
+            ExampleGroupReport (x.ContainingGroups.Head, [ ExampleReport (x.Example, x.Result)]))
+        |> fun x -> ExampleGroupReport ({Name="Top level"; MetaData=TestDataMap.Zero}, x)
+        |> Formatters.JUnitFormatter.createJUnitReport
+        |> fun contents -> System.IO.File.WriteAllText (path',contents)
+
 [<EntryPoint>]
 let main args =
     match parseArguments args with
@@ -54,8 +72,12 @@ let main args =
     | Success parsedArgs ->
         let options = TreeReporterOptions.Default
         let reporter = TreeReporter.create options
-        parsedArgs.AssemblyFiles
-        |> Seq.map (fun assemblyName -> Assembly.LoadFrom(assemblyName))
-        |> Seq.mapMany getSpecsFromAssembly
-        |> runSpecsWithReporter reporter
-        |> toExitCode
+        let report = 
+          parsedArgs.AssemblyFiles
+          |> Seq.map (fun assemblyName -> Assembly.LoadFrom(assemblyName))
+          |> Seq.mapMany getSpecsFromAssembly
+          |> Runner.run reporter
+        createJunitResultFile parsedArgs.OutputFile report
+        report |> reporter.Success |> toExitCode
+//          |> runSpecsWithReporter reporter
+//        |> toExitCode
