@@ -3,9 +3,6 @@ open Microsoft.FSharp.Reflection
 open System.Reflection
 open FSpec.Dsl
 
-module Seq =
-    let mapMany f x = seq { for y in x do yield! f y }
-
 let getSpecsFromAssembly (assembly : Assembly) =
     let toExampleGroup (value : obj) =
         let exampleGroupFromOp = function
@@ -28,7 +25,7 @@ let getSpecsFromAssembly (assembly : Assembly) =
         |> Seq.where (fun x -> x <> null)
         |> Seq.map (fun x -> x.GetValue(null)) 
         |> Seq.choose toExampleGroup 
-        |> Seq.mapMany (fun x -> x)
+        |> Seq.collect (fun x -> x)
         |> List.ofSeq
     specs
 

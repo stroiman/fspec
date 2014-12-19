@@ -43,6 +43,6 @@ let main args =
         let reporter = TreeReporter.create options
         parsedArgs.AssemblyFiles
         |> Seq.map (fun assemblyName -> Assembly.LoadFrom(assemblyName))
-        |> Seq.mapMany getSpecsFromAssembly
+        |> Seq.collect getSpecsFromAssembly
         |> runSpecsWithReporter reporter
         |> toExitCode
