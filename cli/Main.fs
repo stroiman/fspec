@@ -35,23 +35,23 @@ let parseArguments args =
 
 open RunnerHelper
 
-let createReporter () =
-  let exitCode = ref 0
-  let rec createReporterWithState state : ReporterWrapper =
-    {
-      new ReporterWrapper with
-        member __.BeginGroup g = createReporterWithState state
-        member __.EndGroup () = createReporterWithState state
-        member __.ReportExample _ result =
-          match result with
-            | Failure _ -> exitCode := 1
-            | Error _ -> exitCode := 1
-            | _ -> ()
-          createReporterWithState state
-        member __.BeginTestRun () = createReporterWithState true
-        member __.EndTestRun () = null
-    }
-  (createReporterWithState true, fun () -> !exitCode)
+type ExitCodeReporter() as self =
+  let mutable exitCode = 0
+  let x = self :> ReporterWrapper
+
+  member __.getExitCode () = exitCode
+
+  interface ReporterWrapper with
+    member __.BeginGroup _ = x
+    member __.EndGroup () = x
+    member __.ReportExample _ result = 
+        match result with
+        | Failure x -> exitCode <- 1
+        | Error x -> exitCode <- 1
+        | _ -> ()
+        x
+    member __.BeginTestRun () = x
+    member __.EndTestRun () = null
     
 let rec wrapReporters (reporters:ReporterWrapper list) =
   {
@@ -66,10 +66,10 @@ let rec wrapReporters (reporters:ReporterWrapper list) =
 let runExampleGroupsAndGetExitCode specs =
     let options = TreeReporterOptions.Default
     let treeReporter = TreeReporter.create options |> createWrapper
-    let (exitCodeReporter,getExitCode) = createReporter ()
+    let exitCodeReporter = ExitCodeReporter()
     let reporter = wrapReporters [exitCodeReporter; treeReporter]
     Runner.runWithWrapper reporter specs |> ignore
-    getExitCode ()
+    exitCodeReporter.getExitCode()
 
 [<EntryPoint>]
 let main args =
