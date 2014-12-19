@@ -32,12 +32,44 @@ let parseArguments args =
     | false -> Fail (options.GetUsage())
     | true -> Success { AssemblyFiles = List.ofSeq options.AssemblyFiles }
 
+
+open RunnerHelper
+
+let createReporter () =
+  let exitCode = ref 0
+  let rec createReporterWithState state =
+    {
+       BeginGroup = (fun _ -> createReporterWithState state)
+       EndGroup = (fun _ -> createReporterWithState state)
+       ReportExample = (fun _ result ->
+        match result with
+        | Failure _ -> exitCode := 1
+        | Error _ -> exitCode := 1
+        | _ -> ()
+        createReporterWithState state)
+       BeginTestRun = (fun _ -> createReporterWithState true)
+       EndTestRun = (fun _ -> null)
+       Success = (fun _ -> true)
+    }
+  (createReporterWithState true, fun () -> !exitCode)
+    
+let rec wrapReporters (reporters:ReporterWrapper list) =
+  {
+    BeginGroup = fun x -> reporters |> List.map (fun (y:ReporterWrapper) -> y.BeginGroup x) |> wrapReporters
+    EndGroup= fun x -> reporters |> List.map (fun y -> y.EndGroup x) |> wrapReporters
+    ReportExample= fun x r -> reporters |> List.map (fun y -> y.ReportExample x r) |> wrapReporters
+    BeginTestRun= fun x -> reporters |> List.map (fun y -> y.BeginTestRun x) |> wrapReporters
+    EndTestRun= fun x -> reporters |> List.map (fun y -> y.EndTestRun x) :> obj
+    Success = fun _ -> true
+  }
+
 let runExampleGroupsAndGetExitCode specs =
     let options = TreeReporterOptions.Default
-    let reporter = TreeReporter.create options
-    specs
-    |> runSpecsWithReporter reporter
-    |> toExitCode
+    let treeReporter = TreeReporter.create options |> ReporterWrapper.createWrapper
+    let (exitCodeReporter,getExitCode) = createReporter ()
+    let reporter = wrapReporters [exitCodeReporter; treeReporter]
+    Runner.runWithWrapper reporter specs |> ignore
+    getExitCode ()
 
 [<EntryPoint>]
 let main args =
