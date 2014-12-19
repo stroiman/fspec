@@ -10,8 +10,15 @@ ENV['BUILD_NUMBER'] = nil
 
 Albacore::Tasks::Versionizer.new :versioning
 
+def windows?
+  RUBY_PLATFORM =~ /mingw/i 
+end
+
 CLEAN.include("output/*.dll", "output/*.exe", "output/*.mdb", "output/*.xml", "bin/**/*.*", "obj/**/*.*")
 def run_assembly cmd
+  unless windows?
+    cmd = "mono #{cmd}"
+  end
   system cmd or raise "Error running #{cmd}"
 end
 
@@ -27,10 +34,6 @@ namespace :paket do
   task :update => '.paket/paket.exe' do
     run_assembly '.paket/paket.exe update'
   end
-end
-
-def windows?
-  RUBY_PLATFORM =~ /mingw/i 
 end
 
 asmver :asmver_fspec do |a|
@@ -153,6 +156,6 @@ task :commit do
 end
 
 task :default => ["guard:build", :test]
-task :ci => ["paket:restore", :build, :pack]
+task :ci => ["paket:restore", :build, :test, :pack]
 #task :create_minor => [:increment_minor, :ci, :commit]
 task :create_version => [:ci, :commit, :push]
