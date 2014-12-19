@@ -18,13 +18,6 @@ module Configuration =
         }
 
 module RunnerHelper =
-    type IReporter = 
-        abstract member BeginGroup : ExampleDescriptor -> IReporter
-        abstract member ReportExample : ExampleDescriptor -> TestResultType -> IReporter
-        abstract member EndTestRun : unit -> obj
-        abstract member EndGroup : unit -> IReporter
-        abstract member BeginTestRun : unit -> IReporter 
-
     let createWrapper<'T> (reporter : Reporter<'T>) =
         let rec create (state:'T) =
             let beginGroup desc = reporter.BeginGroup desc state |> create

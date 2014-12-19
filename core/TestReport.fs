@@ -29,6 +29,12 @@ module Helper =
         finally
             System.Console.ForegroundColor <- old
 
+type IReporter = 
+    abstract member BeginGroup : ExampleDescriptor -> IReporter
+    abstract member ReportExample : ExampleDescriptor -> TestResultType -> IReporter
+    abstract member EndTestRun : unit -> obj
+    abstract member EndGroup : unit -> IReporter
+    abstract member BeginTestRun : unit -> IReporter 
 
 type Reporter<'T> = {
     BeginGroup : ExampleDescriptor -> 'T -> 'T
