@@ -18,12 +18,12 @@ module Configuration =
         }
 
 module RunnerHelper =
-    type ReporterWrapper = 
-        abstract member BeginGroup : ExampleDescriptor -> ReporterWrapper
-        abstract member ReportExample : ExampleDescriptor -> TestResultType -> ReporterWrapper
+    type IReporter = 
+        abstract member BeginGroup : ExampleDescriptor -> IReporter
+        abstract member ReportExample : ExampleDescriptor -> TestResultType -> IReporter
         abstract member EndTestRun : unit -> obj
-        abstract member EndGroup : unit -> ReporterWrapper
-        abstract member BeginTestRun : unit -> ReporterWrapper 
+        abstract member EndGroup : unit -> IReporter
+        abstract member BeginTestRun : unit -> IReporter 
 
     let createWrapper<'T> (reporter : Reporter<'T>) =
         let rec create (state:'T) =
@@ -32,7 +32,7 @@ module RunnerHelper =
             let endTestRun () = reporter.EndTestRun state :> obj
             let endGroup () = reporter.EndGroup state |> create
             let beginTestRun () = reporter.BeginTestRun () |> create
-            { new ReporterWrapper with
+            { new IReporter with
                 member __.BeginGroup x = beginGroup x
                 member __.ReportExample x r = reportExample x r
                 member __.EndTestRun () = endTestRun ()
@@ -86,8 +86,8 @@ module Runner =
         | ex -> Error ex
 
     let doRun exampleGroup =
-        let rec run groupStack (reporter:ReporterWrapper) =
-            let runExample (example:Example.T) (reporter:ReporterWrapper) =
+        let rec run groupStack (reporter:IReporter) =
+            let runExample (example:Example.T) (reporter:IReporter) =
                 { Example = example;
                   ContainingGroups = groupStack }
                 |> execExample
@@ -112,7 +112,7 @@ module Runner =
         |> ExampleGroup.filterGroups (cfg.Exclude >> not)
 
     let fromConfigWrapped cfg =
-        fun (reporter : ReporterWrapper) topLevelGroups ->
+        fun (reporter : IReporter) topLevelGroups ->
             let filteredGroups = 
                 topLevelGroups
                 |> filterGroupsFromConfig cfg
