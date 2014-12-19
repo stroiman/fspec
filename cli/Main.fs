@@ -37,7 +37,7 @@ open RunnerHelper
 
 let runExampleGroupsAndGetExitCode specs =
     let options = TreeReporterOptions.Default
-    let treeReporter = TreeReporter.create options |> createWrapper
+    let treeReporter = TreeReporter.Reporter(options)
     let exitCodeReporter = ExitCodeReporter()
     let reporter = wrapReporters [exitCodeReporter; treeReporter]
     Runner.runWithWrapper reporter specs |> ignore

@@ -140,18 +140,19 @@ module TreeReporter =
         sprintf "%d success, %d pending, %d failed\n" success pending failed |> printer DefaultColor
         report
 
-    let create (options : TreeReporterOptions.T) =
-        let printer = options.Printer
+    type Reporter(options:TreeReporterOptions.T) as self =
+        let mutable state = Zero
+        let reporter = self :> IReporter
+        let update f = 
+            state <- f state
+            reporter
         let success report = 
             let (_,_,failed) =  getSummary report
             failed = 0
 
-        {
-            BeginGroup  = beginGroup 
-            EndGroup = endGroup;
-            ReportExample = reportExample 
-            Success = success;
-            EndTestRun = printSummary options
-            BeginTestRun = fun () -> Zero 
-        }
-
+        interface IReporter with
+            member __.BeginGroup x = update (beginGroup x)
+            member __.EndGroup () = update endGroup
+            member __.ReportExample x r = update (reportExample x r)
+            member __.BeginTestRun () = update (fun _ -> Zero)
+            member __.EndTestRun () = printSummary options state :> obj

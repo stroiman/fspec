@@ -57,11 +57,10 @@ let rec wrapReporters (reporters:IReporter list) =
       member __.EndTestRun () = reporters |> List.map (fun y -> y.EndTestRun ()) :> obj
   }
 
-
-let runSpecsWithRunnerAndReporter runner reporter specs =
-    specs
-    |> runner reporter
-    |> reporter.Success
+//let runSpecsWithRunnerAndReporter runner (reporter : IReporter) specs =
+//    specs
+//    |> runner reporter
+//    |> reporter.Success
 
 let toExitCode result =
     match result with
@@ -69,12 +68,16 @@ let toExitCode result =
     | false -> 1
 
 let runSingleAssemblyWithConfig config assembly = 
-    let runner = Runner.fromConfig config
-    let reporter = TreeReporter.create TreeReporterOptions.Default
+    let runner = Runner.fromConfigWrapped config
+    let options = TreeReporterOptions.Default
+    let treeReporter = TreeReporter.Reporter(options)
+    let exitCodeReporter = ExitCodeReporter()
+    let reporter = wrapReporters [exitCodeReporter; treeReporter]
     assembly 
     |> getSpecsFromAssembly 
-    |> runSpecsWithRunnerAndReporter runner reporter
-    |> toExitCode
+    |> runner reporter
+    |> ignore
+    exitCodeReporter.getExitCode()
 
 let runSingleAssembly assembly = 
     let config = Configuration.defaultConfig
