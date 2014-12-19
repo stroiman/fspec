@@ -34,14 +34,6 @@ let runSpecsWithRunnerAndReporter runner reporter specs =
     |> runner reporter
     |> reporter.Success
 
-let runSpecsWithReporter reporter specs =
-    let runner = Runner.run
-    runSpecsWithRunnerAndReporter runner reporter specs
-
-let runSpecs specs = 
-    let reporter = TreeReporter.create TreeReporterOptions.Default
-    runSpecsWithReporter reporter specs
-
 let toExitCode result =
     match result with
     | true -> 0

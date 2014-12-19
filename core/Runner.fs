@@ -128,8 +128,3 @@ module Runner =
     let runWithWrapper reporter topLevelGroups =
         let runner = defaultConfig |> fromConfigWrapped
         topLevelGroups |> runner reporter
-
-    let run<'T> (reporter:Reporter<'T>) topLevelGroups : 'T =
-        let wrapper = createWrapper reporter
-        let result : obj = runWithWrapper wrapper topLevelGroups
-        result :?> 'T
