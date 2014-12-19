@@ -37,33 +37,35 @@ open RunnerHelper
 
 let createReporter () =
   let exitCode = ref 0
-  let rec createReporterWithState state =
+  let rec createReporterWithState state : ReporterWrapper =
     {
-       BeginGroup = (fun _ -> createReporterWithState state)
-       EndGroup = (fun _ -> createReporterWithState state)
-       ReportExample = (fun _ result ->
-        match result with
-        | Failure _ -> exitCode := 1
-        | Error _ -> exitCode := 1
-        | _ -> ()
-        createReporterWithState state)
-       BeginTestRun = (fun _ -> createReporterWithState true)
-       EndTestRun = (fun _ -> null)
+      new ReporterWrapper with
+        member __.BeginGroup g = createReporterWithState state
+        member __.EndGroup () = createReporterWithState state
+        member __.ReportExample _ result =
+          match result with
+            | Failure _ -> exitCode := 1
+            | Error _ -> exitCode := 1
+            | _ -> ()
+          createReporterWithState state
+        member __.BeginTestRun () = createReporterWithState true
+        member __.EndTestRun () = null
     }
   (createReporterWithState true, fun () -> !exitCode)
     
 let rec wrapReporters (reporters:ReporterWrapper list) =
   {
-    BeginGroup = fun x -> reporters |> List.map (fun (y:ReporterWrapper) -> y.BeginGroup x) |> wrapReporters
-    EndGroup= fun x -> reporters |> List.map (fun y -> y.EndGroup x) |> wrapReporters
-    ReportExample= fun x r -> reporters |> List.map (fun y -> y.ReportExample x r) |> wrapReporters
-    BeginTestRun= fun x -> reporters |> List.map (fun y -> y.BeginTestRun x) |> wrapReporters
-    EndTestRun= fun x -> reporters |> List.map (fun y -> y.EndTestRun x) :> obj
+    new ReporterWrapper with
+      member __.BeginGroup x = reporters |> List.map (fun (y:ReporterWrapper) -> y.BeginGroup x) |> wrapReporters
+      member __.EndGroup () = reporters |> List.map (fun y -> y.EndGroup ()) |> wrapReporters
+      member __.ReportExample x r = reporters |> List.map (fun y -> y.ReportExample x r) |> wrapReporters
+      member __.BeginTestRun () = reporters |> List.map (fun y -> y.BeginTestRun ()) |> wrapReporters
+      member __.EndTestRun () = reporters |> List.map (fun y -> y.EndTestRun ()) :> obj
   }
 
 let runExampleGroupsAndGetExitCode specs =
     let options = TreeReporterOptions.Default
-    let treeReporter = TreeReporter.create options |> ReporterWrapper.createWrapper
+    let treeReporter = TreeReporter.create options |> createWrapper
     let (exitCodeReporter,getExitCode) = createReporter ()
     let reporter = wrapReporters [exitCodeReporter; treeReporter]
     Runner.runWithWrapper reporter specs |> ignore

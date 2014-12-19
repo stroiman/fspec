@@ -18,28 +18,28 @@ module Configuration =
         }
 
 module RunnerHelper =
-    type ReporterWrapper = {
-        BeginGroup : ExampleDescriptor -> ReporterWrapper
-        ReportExample : ExampleDescriptor -> TestResultType -> ReporterWrapper
-        EndTestRun : unit -> obj
-        EndGroup : unit -> ReporterWrapper
-        BeginTestRun : unit -> ReporterWrapper }
-        with
-            static member createWrapper<'T> (reporter : Reporter<'T>) =
-                let rec create (state:'T) =
-                    let beginGroup desc = reporter.BeginGroup desc state |> create
-                    let reportExample desc result = reporter.ReportExample desc result state |> create
-                    let endTestRun () = reporter.EndTestRun state :> obj
-                    let endGroup () = reporter.EndGroup state |> create
-                    let beginTestRun () = reporter.BeginTestRun () |> create
-                    {
-                        BeginGroup = beginGroup
-                        ReportExample = reportExample
-                        EndTestRun = endTestRun
-                        EndGroup = endGroup
-                        BeginTestRun = beginTestRun
-                    }
-                reporter.BeginTestRun () |> create
+    type ReporterWrapper = 
+        abstract member BeginGroup : ExampleDescriptor -> ReporterWrapper
+        abstract member ReportExample : ExampleDescriptor -> TestResultType -> ReporterWrapper
+        abstract member EndTestRun : unit -> obj
+        abstract member EndGroup : unit -> ReporterWrapper
+        abstract member BeginTestRun : unit -> ReporterWrapper 
+
+    let createWrapper<'T> (reporter : Reporter<'T>) =
+        let rec create (state:'T) =
+            let beginGroup desc = reporter.BeginGroup desc state |> create
+            let reportExample desc result = reporter.ReportExample desc result state |> create
+            let endTestRun () = reporter.EndTestRun state :> obj
+            let endGroup () = reporter.EndGroup state |> create
+            let beginTestRun () = reporter.BeginTestRun () |> create
+            { new ReporterWrapper with
+                member __.BeginGroup x = beginGroup x
+                member __.ReportExample x r = reportExample x r
+                member __.EndTestRun () = endTestRun ()
+                member __.EndGroup () = endGroup ()
+                member __.BeginTestRun () = beginTestRun ()
+            }
+        reporter.BeginTestRun () |> create
 
 module Runner =
     open Configuration
@@ -86,8 +86,8 @@ module Runner =
         | ex -> Error ex
 
     let doRun exampleGroup =
-        let rec run groupStack reporter =
-            let runExample (example:Example.T) reporter =
+        let rec run groupStack (reporter:ReporterWrapper) =
+            let runExample (example:Example.T) (reporter:ReporterWrapper) =
                 { Example = example;
                   ContainingGroups = groupStack }
                 |> execExample
@@ -112,7 +112,7 @@ module Runner =
         |> ExampleGroup.filterGroups (cfg.Exclude >> not)
 
     let fromConfigWrapped cfg =
-        fun reporter topLevelGroups ->
+        fun (reporter : ReporterWrapper) topLevelGroups ->
             let filteredGroups = 
                 topLevelGroups
                 |> filterGroupsFromConfig cfg
@@ -125,7 +125,7 @@ module Runner =
     let fromConfig<'T> cfg =
         fun (reporter : Reporter<'T>) topLevelGroups ->
             let f = fromConfigWrapped cfg
-            let wrapper = ReporterWrapper.createWrapper reporter
+            let wrapper = createWrapper reporter
             let result = f wrapper topLevelGroups 
             result :?> 'T
             
@@ -137,6 +137,6 @@ module Runner =
         topLevelGroups |> runner reporter
 
     let run<'T> (reporter:Reporter<'T>) topLevelGroups : 'T =
-        let wrapper = ReporterWrapper.createWrapper reporter
+        let wrapper = createWrapper reporter
         let result : obj = runWithWrapper wrapper topLevelGroups
         result :?> 'T
