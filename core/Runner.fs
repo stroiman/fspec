@@ -23,8 +23,7 @@ module RunnerHelper =
         ReportExample : ExampleDescriptor -> TestResultType -> ReporterWrapper
         EndTestRun : unit -> obj
         EndGroup : unit -> ReporterWrapper
-        BeginTestRun : unit -> ReporterWrapper
-        Success : unit -> bool }
+        BeginTestRun : unit -> ReporterWrapper }
         with
             static member createWrapper<'T> (reporter : Reporter<'T>) =
                 let rec create (state:'T) =
@@ -33,14 +32,12 @@ module RunnerHelper =
                     let endTestRun () = reporter.EndTestRun state :> obj
                     let endGroup () = reporter.EndGroup state |> create
                     let beginTestRun () = reporter.BeginTestRun () |> create
-                    let success () = reporter.Success state
                     {
                         BeginGroup = beginGroup
                         ReportExample = reportExample
                         EndTestRun = endTestRun
                         EndGroup = endGroup
                         BeginTestRun = beginTestRun
-                        Success = success
                     }
                 reporter.BeginTestRun () |> create
 

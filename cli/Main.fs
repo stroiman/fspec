@@ -49,7 +49,6 @@ let createReporter () =
         createReporterWithState state)
        BeginTestRun = (fun _ -> createReporterWithState true)
        EndTestRun = (fun _ -> null)
-       Success = (fun _ -> true)
     }
   (createReporterWithState true, fun () -> !exitCode)
     
@@ -60,7 +59,6 @@ let rec wrapReporters (reporters:ReporterWrapper list) =
     ReportExample= fun x r -> reporters |> List.map (fun y -> y.ReportExample x r) |> wrapReporters
     BeginTestRun= fun x -> reporters |> List.map (fun y -> y.BeginTestRun x) |> wrapReporters
     EndTestRun= fun x -> reporters |> List.map (fun y -> y.EndTestRun x) :> obj
-    Success = fun _ -> true
   }
 
 let runExampleGroupsAndGetExitCode specs =
