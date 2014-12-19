@@ -49,5 +49,5 @@ let withAnExample = anExample |> ExampleGroup.addExample
 
 // Run helper
 let run exampleGroup = 
-    let reporter = Helpers.TestReporter.instance
-    Runner.run reporter [exampleGroup]
+    let reporter = Helpers.TestReporter.Report()
+    Runner.runWithWrapper reporter [exampleGroup] :?> Helpers.TestReporter.T

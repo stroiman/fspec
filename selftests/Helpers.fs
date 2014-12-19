@@ -14,13 +14,16 @@ module TestReporter =
 
     type T = { CallList: ReportType list }
     
-    let appendToReport n r = { r with CallList = n::r.CallList }
-
-    let instance = {
-        BeginGroup = fun grp -> grp.Name |> BeginGroup |> appendToReport
-        ReportExample = fun ex res -> (ex.Name, res) |> Example |> appendToReport
-        EndTestRun = fun r -> r
-        EndGroup = EndGroup |> appendToReport
-        Success = fun _ -> true
-        BeginTestRun = fun _ -> { CallList = [] } 
-    }
+    type Report () as self=
+        let r = self :> IReporter
+        let mutable state = { CallList = [] }
+        let append x =
+            state <- { state with CallList = x::state.CallList }
+            r
+        
+        interface IReporter with
+            member __.BeginGroup x = x.Name |> BeginGroup |> append
+            member __.EndGroup () = EndGroup |> append
+            member __.ReportExample x r = (x.Name, r) |> Example |> append
+            member __.BeginTestRun () = r
+            member __.EndTestRun () = state :> obj
