@@ -12,7 +12,7 @@ open CustomMatchers
 let aFailureWithMessage message = Failure {Message=message}
 let aFailure = aFailureWithMessage "dummy"
 
-let getSubject<'T> (ctx:TestContext) = ctx.GetSubject<Reporter<'T>> ()
+let getSubject<'T when 'T :> IReporter> (ctx:TestContext) = ctx.GetSubject<'T> () :> IReporter
 
 type TestContext with
     member ctx.Builder = ctx.GetOrDefault "builder" (fun _ -> StringBuilder())
@@ -21,51 +21,15 @@ type TestContext with
         let chars = [|"\r";"\n"|]
         ctx.Builder.ToString().Split(chars, StringSplitOptions.RemoveEmptyEntries);
 
-let setupReport f = before <| fun ctx ->
-    let r = getSubject<TreeReporter.T> ctx
-    r.BeginTestRun() |> (f r) |> r.EndTestRun |> ignore
+let setupReport (f : IReporter -> IReporter) = before <| fun ctx ->
+    let r = getSubject<TreeReporter.Reporter> ctx
+    r.BeginTestRun() |> f |> (fun r -> r.EndTestRun ()) |> ignore
 
 let anExampleNamed name = { Name = name; MetaData = TestDataMap.Zero }
 let anExample = anExampleNamed "Dummy"
 let anExampleGroupNamed = anExampleNamed
 
-let itBehavesLikeATestReporter<'T> () =
-    let getSubject = getSubject<'T>
 
-    context "reporter" [
-        context "With success reported" [
-            it "Is a success" <| fun c ->
-                let r = getSubject c
-                r.BeginTestRun()
-                |> r.ReportExample anExample Success
-                |> r.Success |> should be.True
-        ]
-            
-        context "With pendings reported" [
-            it "Is not a failure" <| fun c ->
-                let r = getSubject c
-                r.BeginTestRun()
-                |> r.ReportExample anExample Pending
-                |> r.Success |> should be.True
-        ]
-
-        context "With errors reported" [
-            it "Is a failure" <| fun c ->
-                let r = getSubject c
-                r.BeginTestRun()
-                |> r.ReportExample anExample (Error(System.Exception()))
-                |> r.Success |> should be.False
-        ]
-            
-        context "With failures reported" [
-            it "Is a failure" <| fun c ->
-                let r = getSubject c
-                r.BeginTestRun()
-                |> r.ReportExample anExample (aFailure)
-                |> r.Success |> should be.False
-        ]
-    ]
-    
 let specs =
     describe "TestReport" [
         describe "ListHelper" [
@@ -98,9 +62,7 @@ let specs =
                     { TreeReporterOptions.Default with 
                           Printer = printer
                           PrintSuccess = false}
-                TreeReporter.create options
-
-            itBehavesLikeATestReporter<TreeReporter.T>()
+                TreeReporter.Reporter options
 
             context "With no errors reported" [
                 setupReport (fun r -> r.ReportExample anExample Success)
@@ -126,9 +88,9 @@ let specs =
 
             context "With failure 'Failure msg' reported" [
                 setupReport (fun r ->
-                    r.BeginGroup (anExampleGroupNamed "Group")
-                    >> r.ReportExample (anExampleNamed "Test1") (aFailureWithMessage "Failure msg")
-                    >> r.EndGroup)
+                    r.BeginGroup (anExampleGroupNamed "Group") 
+                    |> fun r -> r.ReportExample (anExampleNamed "Test1") (aFailureWithMessage "Failure msg")
+                    |> fun r -> r.EndGroup ())
 
                 it "writes more than one line" (fun c ->
                     c.Lines.Length |> should (be.greaterThan 1))
@@ -149,7 +111,7 @@ let specs =
             context "With two errors reported" [
                 setupReport (fun r ->
                     r.ReportExample (anExampleNamed "x1") aFailure
-                    >> r.ReportExample (anExampleNamed "x2") aFailure)
+                    |> fun r -> r.ReportExample (anExampleNamed "x2") aFailure)
 
                 it "Does print errors" <| fun c ->
                     c?builder.ToString() |> should (be.string.matching "2 failed")
@@ -164,7 +126,7 @@ let specs =
             context "with two examples, one fails" [
                 setupReport (fun r ->
                     r.ReportExample (anExampleNamed "Test1") Success
-                    >> r.ReportExample (anExampleNamed "Test2") aFailure)
+                    |> fun r -> r.ReportExample (anExampleNamed "Test2") aFailure)
 
                 it "does not print 'Test1'" <| fun c ->
                     c.Lines.ShouldNot (haveLineMatching "Test1")
@@ -176,8 +138,8 @@ let specs =
             context "One example group with two failing tests" [
                 setupReport (fun r ->
                     r.BeginGroup (anExampleGroupNamed "group")
-                    >> r.ReportExample anExample aFailure
-                    >> r.ReportExample anExample aFailure)
+                    |> fun r -> r.ReportExample anExample aFailure
+                    |> fun r -> r.ReportExample anExample aFailure)
                 
                 it "displays the group name only once" <| fun c ->
                     c.Lines.Should (have.exactly 1 (be.string.matching "group"))

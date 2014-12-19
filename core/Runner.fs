@@ -17,8 +17,26 @@ module Configuration =
             Exclude = fun x -> false
         }
 
+module RunnerHelper =
+    let createWrapper<'T> (reporter : Reporter<'T>) =
+        let rec create (state:'T) =
+            let beginGroup desc = reporter.BeginGroup desc state |> create
+            let reportExample desc result = reporter.ReportExample desc result state |> create
+            let endTestRun () = reporter.EndTestRun state :> obj
+            let endGroup () = reporter.EndGroup state |> create
+            let beginTestRun () = reporter.BeginTestRun () |> create
+            { new IReporter with
+                member __.BeginGroup x = beginGroup x
+                member __.ReportExample x r = reportExample x r
+                member __.EndTestRun () = endTestRun ()
+                member __.EndGroup () = endGroup ()
+                member __.BeginTestRun () = beginTestRun ()
+            }
+        reporter.BeginTestRun () |> create
+
 module Runner =
     open Configuration
+    open RunnerHelper
 
     type SingleExample = {
         Example : Example.T
@@ -60,22 +78,20 @@ module Runner =
         | AssertionError(e) -> Failure e
         | ex -> Error ex
 
-    let doRun exampleGroup reporter report =
-        let rec run groupStack report =
-            let runExample (example:Example.T) =
+    let doRun exampleGroup =
+        let rec run groupStack (reporter:IReporter) =
+            let runExample (example:Example.T) (reporter:IReporter) =
                 { Example = example;
                   ContainingGroups = groupStack }
                 |> execExample
                 |> reporter.ReportExample (example |> Example.getDescriptor)
 
             let grp = groupStack |> List.head
-            report 
-            |> reporter.BeginGroup (grp |> ExampleGroup.getDescriptor)
+            reporter.BeginGroup (grp |> ExampleGroup.getDescriptor)
             |> ExampleGroup.foldExamples (fun rep ex -> runExample ex rep) grp
             |> ExampleGroup.foldChildGroups (fun rep grp -> run (grp::groupStack) rep) grp
-            |> reporter.EndGroup 
-
-        run [exampleGroup] report
+            |> fun x -> x.EndGroup()
+        run [exampleGroup]
 
     let filterGroupsFromConfig cfg topLevelGroups =
         let filterExamples f groups =
@@ -88,19 +104,27 @@ module Runner =
         |> filterExamples cfg.Include
         |> ExampleGroup.filterGroups (cfg.Exclude >> not)
 
-    let fromConfig cfg =
-        fun reporter topLevelGroups ->
+    let fromConfigWrapped cfg =
+        fun (reporter : IReporter) topLevelGroups ->
             let filteredGroups = 
                 topLevelGroups
                 |> filterGroupsFromConfig cfg
-            let fold r = List.fold (fun r g -> doRun g reporter r) r filteredGroups
-            reporter.BeginTestRun ()
-            |> fold
-            |> reporter.EndTestRun
+            let fold r = List.fold (fun r g -> doRun g r) r filteredGroups
+            let r = 
+                reporter.BeginTestRun ()
+                |> fold
+            r.EndTestRun()
+
+    let fromConfig<'T> cfg =
+        fun (reporter : Reporter<'T>) topLevelGroups ->
+            let f = fromConfigWrapped cfg
+            let wrapper = createWrapper reporter
+            let result = f wrapper topLevelGroups 
+            result :?> 'T
             
     /// Runs a collection of top level group specs, using a specific
     /// reporter to report progress. The generated report is returned
     /// to the caller.
-    let run reporter topLevelGroups =
-        let runner = defaultConfig |> fromConfig
+    let runWithWrapper reporter topLevelGroups =
+        let runner = defaultConfig |> fromConfigWrapped
         topLevelGroups |> runner reporter

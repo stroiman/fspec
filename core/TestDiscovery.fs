@@ -29,18 +29,38 @@ let getSpecsFromAssembly (assembly : Assembly) =
         |> List.ofSeq
     specs
 
-let runSpecsWithRunnerAndReporter runner reporter specs =
-    specs
-    |> runner reporter
-    |> reporter.Success
+type ExitCodeReporter() as self =
+  let mutable exitCode = 0
+  let x = self :> IReporter
 
-let runSpecsWithReporter reporter specs =
-    let runner = Runner.run
-    runSpecsWithRunnerAndReporter runner reporter specs
+  member __.getExitCode () = exitCode
 
-let runSpecs specs = 
-    let reporter = TreeReporter.create TreeReporterOptions.Default
-    runSpecsWithReporter reporter specs
+  interface IReporter with
+    member __.BeginGroup _ = x
+    member __.EndGroup () = x
+    member __.ReportExample _ result = 
+        match result with
+        | Failure x -> exitCode <- 1
+        | Error x -> exitCode <- 1
+        | _ -> ()
+        x
+    member __.BeginTestRun () = x
+    member __.EndTestRun () = null
+    
+let rec wrapReporters (reporters:IReporter list) =
+  {
+    new IReporter with
+      member __.BeginGroup x = reporters |> List.map (fun y -> y.BeginGroup x) |> wrapReporters
+      member __.EndGroup () = reporters |> List.map (fun y -> y.EndGroup ()) |> wrapReporters
+      member __.ReportExample x r = reporters |> List.map (fun y -> y.ReportExample x r) |> wrapReporters
+      member __.BeginTestRun () = reporters |> List.map (fun y -> y.BeginTestRun ()) |> wrapReporters
+      member __.EndTestRun () = reporters |> List.map (fun y -> y.EndTestRun ()) :> obj
+  }
+
+//let runSpecsWithRunnerAndReporter runner (reporter : IReporter) specs =
+//    specs
+//    |> runner reporter
+//    |> reporter.Success
 
 let toExitCode result =
     match result with
@@ -48,12 +68,16 @@ let toExitCode result =
     | false -> 1
 
 let runSingleAssemblyWithConfig config assembly = 
-    let runner = Runner.fromConfig config
-    let reporter = TreeReporter.create TreeReporterOptions.Default
+    let runner = Runner.fromConfigWrapped config
+    let options = TreeReporterOptions.Default
+    let treeReporter = TreeReporter.Reporter(options)
+    let exitCodeReporter = ExitCodeReporter()
+    let reporter = wrapReporters [exitCodeReporter; treeReporter]
     assembly 
     |> getSpecsFromAssembly 
-    |> runSpecsWithRunnerAndReporter runner reporter
-    |> toExitCode
+    |> runner reporter
+    |> ignore
+    exitCodeReporter.getExitCode()
 
 let runSingleAssembly assembly = 
     let config = Configuration.defaultConfig

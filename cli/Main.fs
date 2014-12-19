@@ -32,6 +32,17 @@ let parseArguments args =
     | false -> Fail (options.GetUsage())
     | true -> Success { AssemblyFiles = List.ofSeq options.AssemblyFiles }
 
+
+open RunnerHelper
+
+let runExampleGroupsAndGetExitCode specs =
+    let options = TreeReporterOptions.Default
+    let treeReporter = TreeReporter.Reporter(options)
+    let exitCodeReporter = ExitCodeReporter()
+    let reporter = wrapReporters [exitCodeReporter; treeReporter]
+    Runner.runWithWrapper reporter specs |> ignore
+    exitCodeReporter.getExitCode()
+
 [<EntryPoint>]
 let main args =
     match parseArguments args with
@@ -39,10 +50,7 @@ let main args =
         printfn "%s" msg
         1
     | Success parsedArgs ->
-        let options = TreeReporterOptions.Default
-        let reporter = TreeReporter.create options
         parsedArgs.AssemblyFiles
         |> Seq.map (fun assemblyName -> Assembly.LoadFrom(assemblyName))
         |> Seq.collect getSpecsFromAssembly
-        |> runSpecsWithReporter reporter
-        |> toExitCode
+        |> runExampleGroupsAndGetExitCode

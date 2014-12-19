@@ -63,6 +63,7 @@
     <Compile Include="QuotationExampleSpecs.fs" />
     <Compile Include="CommandLineParserSpecs.fs" />
     <Compile Include="TestContextSpecs.fs" />
+    <Compile Include="IntegrationTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">

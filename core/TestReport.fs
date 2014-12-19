@@ -29,6 +29,12 @@ module Helper =
         finally
             System.Console.ForegroundColor <- old
 
+type IReporter = 
+    abstract member BeginGroup : ExampleDescriptor -> IReporter
+    abstract member ReportExample : ExampleDescriptor -> TestResultType -> IReporter
+    abstract member EndTestRun : unit -> obj
+    abstract member EndGroup : unit -> IReporter
+    abstract member BeginTestRun : unit -> IReporter 
 
 type Reporter<'T> = {
     BeginGroup : ExampleDescriptor -> 'T -> 'T
@@ -61,11 +67,29 @@ module TreeReporter =
         Groups = []
         ExecutedExamples = [] }
 
-    let create (options : TreeReporterOptions.T) =
+    let result ex = ex.Result
+    let beginGroup exampleGroup report =
+        { report with Groups = exampleGroup :: report.Groups }
+
+    let endGroup report = { report with Groups = report.Groups.Tail }
+
+    let reportExample example result report =
+        let executedExample = 
+            { Example = example; ContainingGroups = report.Groups; Result = result }
+        { report with ExecutedExamples = executedExample :: report.ExecutedExamples }
+
+    let getSummary report =
+        let folder (success,pending,fail) = function
+            | Failure _ | Error _ -> (success,pending,fail+1)
+            | Pending -> (success,pending+1,fail)
+            | Success -> (success+1,pending,fail)
+        report.ExecutedExamples |> 
+        List.map result |> 
+        List.fold folder (0,0,0)
+
+    let printSummary (options:TreeReporterOptions.T) report =
         let printer = options.Printer
         let exampleName x = x.Example.Name
-        let result ex = ex.Result
-
         let printFailedExamples executedExamples =
             let rec print indent prevGroups executedExamples = 
                 match executedExamples with
@@ -107,45 +131,28 @@ module TreeReporter =
             |> List.filter filter
             |> List.rev
             |> (print [] [])
+        let (success,pending,failed) =  getSummary report
+        match (failed,pending) with
+        | (0,0) -> ()
+        | (0,_) -> "There are pending examples: \n" |> printer Yellow
+        | _ -> "There are failed examples: \n" |> printer Red
+        report.ExecutedExamples |> printFailedExamples
+        sprintf "%d success, %d pending, %d failed\n" success pending failed |> printer DefaultColor
+        report
 
-        let beginGroup exampleGroup report =
-            { report with Groups = exampleGroup :: report.Groups }
-
-        let endGroup report = { report with Groups = report.Groups.Tail }
-        
-        let getSummary report =
-            let folder (success,pending,fail) = function
-                | Failure _ | Error _ -> (success,pending,fail+1)
-                | Pending -> (success,pending+1,fail)
-                | Success -> (success+1,pending,fail)
-            report.ExecutedExamples |> 
-            List.map result |> 
-            List.fold folder (0,0,0)
-
-        let printSummary report =
-            let (success,pending,failed) =  getSummary report
-            match (failed,pending) with
-            | (0,0) -> ()
-            | (0,_) -> "There are pending examples: \n" |> printer Yellow
-            | _ -> "There are failed examples: \n" |> printer Red
-            report.ExecutedExamples |> printFailedExamples
-            sprintf "%d success, %d pending, %d failed\n" success pending failed |> printer DefaultColor
-            report
-
-        let reportExample example result report =
-            let executedExample = 
-                { Example = example; ContainingGroups = report.Groups; Result = result }
-            { report with ExecutedExamples = executedExample :: report.ExecutedExamples }
+    type Reporter(options:TreeReporterOptions.T) as self =
+        let mutable state = Zero
+        let reporter = self :> IReporter
+        let update f = 
+            state <- f state
+            reporter
         let success report = 
             let (_,_,failed) =  getSummary report
             failed = 0
 
-        {
-            BeginGroup  = beginGroup 
-            EndGroup = endGroup;
-            ReportExample = reportExample 
-            Success = success;
-            EndTestRun = printSummary 
-            BeginTestRun = fun () -> Zero 
-        }
-
+        interface IReporter with
+            member __.BeginGroup x = update (beginGroup x)
+            member __.EndGroup () = update endGroup
+            member __.ReportExample x r = update (reportExample x r)
+            member __.BeginTestRun () = update (fun _ -> Zero)
+            member __.EndTestRun () = printSummary options state :> obj
