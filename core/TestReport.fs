@@ -67,11 +67,29 @@ module TreeReporter =
         Groups = []
         ExecutedExamples = [] }
 
-    let create (options : TreeReporterOptions.T) =
+    let result ex = ex.Result
+    let beginGroup exampleGroup report =
+        { report with Groups = exampleGroup :: report.Groups }
+
+    let endGroup report = { report with Groups = report.Groups.Tail }
+
+    let reportExample example result report =
+        let executedExample = 
+            { Example = example; ContainingGroups = report.Groups; Result = result }
+        { report with ExecutedExamples = executedExample :: report.ExecutedExamples }
+
+    let getSummary report =
+        let folder (success,pending,fail) = function
+            | Failure _ | Error _ -> (success,pending,fail+1)
+            | Pending -> (success,pending+1,fail)
+            | Success -> (success+1,pending,fail)
+        report.ExecutedExamples |> 
+        List.map result |> 
+        List.fold folder (0,0,0)
+
+    let printSummary (options:TreeReporterOptions.T) report =
         let printer = options.Printer
         let exampleName x = x.Example.Name
-        let result ex = ex.Result
-
         let printFailedExamples executedExamples =
             let rec print indent prevGroups executedExamples = 
                 match executedExamples with
@@ -113,35 +131,17 @@ module TreeReporter =
             |> List.filter filter
             |> List.rev
             |> (print [] [])
+        let (success,pending,failed) =  getSummary report
+        match (failed,pending) with
+        | (0,0) -> ()
+        | (0,_) -> "There are pending examples: \n" |> printer Yellow
+        | _ -> "There are failed examples: \n" |> printer Red
+        report.ExecutedExamples |> printFailedExamples
+        sprintf "%d success, %d pending, %d failed\n" success pending failed |> printer DefaultColor
+        report
 
-        let beginGroup exampleGroup report =
-            { report with Groups = exampleGroup :: report.Groups }
-
-        let endGroup report = { report with Groups = report.Groups.Tail }
-        
-        let getSummary report =
-            let folder (success,pending,fail) = function
-                | Failure _ | Error _ -> (success,pending,fail+1)
-                | Pending -> (success,pending+1,fail)
-                | Success -> (success+1,pending,fail)
-            report.ExecutedExamples |> 
-            List.map result |> 
-            List.fold folder (0,0,0)
-
-        let printSummary report =
-            let (success,pending,failed) =  getSummary report
-            match (failed,pending) with
-            | (0,0) -> ()
-            | (0,_) -> "There are pending examples: \n" |> printer Yellow
-            | _ -> "There are failed examples: \n" |> printer Red
-            report.ExecutedExamples |> printFailedExamples
-            sprintf "%d success, %d pending, %d failed\n" success pending failed |> printer DefaultColor
-            report
-
-        let reportExample example result report =
-            let executedExample = 
-                { Example = example; ContainingGroups = report.Groups; Result = result }
-            { report with ExecutedExamples = executedExample :: report.ExecutedExamples }
+    let create (options : TreeReporterOptions.T) =
+        let printer = options.Printer
         let success report = 
             let (_,_,failed) =  getSummary report
             failed = 0
@@ -151,7 +151,7 @@ module TreeReporter =
             EndGroup = endGroup;
             ReportExample = reportExample 
             Success = success;
-            EndTestRun = printSummary 
+            EndTestRun = printSummary options
             BeginTestRun = fun () -> Zero 
         }
 
