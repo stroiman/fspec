@@ -29,6 +29,35 @@ let getSpecsFromAssembly (assembly : Assembly) =
         |> List.ofSeq
     specs
 
+type ExitCodeReporter() as self =
+  let mutable exitCode = 0
+  let x = self :> IReporter
+
+  member __.getExitCode () = exitCode
+
+  interface IReporter with
+    member __.BeginGroup _ = x
+    member __.EndGroup () = x
+    member __.ReportExample _ result = 
+        match result with
+        | Failure x -> exitCode <- 1
+        | Error x -> exitCode <- 1
+        | _ -> ()
+        x
+    member __.BeginTestRun () = x
+    member __.EndTestRun () = null
+    
+let rec wrapReporters (reporters:IReporter list) =
+  {
+    new IReporter with
+      member __.BeginGroup x = reporters |> List.map (fun y -> y.BeginGroup x) |> wrapReporters
+      member __.EndGroup () = reporters |> List.map (fun y -> y.EndGroup ()) |> wrapReporters
+      member __.ReportExample x r = reporters |> List.map (fun y -> y.ReportExample x r) |> wrapReporters
+      member __.BeginTestRun () = reporters |> List.map (fun y -> y.BeginTestRun ()) |> wrapReporters
+      member __.EndTestRun () = reporters |> List.map (fun y -> y.EndTestRun ()) :> obj
+  }
+
+
 let runSpecsWithRunnerAndReporter runner reporter specs =
     specs
     |> runner reporter
