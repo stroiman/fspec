@@ -32,7 +32,7 @@ type MatchOf<'T> =
         ]
 
     static member ShouldFailWith message =
-        it "fails when used with 'should'" (fun ctx ->
+        it (sprintf "fails with message '%s' when used with 'should'" message) (fun ctx ->
             let test = MatchOf<'T>.createMatcherTest ctx should
             test.Should (failWithAssertionError message))
 
@@ -214,7 +214,7 @@ let specs = [
         ]
 
         ("matcher", be.ofType<int>() ) **>
-        describe "be.ofType<'T> matcher" [
+        describe "be.ofType<int> matcher" [
             ("actual", 42) **>
             context "when value is an int" [
                 MatchOf<obj>.ShouldPass
