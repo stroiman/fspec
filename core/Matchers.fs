@@ -67,6 +67,18 @@ let createBoolMatcher<'T> (f : 'T -> bool) (shouldMsg : string) =
 
 let createSimpleMatcher f = createBoolMatcher f "FAIL"
         
+let ( &&& ) (a:Matcher<'a>) (b:Matcher<'a>) =
+    let f actual =
+        let x = a.ApplyActual id actual
+        let y = b.ApplyActual id actual
+        match (x,y) with
+        | MatchSuccess _, MatchSuccess _ -> MatchSuccess actual
+        | _ -> MatchFail actual
+    createMatcher f 
+        (sprintf "%s and %s" 
+            a.ExpectationMsgForShould
+            b.ExpectationMsgForShould)
+
 let equal expected =
     createBoolMatcher
         (fun a -> a = expected)
