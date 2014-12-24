@@ -88,6 +88,11 @@ module be =
             (fun a -> a > expected)
             (sprintf "be greater than %A" expected)
 
+    let lessThan expected =
+        createBoolMatcher
+            (fun a -> a < expected)
+            (sprintf "be greater than %A" expected)
+
     let True =
         createBoolMatcher 
             (fun actual -> actual = true) 

@@ -102,6 +102,24 @@ let specs = [
             ]
         ]
 
+        ("matcher", be.lessThan 42) **>
+        describe "be.lessThan matcher" [
+            ("actual", 41) **>
+            context "when actual is less than expected" [
+                MatchOf<int>.ShouldPass
+            ]
+            
+            ("actual", 42) **>
+            context "when actual is equal to expected" [
+                MatchOf<int>.ShouldFail
+            ]
+
+            ("actual", 43) **>
+            context "when actual is equal to expected" [
+                MatchOf<int>.ShouldFail
+            ]
+        ]
+
         ("matcher", be.greaterThan 42) **>
         describe "be.greaterThan matcher" [
             ("actual", 41) **>
