@@ -16,7 +16,7 @@ let haveContextData name valueMatcher =
     createCompoundMatcher 
         valueMatcher
         (fun (x:TestContext) -> x.Get name)
-        (sprintf "have data key %A with value %s" name (valueMatcher.FailureMsgForShould))
+        (sprintf "have data key %A with value %s" name (valueMatcher.ExpectationMsgForShould))
         
 let specs =
     describe "TestContext" [

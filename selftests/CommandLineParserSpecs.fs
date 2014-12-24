@@ -16,15 +16,18 @@ module Helpers =
             function
             | Success x -> matcher.ApplyActual id x
             | Fail x -> MatchResult.MatchFail x
-        createMatcher f (sprintf "be success %s" matcher.FailureMsgForShould)
+        createMatcher f (sprintf "be success %s" matcher.ExpectationMsgForShould)
 
-    let withAssemblies m = createCompoundMatcher m (fun x -> x.AssemblyFiles) (sprintf "with AssemblyFiles %s" m.FailureMsgForShould)
+    let withAssemblies m = 
+      createCompoundMatcher m 
+        (fun x -> x.AssemblyFiles)
+        (sprintf "with AssemblyFiles %s" m.ExpectationMsgForShould)
 
     let printMessage (m:Matcher<string>) =
         let f = function
                 | Success x -> MatchResult.MatchFail x
                 | Fail x -> m.ApplyActual id x
-        createMatcher f (sprintf "print message %s" m.FailureMsgForShould)
+        createMatcher f (sprintf "print message %s" m.ExpectationMsgForShould)
 open Helpers
 
 let mainSpecs =
