@@ -57,11 +57,6 @@ let rec wrapReporters (reporters:IReporter list) =
       member __.EndTestRun () = reporters |> List.map (fun y -> y.EndTestRun ()) :> obj
   }
 
-//let runSpecsWithRunnerAndReporter runner (reporter : IReporter) specs =
-//    specs
-//    |> runner reporter
-//    |> reporter.Success
-
 let toExitCode result =
     match result with
     | true -> 0
