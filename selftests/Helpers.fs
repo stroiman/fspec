@@ -25,5 +25,4 @@ module TestReporter =
             member __.BeginGroup x = x.Name |> BeginGroup |> append
             member __.EndGroup () = EndGroup |> append
             member __.ReportExample x r = (x.Name, r) |> Example |> append
-            member __.BeginTestRun () = r
             member __.EndTestRun () = state :> obj

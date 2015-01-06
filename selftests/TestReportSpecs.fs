@@ -23,7 +23,7 @@ type TestContext with
 
 let setupReport (f : IReporter -> IReporter) = before <| fun ctx ->
     let r = getSubject<TreeReporter.Reporter> ctx
-    r.BeginTestRun() |> f |> (fun r -> r.EndTestRun ()) |> ignore
+    r |> f |> (fun r -> r.EndTestRun ()) |> ignore
 
 let anExampleNamed name = { Name = name; MetaData = TestDataMap.Zero }
 let anExample = anExampleNamed "Dummy"

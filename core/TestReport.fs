@@ -34,7 +34,6 @@ type IReporter =
     abstract member ReportExample : ExampleDescriptor -> TestResultType -> IReporter
     abstract member EndTestRun : unit -> obj
     abstract member EndGroup : unit -> IReporter
-    abstract member BeginTestRun : unit -> IReporter 
 
 type Reporter<'T> = {
     BeginGroup : ExampleDescriptor -> 'T -> 'T
@@ -154,5 +153,4 @@ module TreeReporter =
             member __.BeginGroup x = update (beginGroup x)
             member __.EndGroup () = update endGroup
             member __.ReportExample x r = update (reportExample x r)
-            member __.BeginTestRun () = update (fun _ -> Zero)
             member __.EndTestRun () = printSummary options state :> obj

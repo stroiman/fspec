@@ -30,7 +30,6 @@ module RunnerHelper =
                 member __.ReportExample x r = reportExample x r
                 member __.EndTestRun () = endTestRun ()
                 member __.EndGroup () = endGroup ()
-                member __.BeginTestRun () = beginTestRun ()
             }
         reporter.BeginTestRun () |> create
 
@@ -110,9 +109,7 @@ module Runner =
                 topLevelGroups
                 |> filterGroupsFromConfig cfg
             let fold r = List.fold (fun r g -> doRun g r) r filteredGroups
-            let r = 
-                reporter.BeginTestRun ()
-                |> fold
+            let r = reporter |> fold
             r.EndTestRun()
 
     let fromConfig<'T> cfg =

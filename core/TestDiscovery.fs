@@ -44,7 +44,6 @@ type ExitCodeReporter() as self =
         | Error x -> exitCode <- 1
         | _ -> ()
         x
-    member __.BeginTestRun () = x
     member __.EndTestRun () = null
     
 let rec wrapReporters (reporters:IReporter list) =
@@ -53,7 +52,6 @@ let rec wrapReporters (reporters:IReporter list) =
       member __.BeginGroup x = reporters |> List.map (fun y -> y.BeginGroup x) |> wrapReporters
       member __.EndGroup () = reporters |> List.map (fun y -> y.EndGroup ()) |> wrapReporters
       member __.ReportExample x r = reporters |> List.map (fun y -> y.ReportExample x r) |> wrapReporters
-      member __.BeginTestRun () = reporters |> List.map (fun y -> y.BeginTestRun ()) |> wrapReporters
       member __.EndTestRun () = reporters |> List.map (fun y -> y.EndTestRun ()) :> obj
   }
 
