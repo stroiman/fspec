@@ -7,8 +7,8 @@ open FSpec.Formatters
 
 let run () =
     use stream = new System.IO.MemoryStream()
-    let formatter = JUnitFormatter(stream)
-    formatter.Run()
+    let formatter = JUnitFormatter(stream) :> IReporter
+    formatter.EndTestRun () |> ignore
     System.Text.Encoding.UTF8.GetString (stream.ToArray())
 
 let specs =

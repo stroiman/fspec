@@ -3,12 +3,13 @@ open System.Xml.Linq
 
 let xname = XName.Get
 
-type JUnitFormatter (stream:System.IO.Stream) =
+type JUnitFormatter (stream:System.IO.Stream) as self =
   let write (doc:XDocument) =
     let settings = System.Xml.XmlWriterSettings()
     settings.Encoding <- System.Text.UTF8Encoding(false)
     use writer = System.Xml.XmlWriter.Create(stream, settings)
     doc.WriteTo(writer)
+  let x = self :> IReporter
 
   member __.Run () = 
     let name = XAttribute(xname "name", "name")
@@ -17,3 +18,11 @@ type JUnitFormatter (stream:System.IO.Stream) =
     let elms = XElement(xname "testsuites", suite) :> obj
     let doc = XDocument( XDeclaration("1.0", "UTF-8", "yes"), [| elms |])
     write doc
+
+  interface IReporter with
+    member __.BeginGroup _ = x
+    member __.EndGroup () = x
+    member __.ReportExample _ _ = x
+    member self.EndTestRun () = 
+        self.Run ()
+        null :> obj
