@@ -11,6 +11,9 @@ type Options () =
     [<ValueList(typeof<L<string>>)>]
     member val AssemblyFiles : L<string> = (null :> L<string>) with get, set
 
+    [<Option("hide-successful-tests", HelpText = "Don't write successful tests to the console")>]
+    member val HideSuccessfulTests = false with get, set
+
     [<HelpOption>]
     member this.GetUsage () : string = //HelpText.AutoBuild(this).ToString()
       let t = new HelpText()
@@ -18,7 +21,12 @@ type Options () =
       t.Heading <- HeadingInfo("FSpec").ToString()
       t.ToString()
 
+type ReportingLevel =
+    | ShowAllTests
+    | HideSuccesfullTests
+
 type ParsedArguments = {
+    ConsoleOutput : ReportingLevel
     AssemblyFiles : string list }
 
 type ArgumentParseResult =
@@ -28,9 +36,16 @@ type ArgumentParseResult =
 let parseArguments args =
     let options = Options()
     let parser = new CommandLine.Parser()
+
     match parser.ParseArguments(args, options) with
     | false -> Fail (options.GetUsage())
-    | true -> Success { AssemblyFiles = List.ofSeq options.AssemblyFiles }
+    | true -> 
+        let consoleOutput = match options.HideSuccessfulTests with
+                            | true -> HideSuccesfullTests
+                            | false -> ShowAllTests
+        Success { 
+            ConsoleOutput = consoleOutput
+            AssemblyFiles = List.ofSeq options.AssemblyFiles }
 
 
 open RunnerHelper
@@ -48,7 +63,10 @@ let main args =
         printfn "%s" msg
         1
     | Success parsedArgs ->
-        let options = TreeReporterOptions.Default
+        let printSuccess = match parsedArgs.ConsoleOutput with
+                           | ShowAllTests -> true
+                           | HideSuccesfullTests -> false
+        let options = { TreeReporterOptions.Default with PrintSuccess = printSuccess }
         let treeReporter = TreeReporter.Reporter(options)
         parsedArgs.AssemblyFiles
         |> Seq.map (fun assemblyName -> Assembly.LoadFrom(assemblyName))

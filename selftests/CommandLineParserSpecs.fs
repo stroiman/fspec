@@ -18,6 +18,11 @@ module Helpers =
             | Fail x -> MatchResult.MatchFail x
         createMatcher f (sprintf "be success %s" matcher.ExpectationMsgForShould)
 
+    let withConsoleOutput m =
+      createCompoundMatcher m 
+        (fun x -> x.ConsoleOutput)
+        (sprintf "with ConsoleOutput %s" m.ExpectationMsgForShould)
+
     let withAssemblies m = 
       createCompoundMatcher m 
         (fun x -> x.AssemblyFiles)
@@ -54,5 +59,15 @@ let specs =
 
         withArguments ["--invalid-arguments-not-supported"] [
             itShould (printMessage (be.string.containing "FSpec"))
+        ]
+
+        describe "console output level" [
+            withArguments ["dummy.dll"] [
+                itShould (parse (withConsoleOutput (equal ShowAllTests)))
+            ]
+
+            withArguments ["--hide-successful-tests"; "dummy.dll"] [
+                itShould (parse (withConsoleOutput (equal HideSuccesfullTests)))
+            ]
         ]
     ]
