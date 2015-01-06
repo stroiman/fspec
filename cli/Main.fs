@@ -56,6 +56,13 @@ let runExampleGroupsAndGetExitCode reporters specs =
     Runner.runWithWrapper reporter specs |> ignore
     exitCodeReporter.getExitCode()
 
+let createReporter parsedArgs =
+    let printSuccess = match parsedArgs.ConsoleOutput with
+                       | ShowAllTests -> true
+                       | HideSuccesfullTests -> false
+    let options = { TreeReporterOptions.Default with PrintSuccess = printSuccess }
+    TreeReporter.Reporter(options)
+
 [<EntryPoint>]
 let main args =
     match parseArguments args with
@@ -63,12 +70,8 @@ let main args =
         printfn "%s" msg
         1
     | Success parsedArgs ->
-        let printSuccess = match parsedArgs.ConsoleOutput with
-                           | ShowAllTests -> true
-                           | HideSuccesfullTests -> false
-        let options = { TreeReporterOptions.Default with PrintSuccess = printSuccess }
-        let treeReporter = TreeReporter.Reporter(options)
+        let consoleReporter = createReporter parsedArgs
         parsedArgs.AssemblyFiles
         |> Seq.map (fun assemblyName -> Assembly.LoadFrom(assemblyName))
         |> Seq.collect getSpecsFromAssembly
-        |> runExampleGroupsAndGetExitCode [treeReporter]
+        |> runExampleGroupsAndGetExitCode [consoleReporter]
