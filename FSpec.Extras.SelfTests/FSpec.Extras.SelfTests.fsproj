@@ -55,7 +55,6 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <Import Project="..\.paket\paket.targets" />
   <ItemGroup>
     <Compile Include="MbUnitWrapperSpecs.fs" />
     <Compile Include="AutoFoqSpecs.fs" />
