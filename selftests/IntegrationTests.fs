@@ -10,7 +10,7 @@ let specs =
     describe "exit code" [
       subject (fun ctx ->
         let grp = anExampleGroup |> withExamples [ ctx?example ]
-        runExampleGroupsAndGetExitCode [grp] 
+        runExampleGroupsAndGetExitCode [] [grp] 
       )
 
       ("example", aPendingExample) **>

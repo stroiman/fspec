@@ -35,11 +35,9 @@ let parseArguments args =
 
 open RunnerHelper
 
-let runExampleGroupsAndGetExitCode specs =
-    let options = TreeReporterOptions.Default
-    let treeReporter = TreeReporter.Reporter(options)
-    let exitCodeReporter = ExitCodeReporter()
-    let reporter = wrapReporters [exitCodeReporter; treeReporter]
+let runExampleGroupsAndGetExitCode reporters specs =
+    let exitCodeReporter = ExitCodeReporter() 
+    let reporter = wrapReporters (exitCodeReporter :> IReporter :: reporters)
     Runner.runWithWrapper reporter specs |> ignore
     exitCodeReporter.getExitCode()
 
@@ -50,7 +48,9 @@ let main args =
         printfn "%s" msg
         1
     | Success parsedArgs ->
+        let options = TreeReporterOptions.Default
+        let treeReporter = TreeReporter.Reporter(options)
         parsedArgs.AssemblyFiles
         |> Seq.map (fun assemblyName -> Assembly.LoadFrom(assemblyName))
         |> Seq.collect getSpecsFromAssembly
-        |> runExampleGroupsAndGetExitCode
+        |> runExampleGroupsAndGetExitCode [treeReporter]
