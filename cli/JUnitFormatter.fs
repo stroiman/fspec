@@ -15,8 +15,9 @@ type JUnitFormatter (stream:System.IO.Stream) as self =
     stream.Close()
   let x = self :> IReporter
 
+  let stripChars (str:string) = str.Replace(" ", "_").Replace(".","_").Replace("(","_").Replace(")","_")
   let getClassName () =
-    let names = groups |> List.rev |> List.map (fun x -> x.Name) |> List.toArray 
+    let names = groups |> List.rev |> List.map (fun x -> x.Name |> stripChars) |> List.toArray 
     System.String.Join(".", names)
 
   member __.Run () = 
@@ -38,7 +39,7 @@ type JUnitFormatter (stream:System.IO.Stream) as self =
         | x::xs -> groups <- xs
         x
     member __.ReportExample desc _ = 
-        let nameAttribute = XAttribute(xname "name", desc.Name)
+        let nameAttribute = XAttribute(xname "name", desc.Name |> stripChars)
         let classnameAttribute = XAttribute(xname "classname", getClassName())
         tests <- XElement(xname "testcase", nameAttribute, classnameAttribute) :: tests
         x
