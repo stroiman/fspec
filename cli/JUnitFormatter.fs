@@ -24,8 +24,8 @@ type JUnitFormatter (stream:System.IO.Stream) as self =
   interface IReporter with
     member __.BeginGroup _ = x
     member __.EndGroup () = x
-    member __.ReportExample _ _ = 
-        tests <- XElement(xname "testcase", XAttribute(xname "name", "name")) :: tests
+    member __.ReportExample desc _ = 
+        tests <- XElement(xname "testcase", XAttribute(xname "name", desc.Name)) :: tests
         x
     member self.EndTestRun () = 
         self.Run ()

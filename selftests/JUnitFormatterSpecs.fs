@@ -35,6 +35,10 @@ let specs =
 
         it "create a single test element" (fun c ->
           c.Subject.Should beJUnitXmlWithOneTestCase)
+
+        it "assigns the 'name' attribute" (fun c ->
+          c.Subject.Should (beJUnitXmlWithOneTestCase >>> withAttribute "name" >>> equal "Example")
+        )
       ]
 
       withRun
