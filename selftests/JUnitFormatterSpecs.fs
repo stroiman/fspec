@@ -27,7 +27,7 @@ module Helpers =
 open Helpers
 
 let specs =
-  describe "JUnitFormatter" [
+  +describe "JUnitFormatter" [
     describe "xml output" [
       withRun 
         "with one group and one example"
@@ -41,9 +41,13 @@ let specs =
         "with one group and two examples" 
         (beginGroup "Group" >> reportExample "Example1" >> reportExample "Example2" >> endGroup) [
 
+        itShould (beJUnitXmlWithOneTestSuite >>> withNoOfElementsNamed "testcase" >>> equal 2)
+
         it "creates two test elements" (fun c ->
           c.Subject.Should (beJUnitXmlWithOneTestSuite >>> withNoOfElementsNamed "testcase" >>> equal 2)
         )
+
+        itShould (beJUnitXmlWithOneTestSuite >>> withAttribute "tests" >>> equal "2")
       ]
       
       withRun 

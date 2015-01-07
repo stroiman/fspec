@@ -13,8 +13,10 @@ type JUnitFormatter (stream:System.IO.Stream) as self =
   let x = self :> IReporter
 
   member __.Run () = 
+    let tests = tests
+    let noOfTests = tests |> List.length
     let name = XAttribute(xname "name", "name")
-    let suite = XElement(xname "testsuite", name, XAttribute(xname "tests", "0"), tests)
+    let suite = XElement(xname "testsuite", name, XAttribute(xname "tests", noOfTests.ToString()), tests)
     let elms = XElement(xname "testsuites", suite) :> obj
     let doc = XDocument( XDeclaration("1.0", "UTF-8", "yes"), [| elms |])
     write doc

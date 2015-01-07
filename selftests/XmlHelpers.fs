@@ -67,6 +67,13 @@ let withNoOfElementsNamed name =
   let f (actual : XElement) = actual.Elements (xname name) |> Seq.length |> MatchSuccess
   createMatcher f (sprintf "with no of elements named: '%s'" name)
 
+let withAttribute name =
+  let f (actual : XElement) = 
+    match actual.Attribute (xname name) with
+    | null -> MatchFail actual
+    | x -> MatchSuccess (x.Value)
+  createMatcher f (sprintf "with attribute: '%s'" name)
+
 let beJUnitXmlWithOneTestSuite =
   beXml >>> withRootElement "testsuites" >>> withOneElement "testsuite"
 
