@@ -39,7 +39,26 @@ let specs =
         it "assigns the 'name' attribute" (fun c ->
           c.Subject.Should (beJUnitXmlWithOneTestCase >>> withAttribute "name" >>> equal "Example")
         )
+
+        it "assigns the 'classname' attribute" (fun c ->
+          c.Subject.Should (beJUnitXmlWithOneTestCase >>> withAttribute "classname" >>> equal "Group")
+        )
       ]
+
+      withRun
+        "with two sibling groups"
+        (beginGroup "Group1" >> beginGroup "GroupA" >> reportExample "Example1" >> endGroup >> 
+         beginGroup "GroupB" >> reportExample "Example2" >> endGroup >> endGroup) [
+          itShould (beJUnitXmlWithOneTestSuite >>> select (fun x -> x.Elements(xname "testcase") |> Seq.head) >>> withAttribute "classname" >>> equal "Group1.GroupA")
+
+          itShould (beJUnitXmlWithOneTestSuite >>> select (fun x -> x.Elements(xname "testcase") |> Seq.last) >>> withAttribute "classname" >>> equal "Group1.GroupB")
+        ]
+
+      withRun
+        "with two nested groups"
+        (beginGroup "Group1" >> beginGroup "Group2" >> reportExample "Example1" >> endGroup >> endGroup) [
+          itShould (beJUnitXmlWithOneTestCase >>> withAttribute "classname" >>> equal "Group1.Group2")
+        ]
 
       withRun
         "with one group and two examples" 

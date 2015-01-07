@@ -5,6 +5,7 @@ let xname = XName.Get
 
 type JUnitFormatter (stream:System.IO.Stream) as self =
   let mutable tests = []
+  let mutable groups = []
   let write (doc:XDocument) =
     let settings = System.Xml.XmlWriterSettings()
     settings.Encoding <- System.Text.UTF8Encoding(false)
@@ -12,8 +13,12 @@ type JUnitFormatter (stream:System.IO.Stream) as self =
     doc.WriteTo(writer)
   let x = self :> IReporter
 
+  let getClassName () =
+    let names = groups |> List.rev |> List.map (fun x -> x.Name) |> List.toArray 
+    System.String.Join(".", names)
+
   member __.Run () = 
-    let tests = tests
+    let tests = tests |> List.rev
     let noOfTests = tests |> List.length
     let name = XAttribute(xname "name", "FSpec suite")
     let suite = XElement(xname "testsuite", name, XAttribute(xname "tests", noOfTests.ToString()), tests)
@@ -22,10 +27,18 @@ type JUnitFormatter (stream:System.IO.Stream) as self =
     write doc
 
   interface IReporter with
-    member __.BeginGroup _ = x
-    member __.EndGroup () = x
+    member __.BeginGroup desc = 
+        groups <- desc::groups
+        x
+    member __.EndGroup () = 
+        match groups with
+        | [] -> failwith "EndGroup called too many times"
+        | x::xs -> groups <- xs
+        x
     member __.ReportExample desc _ = 
-        tests <- XElement(xname "testcase", XAttribute(xname "name", desc.Name)) :: tests
+        let nameAttribute = XAttribute(xname "name", desc.Name)
+        let classnameAttribute = XAttribute(xname "classname", getClassName())
+        tests <- XElement(xname "testcase", nameAttribute, classnameAttribute) :: tests
         x
     member self.EndTestRun () = 
         self.Run ()

@@ -54,6 +54,8 @@ let withRootElement name =
       MatchFail root
   createMatcher f (sprintf "with root element: '%s'" name)
 
+let select f = createMatcher (fun actual -> actual |> f |> MatchSuccess) ""
+
 let withOneElement name =
   let f (actual : XElement) =
     let c = actual.Elements (xname name) |> List.ofSeq
