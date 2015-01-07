@@ -25,8 +25,12 @@ type Matcher<'TActual,'TResult> () =
             | Should -> self.ExpectationMsgForShould
             | ShouldNot -> self.ExpectationMsgForShouldNot
 
-let applyMatcher<'T,'U> (matcher: Matcher<'T,_>) f (a : 'T) : 'U =
-    matcher.ApplyActual f a
+module private Helpers =
+    let applyActual f x (m:Matcher<'a,'b>) = m.ApplyActual f x
+open Helpers
+
+let applyMatcher<'T,'U> matcher f (a : 'T) : 'U =
+    matcher |> applyActual f a
 
 let createFullMatcher<'T,'TResult> 
         (f : 'T -> MatchResult<'TResult>) 
@@ -66,11 +70,11 @@ let createBoolMatcher<'T> (f : 'T -> bool) (shouldMsg : string) =
     createFullBoolMatcher f shouldMsg (sprintf "not %s" shouldMsg)
 
 let createSimpleMatcher f = createBoolMatcher f "FAIL"
-        
-let ( &&& ) (a:Matcher<'a,'b>) (b:Matcher<'a,'b>) =
+
+let ( &&& ) a b =
     let f actual =
-        let x = a.ApplyActual id actual
-        let y = b.ApplyActual id actual
+        let x:MatchResult<'a> = a |> applyActual id actual
+        let y:MatchResult<'a> = b |> applyActual id actual
         match (x,y) with
         | MatchSuccess _, MatchSuccess _ -> MatchSuccess actual
         | _ -> MatchFail actual
