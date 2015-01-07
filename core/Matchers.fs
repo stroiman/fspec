@@ -72,7 +72,7 @@ let ( &&& ) (a:Matcher<'a,'b>) (b:Matcher<'a,'b>) =
         let x = a.ApplyActual id actual
         let y = b.ApplyActual id actual
         match (x,y) with
-        | MatchSuccess _, MatchSuccess _ -> MatchSuccess (actual :> obj)
+        | MatchSuccess _, MatchSuccess _ -> MatchSuccess actual
         | _ -> MatchFail actual
     createMatcher f 
         (sprintf "%s and %s" 

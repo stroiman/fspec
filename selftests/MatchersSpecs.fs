@@ -127,15 +127,15 @@ let specs = [
         describe "be.lessThan 50 &&& be.greaterThan 40" [
             ("actual", 40) **>
             context "when actual is 40" [
-                MatchOf<int>.ShouldFail
+                MatchOf<int,int>.ShouldFail
             ]
             ("actual", 45) **>
             context "when actual is 45" [
-                MatchOf<int>.ShouldPass
+                MatchOf<int,int>.ShouldPass
             ]
             ("actual", 50) **>
             context "when actual is 50" [
-                MatchOf<int>.ShouldFail
+                MatchOf<int,int>.ShouldFail
             ]
         ]
 
