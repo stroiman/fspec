@@ -4,6 +4,7 @@ open System.Xml.Linq
 let xname = XName.Get
 
 type JUnitFormatter (stream:System.IO.Stream) as self =
+  let mutable tests = []
   let write (doc:XDocument) =
     let settings = System.Xml.XmlWriterSettings()
     settings.Encoding <- System.Text.UTF8Encoding(false)
@@ -13,8 +14,7 @@ type JUnitFormatter (stream:System.IO.Stream) as self =
 
   member __.Run () = 
     let name = XAttribute(xname "name", "name")
-    let tests = XAttribute(xname "tests", "0")
-    let suite = XElement(xname "testsuite", name, tests)
+    let suite = XElement(xname "testsuite", name, XAttribute(xname "tests", "0"), tests)
     let elms = XElement(xname "testsuites", suite) :> obj
     let doc = XDocument( XDeclaration("1.0", "UTF-8", "yes"), [| elms |])
     write doc
@@ -22,7 +22,9 @@ type JUnitFormatter (stream:System.IO.Stream) as self =
   interface IReporter with
     member __.BeginGroup _ = x
     member __.EndGroup () = x
-    member __.ReportExample _ _ = x
+    member __.ReportExample _ _ = 
+        tests <- XElement(xname "testcase", XAttribute(xname "name", "name")) :: tests
+        x
     member self.EndTestRun () = 
         self.Run ()
         null :> obj

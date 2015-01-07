@@ -53,3 +53,22 @@ let withRootElement name =
     else
       MatchFail root
   createMatcher f (sprintf "with root element: '%s'" name)
+
+let withOneElement name =
+  let f (actual : XElement) =
+    let c = actual.Elements (xname name) |> List.ofSeq
+    match c with
+    | [x] -> MatchSuccess x
+    | [] -> MatchFail (sprintf "no elements with name '%s'" name)
+    | _ -> MatchFail (sprintf "more than elements with name '%s'" name)
+  createMatcher f (sprintf "with one element named: '%s'" name)
+
+let withNoOfElementsNamed name =
+  let f (actual : XElement) = actual.Elements (xname name) |> Seq.length |> MatchSuccess
+  createMatcher f (sprintf "with no of elements named: '%s'" name)
+
+let beJUnitXmlWithOneTestSuite =
+  beXml >>> withRootElement "testsuites" >>> withOneElement "testsuite"
+
+let beJUnitXmlWithOneTestCase =
+  beJUnitXmlWithOneTestSuite >>> withOneElement "testcase"
