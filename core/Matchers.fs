@@ -10,7 +10,7 @@ type MatchType =
 
 [<AbstractClass>]
 type Matcher<'TActual> () = 
-    abstract member ApplyActual<'TResult> : (MatchResult -> 'TResult) -> 'TActual -> 'TResult
+    abstract member ApplyActual : (MatchResult -> 'a) -> 'TActual -> 'a
     abstract member ExpectationMsgForShould : string
     abstract member ExpectationMsgForShouldNot : string
     [<System.Obsolete("Use ExpectationMsgForShould instead")>]
