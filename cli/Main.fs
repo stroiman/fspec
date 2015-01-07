@@ -73,6 +73,15 @@ let createReporter parsedArgs =
     let options = { TreeReporterOptions.Default with PrintSuccess = printSuccess }
     TreeReporter.Reporter(options)
 
+let createReporters parsedArgs =
+    let consoleReporter = createReporter parsedArgs :> IReporter
+    match parsedArgs.OutputFile with
+    | None -> [consoleReporter]
+    | Some x ->
+        let file = new System.IO.FileStream(x, System.IO.FileMode.Create)
+        let junitReporter = Formatters.JUnitFormatter(file) :> IReporter
+        [consoleReporter; junitReporter]
+
 [<EntryPoint>]
 let main args =
     match parseArguments args with
@@ -84,4 +93,4 @@ let main args =
         parsedArgs.AssemblyFiles
         |> Seq.map (fun assemblyName -> Assembly.LoadFrom(assemblyName))
         |> Seq.collect getSpecsFromAssembly
-        |> runExampleGroupsAndGetExitCode [consoleReporter]
+        |> runExampleGroupsAndGetExitCode (createReporters parsedArgs)

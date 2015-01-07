@@ -11,6 +11,8 @@ type JUnitFormatter (stream:System.IO.Stream) as self =
     settings.Encoding <- System.Text.UTF8Encoding(false)
     use writer = System.Xml.XmlWriter.Create(stream, settings)
     doc.WriteTo(writer)
+    writer.Close()
+    stream.Close()
   let x = self :> IReporter
 
   let getClassName () =

@@ -12,3 +12,4 @@ _NCrunch_*
 *.ncrunchsolution
 output
 paket.exe
+TestResult.xml
