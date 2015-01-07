@@ -262,7 +262,7 @@ let specs = [
             ]
         ]
 
-        ("matcher", (be.ofType<int>()) |>> (be.equalTo 42)) **>
+        ("matcher", (be.ofType<int>()) >>> (be.equalTo 42)) **>
         describe "Matcher combinators" [
             ("actual", 42) **>
             context "when value matches both matchers" [
