@@ -4,37 +4,40 @@ open Dsl
 open Matchers
 open CustomMatchers
 
-type MatchOf<'T> =
-    static member createMatcherTest (ctx:TestContext) f =
+type MatchOf<'T,'U> =
+    static member createMatcherTest (ctx:TestContext) (f: Matcher<'T,'U> -> 'T -> unit) =
         let actual = ctx.MetaData.Get<'T> "actual"
-        fun () -> actual |> f ctx?matcher
+        let matcher : Matcher<'T,'U> = ctx?matcher
+        fun () -> actual |> f matcher
  
     static member ShouldPass =
         examples [
             it "succeeds when used with 'should'" (fun ctx ->
-                let test = MatchOf<'T>.createMatcherTest ctx should
+                let test = MatchOf<'T,'U>.createMatcherTest ctx should
                 test.Should succeed)
             
             it "fails when used with 'shouldNot'" (fun ctx ->
-                let test = MatchOf<'T>.createMatcherTest ctx shouldNot
+                let test = MatchOf<'T,'U>.createMatcherTest ctx shouldNot
                 test.Should fail)
         ]
 
     static member ShouldFail =
         examples [
             it "succeeds when used with 'shouldNot'" (fun ctx ->
-                let test = MatchOf<'T>.createMatcherTest ctx shouldNot
+                let test = MatchOf<'T,'U>.createMatcherTest ctx shouldNot
                 test.Should succeed)
 
             it "fails when used with 'should'" (fun ctx ->
-                let test = MatchOf<'T>.createMatcherTest ctx should
+                let test = MatchOf<'T,'U>.createMatcherTest ctx should
                 test.Should fail)
         ]
 
     static member ShouldFailWith message =
         it (sprintf "fails with message '%s' when used with 'should'" message) (fun ctx ->
-            let test = MatchOf<'T>.createMatcherTest ctx should
+            let test = MatchOf<'T,'U>.createMatcherTest ctx should
             test.Should (failWithAssertionError message))
+
+type MatchOf<'T> = MatchOf<'T,obj>
 
 let specs = [
     describe "System.Object extesions" [
@@ -251,14 +254,14 @@ let specs = [
         describe "be.ofType<int> matcher" [
             ("actual", 42) **>
             context "when value is an int" [
-                MatchOf<obj>.ShouldPass
+                MatchOf<obj,int>.ShouldPass
             ]
 
             ("actual", "foo") **>
             context "when value is a string" [
-                MatchOf<obj>.ShouldFail
+                MatchOf<obj,int>.ShouldFail
 
-                MatchOf<obj>.ShouldFailWith "be of type Int32 but was System.String"
+                MatchOf<obj,int>.ShouldFailWith "be of type Int32 but was System.String"
             ]
         ]
 

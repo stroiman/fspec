@@ -1,7 +1,7 @@
 module FSpec.Matchers
 
-type MatchResult =
-    | MatchSuccess of obj
+type MatchResult<'T> =
+    | MatchSuccess of 'T
     | MatchFail of obj
 
 type MatchType =
@@ -9,15 +9,15 @@ type MatchType =
     | ShouldNot
 
 [<AbstractClass>]
-type Matcher<'TActual> () = 
-    abstract member ApplyActual : (MatchResult -> 'a) -> 'TActual -> 'a
+type Matcher<'TActual,'TResult> () = 
+    abstract member ApplyActual : (MatchResult<'TResult> -> 'a) -> 'TActual -> 'a
     abstract member ExpectationMsgForShould : string
     abstract member ExpectationMsgForShouldNot : string
     [<System.Obsolete("Use ExpectationMsgForShould instead")>]
     member this.FailureMsgForShould = this.ExpectationMsgForShould
     [<System.Obsolete("Use ExpectationMsgForShouldNot instead")>]
     member this.FailureMsgForShouldNot = this.ExpectationMsgForShouldNot
-    static member IsMatch (matcher:Matcher<'TActual>) actual =
+    static member IsMatch (matcher:Matcher<'TActual,'TResult>) actual =
         let resultToBool = function | MatchSuccess _ -> true | _ -> false
         actual |> matcher.ApplyActual resultToBool
     member self.MessageFor = 
@@ -25,20 +25,20 @@ type Matcher<'TActual> () =
             | Should -> self.ExpectationMsgForShould
             | ShouldNot -> self.ExpectationMsgForShouldNot
 
-let applyMatcher<'T,'U> (matcher: Matcher<'T>) f (a : 'T) : 'U =
+let applyMatcher<'T,'U> (matcher: Matcher<'T,_>) f (a : 'T) : 'U =
     matcher.ApplyActual f a
 
-let createFullMatcher<'T> 
-        (f : 'T -> MatchResult) 
+let createFullMatcher<'T,'TResult> 
+        (f : 'T -> MatchResult<'TResult>) 
         (shouldMsg : string) 
         (shouldNotMsg : string) =
-    { new Matcher<'T> () with
+    { new Matcher<'T,_> () with
         member __.ApplyActual g actual = f actual |> g
         member __.ExpectationMsgForShould = shouldMsg
         member __.ExpectationMsgForShouldNot = shouldNotMsg
     }
 
-let createMatcher<'T> (f : 'T -> MatchResult) (shouldMsg : string) =
+let createMatcher<'T,'TResult> (f : 'T -> MatchResult<'TResult>) (shouldMsg : string) =
     createFullMatcher f shouldMsg (sprintf "not %s" shouldMsg)
 
 /// Helps create a matcher, that uses a child matcher for some verification.
@@ -67,12 +67,12 @@ let createBoolMatcher<'T> (f : 'T -> bool) (shouldMsg : string) =
 
 let createSimpleMatcher f = createBoolMatcher f "FAIL"
         
-let ( &&& ) (a:Matcher<'a>) (b:Matcher<'a>) =
+let ( &&& ) (a:Matcher<'a,'b>) (b:Matcher<'a,'b>) =
     let f actual =
         let x = a.ApplyActual id actual
         let y = b.ApplyActual id actual
         match (x,y) with
-        | MatchSuccess _, MatchSuccess _ -> MatchSuccess actual
+        | MatchSuccess _, MatchSuccess _ -> MatchSuccess (actual :> obj)
         | _ -> MatchFail actual
     createMatcher f 
         (sprintf "%s and %s" 
@@ -88,9 +88,9 @@ module be =
     let equalTo = equal
 
     let ofType<'T> () =
-        let f (actual:obj) =
+        let f (actual:obj) : MatchResult<'T> =
             match actual with
-            | :? 'T as x -> MatchSuccess x
+            | :? 'T as x -> x |> MatchSuccess
             | null -> MatchFail null
             | _ as x -> MatchFail (x.GetType())
         createMatcher f (sprintf "be of type %s" (typeof<'T>.Name))
@@ -179,7 +179,7 @@ module throwException =
     let withMessageContaining msg =
         withMessage (be.string.containing msg)
     
-let performMatch<'T> matchType (matcher:Matcher<'T>) (actual:'T) =
+let performMatch<'T,'U> matchType (matcher:Matcher<'T,'U>) (actual:'T) =
     let raiseMsg a = 
             let msg = sprintf "%A was expected to %s but was %A" 
                         actual (matcher.MessageFor matchType) a
@@ -191,32 +191,32 @@ let performMatch<'T> matchType (matcher:Matcher<'T>) (actual:'T) =
         | _ -> ()
     matcher.ApplyActual continuation actual
     
-let should<'T> = performMatch<'T> Should 
-let shouldNot<'T> = performMatch<'T> ShouldNot
+let should<'T,'U> = performMatch<'T,'U> Should 
+let shouldNot<'T,'U> = performMatch<'T,'U> ShouldNot
 
 /// Extension methods for System.Object to aid in assertions
 type System.Object with
     /// Allows the use of testContext.Subject.Should (matcher)
-    member self.Should<'T> (matcher : Matcher<'T>) =
+    member self.Should<'T,'U> (matcher : Matcher<'T,'U>) =
         self :?> 'T |> should matcher
 
     /// Allows the use of testContext.Subject.ShouldNot (matcher)
-    member self.ShouldNot<'T> (matcher : Matcher<'T>) =
+    member self.ShouldNot<'T,'U> (matcher : Matcher<'T,'U>) =
         self :?> 'T |> shouldNot matcher
 
     member self.Apply<'T,'U> (f : 'T -> 'U) =
         self :?> 'T |> f
 
 type Async<'T> with
-    member self.Should<'T> (matcher : Matcher<'T>) =
+    member self.Should<'T,'U> (matcher : Matcher<'T,'U>) =
         Async.RunSynchronously(self,5000).Should matcher
 
-    member self.ShouldNot<'T> (matcher : Matcher<'T>) =
+    member self.ShouldNot<'T,'U> (matcher : Matcher<'T,'U>) =
         Async.RunSynchronously(self,5000).ShouldNot matcher
 
-let ( >>> ) (a : Matcher<'a>) (b: Matcher<'b>) =
+let ( >>> ) (a : Matcher<'a,'b>) (b: Matcher<'b,_>) =
     let f actual =
         match a.ApplyActual id actual with
-        | MatchSuccess x -> b.ApplyActual id (x :?> 'b)
-        | x -> x
+        | MatchSuccess x -> b.ApplyActual id x
+        | MatchFail x -> MatchFail x
     createMatcher f (sprintf "%s %s" a.ExpectationMsgForShould b.ExpectationMsgForShould)

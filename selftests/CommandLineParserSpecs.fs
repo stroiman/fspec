@@ -11,7 +11,7 @@ module Helpers =
         ("input", args) **> 
         context (sprintf "when called with '%s'" (args |> join " ")) specs
 
-    let parse (matcher : Matcher<ParsedArguments>) =
+    let parse (matcher : Matcher<ParsedArguments,_>) =
         let f =
             function
             | Success x -> matcher.ApplyActual id x
@@ -28,7 +28,7 @@ module Helpers =
         (fun x -> x.AssemblyFiles)
         (sprintf "with AssemblyFiles %s" m.ExpectationMsgForShould)
 
-    let printMessage (m:Matcher<string>) =
+    let printMessage (m:Matcher<string,_>) =
         let f = function
                 | Success x -> MatchResult.MatchFail x
                 | Fail x -> m.ApplyActual id x
