@@ -27,7 +27,7 @@ module Helpers =
 open Helpers
 
 let specs =
-  +describe "JUnitFormatter" [
+  describe "JUnitFormatter" [
     describe "xml output" [
       withRun 
         "with one group and one example"
