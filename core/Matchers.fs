@@ -66,18 +66,6 @@ let createBoolMatcher<'T> (f : 'T -> bool) (shouldMsg : string) =
     createFullBoolMatcher f shouldMsg (sprintf "not %s" shouldMsg)
 
 let createSimpleMatcher f = createBoolMatcher f "FAIL"
-        
-let ( &&& ) (a:Matcher<'a>) (b:Matcher<'a>) =
-    let f actual =
-        let x = a.ApplyActual id actual
-        let y = b.ApplyActual id actual
-        match (x,y) with
-        | MatchSuccess _, MatchSuccess _ -> MatchSuccess actual
-        | _ -> MatchFail actual
-    createMatcher f 
-        (sprintf "%s and %s" 
-            a.ExpectationMsgForShould
-            b.ExpectationMsgForShould)
 
 let equal expected =
     createBoolMatcher
@@ -213,6 +201,30 @@ type Async<'T> with
 
     member self.ShouldNot<'T> (matcher : Matcher<'T>) =
         Async.RunSynchronously(self,5000).ShouldNot matcher
+        
+let ( ||| ) (a:Matcher<'a>) (b:Matcher<'a>) =
+    let f actual =
+        let x = a.ApplyActual id actual
+        let y = b.ApplyActual id actual
+        match (x,y) with
+        | MatchFail _, MatchFail _ -> MatchFail actual
+        | _ -> MatchSuccess actual
+    createMatcher f 
+        (sprintf "%s and %s" 
+            a.ExpectationMsgForShould
+            b.ExpectationMsgForShould)
+        
+let ( &&& ) (a:Matcher<'a>) (b:Matcher<'a>) =
+    let f actual =
+        let x = a.ApplyActual id actual
+        let y = b.ApplyActual id actual
+        match (x,y) with
+        | MatchSuccess _, MatchSuccess _ -> MatchSuccess actual
+        | _ -> MatchFail actual
+    createMatcher f 
+        (sprintf "%s and %s" 
+            a.ExpectationMsgForShould
+            b.ExpectationMsgForShould)
 
 let ( >>> ) (a : Matcher<'a>) (b: Matcher<'b>) =
     let f actual =

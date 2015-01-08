@@ -120,6 +120,22 @@ let specs = [
             ]
         ]
 
+        ("matcher", be.lessThan 40 ||| be.greaterThan 50) **>
+        describe "be.lessThan 50 &&& be.greaterThan 40" [
+            ("actual", 39) **>
+            context "when actual is 40" [
+                MatchOf<int>.ShouldPass
+            ]
+            ("actual", 45) **>
+            context "when actual is 45" [
+                MatchOf<int>.ShouldFail
+            ]
+            ("actual", 51) **>
+            context "when actual is 50" [
+                MatchOf<int>.ShouldPass
+            ]
+        ]
+
         ("matcher", be.lessThan 50 &&& be.greaterThan 40) **>
         describe "be.lessThan 50 &&& be.greaterThan 40" [
             ("actual", 40) **>
