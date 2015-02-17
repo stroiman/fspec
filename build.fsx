@@ -59,14 +59,40 @@ Target "Build" <| fun _ ->
         Attribute.FileVersion version
     ]
 
-    let result = ExecProcess (fun info ->
-        info.FileName <- "c:\\Ruby193\\bin\\rake.bat"
-        info.WorkingDirectory <- ".") (TimeSpan.FromMinutes 5.0)
-    if result <> 0 then failwithf "MyProc.exe returned with a non-zero exit code"
+    let setParams defaults =
+        { defaults with
+            Targets = ["Build"]
+            Properties =
+                [
+                    "Optimize", "True"
+                    "Platform", "Any CPU"
+                    "Configuration", "Release"
+                ]
+        }
+
+    let rebuild config = {(setParams config) with Targets = ["Rebuild"]}
+
+    build rebuild "./FSpec.sln"
 
 Target "CreatePackage" <| fun _ ->
     let version = getVersion() |> versionToString
     ensureDirectory "NuGet"
+    CleanDir "Nuget"
+
+    let result =
+        let dependencies = 
+            ["FSharp.core"; "FSpec"; "CommandLine"] 
+            |> Seq.map (fun dep -> "output" @@ (dep + ".dll"))
+            |> String.concat " "
+
+        ExecProcess (fun info ->
+            info.FileName <- ("packages" @@ "ilmerge" @@ "tools" @@ "ilmerge.exe")
+            info.WorkingDirectory <- "."
+            info.Arguments <- "/out:output/fspec-runner-merged.exe output/fspec-runner.exe " + dependencies
+        ) (System.TimeSpan.FromMinutes 5.)
+
+    if result <> 0 then failwithf "Calling ILMerge failed with non zero code"
+
     NuGet (fun p -> 
         {p with
             Version = version
