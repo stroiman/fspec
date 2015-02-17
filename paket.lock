@@ -3,7 +3,8 @@ NUGET
   specs:
     CommandLineParser (1.9.71)
     Foq (1.6)
+    ilmerge (2.14.1208)
     mbunit (3.4.14.0)
     Ninject (3.2.2.0)
     Ninject.MockingKernel (3.2.1.0)
-      Ninject (>= 3.2.0.0 <  3.3.0.0)
+      Ninject (>= 3.2.0.0 < 3.3.0.0)

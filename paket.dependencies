@@ -5,3 +5,4 @@ nuget mbunit
 nuget Ninject
 nuget Ninject.MockingKernel
 nuget CommandLineParser
+nuget ilmerge

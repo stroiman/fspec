@@ -22,6 +22,6 @@
   </metadata>
   <files>
     <file src="output/FSpec.dll" target="lib/net40/FSpec.dll" />
-    <file src="output/FSpec-runner.exe" target="tools/FSpec-runner.exe" />
+    <file src="output/FSpec-runner-merged.exe" target="tools/FSpec-runner.exe" />
   </files>
 </package>

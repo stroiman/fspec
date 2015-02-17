@@ -1,4 +1,3 @@
-
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.31101.0
@@ -20,6 +19,11 @@ EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSpec.MbUnitWrapper", "FSpec.MbUnitWrapper\FSpec.MbUnitWrapper.fsproj", "{C5C98D42-1FFC-40AC-AC07-A9184ACC2A7D}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSpec.Extras.SelfTests", "FSpec.Extras.SelfTests\FSpec.Extras.SelfTests.fsproj", "{0381ACB6-20E2-434F-8832-B037E2716181}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{019CF3D5-63B1-401B-B1CD-4413FCDE8151}"
+	ProjectSection(SolutionItems) = preProject
+		build.fsx = build.fsx
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
