@@ -55,6 +55,7 @@
     <Compile Include="CustomMatchers.fs" />
     <Compile Include="DomainTypesSpecs.fs" />
     <Compile Include="MatchersSpecs.fs" />
+    <Compile Include="MatchersV3Specs.fs" />
     <Compile Include="RunnerSpecs.fs" />
     <Compile Include="TestRunnerSpecs.fs" />
     <Compile Include="TestReportSpecs.fs" />

@@ -54,6 +54,7 @@
     <Compile Include="TestReport.fs" />
     <Compile Include="Runner.fs" />
     <Compile Include="Matchers.fs" />
+    <Compile Include="MatchersV3.fs" />
     <Compile Include="Dsl.fs" />
     <Compile Include="TestDiscovery.fs" />
     <Compile Include="Compatibility.fs" />
