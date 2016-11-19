@@ -19,4 +19,16 @@ let specs =
                 m |> shouldFail
             )
         ]
+
+        describe "haveLength" [
+            it "passes when length is correct" (fun _ ->
+                let m () = [1;2;3] |> should (haveLength >=> equal 3)
+                m |> shouldSucceed
+            )
+
+            it "fails when length is incorrect" (fun _ ->
+                let m () = [1;2;3] |> should (haveLength >=> equal 1)
+                m |> shouldFail
+            )
+        ]
     ]

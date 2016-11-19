@@ -21,7 +21,7 @@ module M =
         | Success(x,_) -> f x
         | Failure(x,y) -> Failure(x,y)
 
-let (>=>) = M.bind
+let (>=>) (M f) (M g) = f >> M.bind g |> M
 
 let equal expected =
     let m actual =
