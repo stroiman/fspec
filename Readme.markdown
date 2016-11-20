@@ -42,27 +42,26 @@ I have written a few [blog posts][1] about FSpec
 
 [1]: http://stroiman.com/software/fspec
 
-## Want to contribute? ##
-
-Please. Contributers are greatly welcome.
-
-Feedback is also more than welcome.
-
 ## Stability ##
 
 FSpec is stil in it's 0.x phase, so there is a risk that the API could change.
 
-However, both the example building DSL, and the matchers have undergone
-significant changes already, and I have reached a point where I am quite happy
-with most of it. 
+## Getting started ##
 
-So I believe that there should be no major changes to the API.
+The easiest way to get started is to create a _console application_. Add the
+following _main_ function.
 
-## General syntax ##
+```fsharp
+module MySpecs.Program
 
-Create an assembly containing your specs. Place your specs in a module, and
-assign the spec code to the value _spec_. Pass the name of the assembly to
-the fspec runner command line.
+[<EntryPoint>]
+let main argv = 
+    System.Reflection.Assembly.GetExecutingAssembly() |>
+    FSpec.TestDiscovery.runSingleAssembly
+```
+
+Add _.fs_ files containing the tests, and assign them to a value named _spec_.
+The test discovery mechanism looks for this particular value name. E.g.:
 
 ```fsharp
 module MySpecModule
@@ -125,12 +124,15 @@ The functions _before_/_after_ can be used to hold general setup/teardown code.
 ```fsharp
 let specs =
     describe "Some feature" <| fun _ ->
-        before <| fun _ ->
-            ()
-        after <| fun _ ->
-            ()
-        it "Has some behavior" <| fun _ ->
-            ()
+        before (fun _ ->
+            // setup code here ...
+        )
+        after (fun _ ->
+            // teardown code here ...
+        )
+        it "Has some behavior" (fun _ ->
+            // Actual example here
+        )
 ```
 
 ## Test Context ##
@@ -166,26 +168,38 @@ In the above example, the _fun x -> x.FirstName_ would be inferred to be of
 type _User -> string_ - assuming the _User_ type was the only type with a
 _FirstName_ property currently opened.
 
-The above example could be written a little nicer, if we introduced custom
-matchers for members on the _User_ type
+If we created custome matchers for members on the _User_ type, we could have
+rewritten the above code as:
 
 ```fsharp
 let specs =
     describe "createUser function" [
-        before <| fun _ ->
-            ctx?user <- createUser "John" "Doe"
-        it "sets the first name" <| fun ctx ->
-            ctx?user.Should (haveFirstName "John")
-        it "sets the last name" <| fun ctx ->
-            ctx?user.Should (haveLastName "Doe")
+        before (fun ctx -> ctx?user <- createUser "John" "Doe")
+
+        it "sets the first name" (fun ctx ->
+            ctx?user.Should (haveFirstName "John"))
+
+        it "sets the last name" (fun ctx ->
+            ctx?user.Should (haveLastName "Doe"))
     ]
 ```
 
 Because the matchers themselves are typed to the type of the expected value,
 the type inference system will bring the expected type to the _?_ operator.
 
-If you get a compiler error saying that the it cannot infer the type, use
-the generic _Get<'T>_ function instead.
+If you get a compiler error saying that the it cannot infer the type, you can
+use the generic _TestContext.Get<'T>_ function instead.
+
+```fsharp
+let specs =
+    describe "createUser function" [
+        before (fun _ -> ctx?user = createUser "John" "Doe")
+
+        it "sets the first name" (fun ctx ->
+            let user = ctx.Get<User> "user"
+            user.FirstName |> should equal "John")
+    ]
+```
 
 ### Automatically Disposal ###
 
@@ -202,17 +216,6 @@ let specs =
 ```
 
 The database connection will in this case automatically be disposed.
-
-```fsharp
-let specs =
-    describe "createUser function" [
-        before <| fun _ ->
-            ctx?user = createUser "John" "Doe"
-        it "sets the first name" <| fun ctx ->
-            let user = ctx.Get<User> "user"
-            user.FirstName |> should equal "John"
-    ]
-```
   
 ### Implicit subject ###
 
@@ -223,14 +226,29 @@ will cast the subject to the expected type
 ```fsharp
 let specs =
     describe "createUser function" [
-        subject <| fun _ -> createuser "john" "doe"
+        subject (fun _ -> createuser "John" "Doe")
 
-        it "sets the first name" <| fun ctx ->
+        it "sets the first name" (fun ctx ->
             let user = ctx.GetSubject<User> ()
-            user.FirstName |> should (equal "John")
-        it "sets the last name" <| fun ctx ->
+            user.FirstName |> should (equal "John"))
+
+        it "sets the last name" (fun ctx ->
             let user = ctx.GetSubject<User> ()
-            user.LastName |> should (equal "Doe")
+            user.LastName |> should (equal "Doe"))
+    ]
+```
+
+With a subject defined, you can write single-line tests. Again, here we assume
+we have created the custom matchers, _haveFirstName_, and _haveLastName_
+
+```fsharp
+let specs =
+    describe "createUser function" [
+        subject (fun _ -> createuser "John" "Doe")
+
+        itShould (haveFirstName "John")
+
+        itShould (haveLastName "Doe")
     ]
 ```
 
@@ -240,13 +258,13 @@ These will automatically cast the subject to the type expected by the matcher.
 ```fsharp
 let specs =
     describe "createUser function" [
-        subject <| fun _ -> createuser "john" "doe"
+        subject (fun _ -> createuser "john" "doe")
 
-        it "sets the first name" <| fun ctx ->
-            ctx.Subject.Should (haveFirstName "John")
+        it "sets the first name" (fun ctx ->
+            ctx.Subject.Should (haveFirstName "John"))
 
-        it "sets the last name" <| fun ctx ->
-            ctx.Subject.Should (haveLastName "Doe")
+        it "sets the last name" (fun ctx ->
+            ctx.Subject.Should (haveLastName "Doe"))
     ]
 ```
 
@@ -270,17 +288,21 @@ let specs =
 ```
 
 #### Functions as subjects ####
+
 The subject can also be a function.
 
 ```fsharp
 let specs =
     describe "createUser function, when user already exists" [
         ...
-        subject <| fun _ -> 
-            (fun () -> CreateAndSaveNewUser())
+        subject (fun _ -> 
+            (fun () -> CreateAndSaveNewUser()))
 
         it "should fail" <| fun ctx ->
             ctx.Subject.Should fail
+
+        // or simply
+        itShould fail
 ```
 
 ### Test metadata ###
@@ -299,7 +321,7 @@ specific context.
 let specs =
     describe "Register new user feature" [
         before (fun ctx ->
-            let user = ctx?existing_user
+            let user = ctx?existing_user // Reads the from metatada
             Mock<IUserRepository>()
                 .Setup(fun x -> <@ x.FindByEmail(email) @>)
                 .Returns(user)
@@ -307,11 +329,15 @@ let specs =
             |> // do something with the mock
         )
 
-        ("existing_user" ++ null) ==>
+        // When running tests in this context, the setup code will setup the
+        // FindByEmail function to return null
+        ("existing_user", null) **>
         context "when no user exists" [
             it "succeeds" (...)
         ]
 
+        // When running tests in this context, the setup code will setup the
+        // FindByEmail function to return a valid user
         ("existing_user", createValidUser()) **>
         context "when a user has already been registered with that email" [
             it "fails" (...)
@@ -329,8 +355,8 @@ let specs =
 The funny looking _**>_ operator is chosen because it is right-to-left
 associative, allowing us to reduce the required no of parenthesis.
 
-The metadata getter is generic, but will fail at runtime if the actual data is
-not of the correct type.
+The metadata getter is generic, but metadata lookup will fail at runtime if the
+actual data is not of the correct type.
 
 Metadata with the same name on a child example group will override the value of
 the parent group, and metadata on an example will override that of the group.
@@ -347,7 +373,7 @@ assertions are typed, so the actual value must be of the correct type
 "foobar" |> should (be.string.matching "ooba") // pass
 ```
 
-### Writing new assertions ###
+### Writing new matchers ###
 
 Is possible, and soon to be documented.
 
@@ -378,8 +404,8 @@ returned.
 
 ### Batch building examples ###
 
-Because examples are created at runtime, you can use _List_ operations to
-generate batches of test cases.
+Because examples are data structure, you can use _List_ operations to generate
+batches of test cases.
 
 ```fsharp
 let specs =
@@ -402,8 +428,8 @@ let specs =
     )
 ```
 
-Although this example is a bit noisy with paranthesis, it shows that it can
-be done with the current api.
+Although this example is a bit noisy, it shows that it can be done with the
+current api.
 
 Alternately, you can create helper functions to create tests for you.
 
@@ -427,23 +453,11 @@ let specs =
         itIsInvalidEmail "user@.com"
     )
 ```
-## Running the tests ##
-
-You can either use the console runner for running the specs. Or - create your
-spec assembly as a console application, and use this following piece of code as
-the main function
-
-```fsharp
-[<EntryPoint>]
-let main argv = 
-    System.Reflection.Assembly.GetExecutingAssembly ()
-    |> FSpec.TestDiscovery.runSingleAssembly
-```
 
 ## Visual Studio Integration ##
 
-You can use the NCrunch plugin for Visual Studio to run unit tests
-automatically as you are writing code.
+You can use the NCrunch plugin for Visual Studio to run unit tests automatically
+as you are writing code.
 
 The integration is based on the fact that `MbUnit` allows the creation of a
 `DynamicTestFactory` that can return tests as instances of a `TestCase` class.
