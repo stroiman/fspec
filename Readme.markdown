@@ -84,7 +84,9 @@ let specs =
                 it "has some completely different behavior" (fun _ ->
                     ()
                 )
-            ]]]
+            ]
+        ]
+    ]
 ```
 
 If you find the paranthesis noisy, you can use the backward pipe operator
@@ -122,7 +124,8 @@ pending tests.
 
 ### General setup/teardown code ###
 
-The functions _before_/_after_ can be used to hold general setup/teardown code.
+The functions _before_ and _after_ can be used to hold general setup/teardown
+code.
 
 ```fsharp
 let specs =
@@ -140,30 +143,37 @@ let specs =
 
 ## Test Context ##
 
-Setup, teardown, and test functions all receive a _TestContext_ parameter. Test
-metadata can be received from this context, and specific test data can be
-stored in the context. The latter is useful if the test needs to use data
-created in the setup.
+In typical xUnit based frameworks, where tests are methods on classes, you
+typically use member variables to share data between setup code and individual
+tests (with the risk of forgetting to reset between tests).
+
+In FSpec, you place such data in a _TestContext_, a value passed to all test
+functions, as well as setup and tear down code. A new _TestContext_ is created
+for each test, so there is no risk of data getting carried over from one test to
+the next.
+
+This pattern is also used in the JavaScript test frameworks Mocha and Jasmine
+for JavaScript, where a test context is passed as _this_ to all test functions.
 
 The context data is accessible using the ? operator.
 
 ```fsharp
 let specs =
     describe "createUser function" [
-        before <| fun _ ->
-            ctx?user <- createUser "John" "Doe"
-        it "sets the first name" <| fun ctx ->
+        before (fun _ -> 
+            ctx?user <- createUser "John" "Doe")
+
+        it "sets the first name" (fun ctx ->
             ctx?user |> (fun x -> x.FirstName) |> should equal "John"
-        it "sets the last name" <| fun ctx ->
+        )
+
+        it "sets the last name" (fun ctx ->
             ctx?user |> (fun x -> x.LastName) |> should equal "Doe"
+        )
     ]
 ```
 
-Where other test frameworks relies on class member fields to share data
-between, e.g. general setup and test code, the _TestContext_ is the place to
-store it in FSpec.
-
-The data is internally stored as instances of type _obj_, but the ? operator
+Internally, the data is stored as instances of type _obj_, but the ? operator
 works with the type inference system, so it will automatically cast the data to
 the expected type. 
 
@@ -206,8 +216,8 @@ let specs =
 
 ### Automatically Disposal ###
 
-If you add an object that implements _IDisposable_ to the test context, the
-object will automatically be disposed when the test run has finished. 
+Any object added to the _TestContext_ that implements _IDisposable_ are
+automatically disposed when the test has finished.
 
 ```fsharp
 let specs =
@@ -261,7 +271,7 @@ These will automatically cast the subject to the type expected by the matcher.
 ```fsharp
 let specs =
     describe "createUser function" [
-        subject (fun _ -> createuser "john" "doe")
+        subject (fun _ -> createuser "John" "Doe")
 
         it "sets the first name" (fun ctx ->
             ctx.Subject.Should (haveFirstName "John"))
