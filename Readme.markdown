@@ -355,14 +355,6 @@ let specs =
         context "when a user has already been registered with that email" [
             it "fails" (...)
         ]
-
-        context "an example with many pieces of metadata" [
-            ("data1", 42) **>
-            ("data2", "Yummy") **>
-            ("data3", Some [1;2;3]) **>
-            it "can easily specify a lot of metadata" (fun _ -> ())
-        ]
-    ]
 ```
 
 The funny looking _**>_ operator is chosen because it is right-to-left
@@ -373,6 +365,18 @@ actual data is not of the correct type.
 
 Metadata with the same name on a child example group will override the value of
 the parent group, and metadata on an example will override that of the group.
+
+Several pieces of metadata can be applied at once:
+
+```fsharp
+        context "an example with many pieces of metadata" [
+            ("data1", 42) **>
+            ("data2", "Yummy") **>
+            ("data3", Some [1;2;3]) **>
+            it "can easily specify a lot of metadata" (fun _ -> ())
+        ]
+    ]
+```
 
 ## Assertion framework ##
 
@@ -487,9 +491,9 @@ type Wrapper() =
     inherit FSpec.MbUnitWrapper.MbUnitWrapperBase()
 ```
 
-Just make sure that you have enabled MbUnit support with NCrunch. I am also not
-sure whether or not it works in NCrunch version 1.
+Just make sure that you have enabled MbUnit support with NCrunch. This has been
+tested with NCrunch 2.
 
 Unfortunately, NCrunch cannot see each individual test, it only recognizes the
 entire test suite as a single test. But if your tests are fast, that should
-work for a normal red/green/refactor workflow.
+work fine for a normal red/green/refactor workflow.
