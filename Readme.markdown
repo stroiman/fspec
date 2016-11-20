@@ -60,6 +60,8 @@ let main argv =
     FSpec.TestDiscovery.runSingleAssembly
 ```
 
+### Basic structure of tests ###
+
 Add _.fs_ files containing the tests, and assign them to a value named _spec_.
 The test discovery mechanism looks for this particular value name. E.g.:
 
@@ -93,6 +95,7 @@ let specs =
         context "In some context" [
             it "has some specific behaviour" <| fun _ ->
                 ()
+
             it "has some other specific behaviour" <| fun _ ->
                 ()
 ```
