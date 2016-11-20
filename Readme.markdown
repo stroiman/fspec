@@ -152,8 +152,8 @@ functions, as well as setup and tear down code. A new _TestContext_ is created
 for each test, so there is no risk of data getting carried over from one test to
 the next.
 
-This pattern is also used in the JavaScript test frameworks Mocha and Jasmine
-for JavaScript, where a test context is passed as _this_ to all test functions.
+This pattern is also used in the JavaScript test frameworks Mocha and Jasmine,
+where a test context is passed as _this_ to all test functions.
 
 The context data is accessible using the ? operator.
 
