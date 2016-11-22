@@ -32,7 +32,7 @@ let failWithAssertionError expected =
             MatchFail "No exception thrown"
         with
             | AssertionError(info) -> 
-                info.Message |> applyMatcher matcher id
+                info.Message |> matcher.Run
     createMatcher f
         (sprintf "fail assertion with message %A" expected)
 

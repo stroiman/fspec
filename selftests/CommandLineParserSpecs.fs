@@ -1,4 +1,4 @@
-﻿module FSpec.SelfTest.sCommandLineParserSpecs
+﻿module FSpec.SelfTest.CommandLineParserSpecs
 open FSpec
 open FSpec.Dsl
 open FSpec.Matchers
@@ -11,27 +11,27 @@ module Helpers =
         ("input", args) **> 
         context (sprintf "when called with '%s'" (args |> join " ")) specs
 
-    let parse (matcher : Matcher<ParsedArguments>) =
+    let parse (matcher : Matcher<ParsedArguments,'U>) =
         let f =
             function
-            | Success x -> matcher.ApplyActual id x
+            | Success x -> x |> matcher.Run
             | Fail x -> MatchResult.MatchFail x
         createMatcher f (sprintf "be success %s" matcher.ExpectationMsgForShould)
 
     let withConsoleOutput m =
       createCompoundMatcher m 
         (fun x -> x.ConsoleOutput)
-        (sprintf "with ConsoleOutput %s" m.ExpectationMsgForShould)
+        (sprintf "with ConsoleOutput %s" (m |> Matcher.expectationMsgForShould))
 
-    let withAssemblies m = 
+    let withAssemblies m =
       createCompoundMatcher m 
         (fun x -> x.AssemblyFiles)
-        (sprintf "with AssemblyFiles %s" m.ExpectationMsgForShould)
+        (sprintf "with AssemblyFiles %s" (m |> Matcher.expectationMsgForShould))
 
-    let printMessage (m:Matcher<string>) =
+    let printMessage (m:Matcher<string,_>) =
         let f = function
                 | Success x -> MatchResult.MatchFail x
-                | Fail x -> m.ApplyActual id x
+                | Fail x -> x |> m.Run
         createMatcher f (sprintf "print message %s" m.ExpectationMsgForShould)
 open Helpers
 

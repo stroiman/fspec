@@ -26,9 +26,9 @@ module Core =
         [<Obsolete("Use types from FSpec.Dsl namespace instead of FSpec.Core.Dsl")>]
         let it = it
         [<Obsolete("Use types from FSpec.Dsl namespace instead of FSpec.Core.Dsl")>]
-        let itShould<'T> = itShould<'T>
+        let itShould<'T,'U> = itShould<'T,'U>
         [<Obsolete("Use types from FSpec.Dsl namespace instead of FSpec.Core.Dsl")>]
-        let itShouldNot<'T> = itShouldNot<'T>
+        let itShouldNot<'T,'U> = itShouldNot<'T,'U>
         [<Obsolete("Use types from FSpec.Dsl namespace instead of FSpec.Core.Dsl")>]
         let (<<-) = (<<-)
 
@@ -36,15 +36,13 @@ module Core =
         open FSpec.Matchers
 
         [<Obsolete("Use types from FSpec.Matchers instead of FSpec.Core.MatchersV3")>]
-        let applyMatcher = applyMatcher
+        let createMatcher<'T,'U> = createMatcher<'T,'U>
         [<Obsolete("Use types from FSpec.Matchers instead of FSpec.Core.MatchersV3")>]
-        let createMatcher<'T> = createMatcher<'T>
-        [<Obsolete("Use types from FSpec.Matchers instead of FSpec.Core.MatchersV3")>]
-        let createFullMatcher<'T> = createFullMatcher<'T> 
+        let createFullMatcher<'T,'U> = createFullMatcher<'T,'U> 
         [<Obsolete("Use types from FSpec.Matchers instead of FSpec.Core.MatchersV3")>]
         let createSimpleMatcher = createSimpleMatcher
         [<Obsolete("Use types from FSpec.Matchers instead of FSpec.Core.MatchersV3")>]
-        let createFullBoolMatcher<'T> = createFullBoolMatcher<'T> 
+        let createFullBoolMatcher<'T,'U> = createFullBoolMatcher<'T,'U> 
         [<Obsolete("Use types from FSpec.Matchers instead of FSpec.Core.MatchersV3")>]
         let createBoolMatcher = createBoolMatcher
         [<Obsolete("Use types from FSpec.Matchers instead of FSpec.Core.MatchersV3")>]
@@ -57,9 +55,9 @@ module Core =
         [<Obsolete("Use types from FSpec.Matchers instead of FSpec.Core.MatchersV3")>]
         let succeed = succeed
         [<Obsolete("Use types from FSpec.Matchers instead of FSpec.Core.MatchersV3")>]
-        let should<'T> = should<'T>
+        let should<'T,'U> = should<'T,'U>
         [<Obsolete("Use types from FSpec.Matchers instead of FSpec.Core.MatchersV3")>]
-        let shouldNot<'T> = shouldNot<'T>
+        let shouldNot<'T,'U> = shouldNot<'T,'U>
 
         module throwException =
             open FSpec.Matchers.throwException
@@ -99,10 +97,10 @@ module Core =
         type System.Object
             with
                 [<Obsolete("Use types from FSpec.Matchers instead of FSpec.Core.MatchersV3")>]
-                member self.Should<'T> (matcher : Matcher<'T>) =
+                member self.Should<'T,'U> (matcher : Matcher<'T,'U>) =
                     self :?> 'T |> FSpec.Matchers.should matcher
                 [<Obsolete("Use types from FSpec.Matchers instead of FSpec.Core.MatchersV3")>]
-                member self.ShouldNot<'T> (matcher : Matcher<'T>) =
+                member self.ShouldNot<'T,'U> (matcher : Matcher<'T,'U>) =
                     self :?> 'T |> FSpec.Matchers.shouldNot matcher
                 [<Obsolete("Use types from FSpec.Matchers instead of FSpec.Core.MatchersV3")>]
                 member self.Apply<'T,'U> (f : 'T -> 'U) =

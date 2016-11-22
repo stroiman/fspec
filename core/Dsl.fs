@@ -28,14 +28,14 @@ let focus = AddMetaDataOperation ("focus", true)
 let slow = AddMetaDataOperation ("slow", true)
 let it name func = AddExampleOperation <| Example.create name func
 
-let exampleFromMatcher<'T> matchType (matcher : Matcher<'T>) =
+let exampleFromMatcher<'T,'U> matchType (matcher : Matcher<'T,'U>) =
     Example.create 
         (sprintf "should %s" (matcher.MessageFor matchType))
         (fun ctx -> ctx.Subject.Apply (performMatch matchType matcher))
     |> AddExampleOperation
 
-let itShould<'T> = exampleFromMatcher<'T> Should
-let itShouldNot<'T> = exampleFromMatcher<'T> ShouldNot
+let itShould<'T,'U> = exampleFromMatcher<'T,'U> Should
+let itShouldNot<'T,'U> = exampleFromMatcher<'T,'U> ShouldNot
 let describe name operations =
     let rec applyOperation (grp,md) op =
         match op with
