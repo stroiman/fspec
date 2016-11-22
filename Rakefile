@@ -19,6 +19,7 @@ def run_assembly cmd
   unless windows?
     cmd = "mono #{cmd}"
   end
+  puts cmd
   system cmd or raise "Error running #{cmd}"
 end
 
