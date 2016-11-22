@@ -18,14 +18,15 @@ let getSpecsFromAssembly (assembly : Assembly) =
         | :? List<Operation> as l -> Some (l |> List.choose exampleGroupFromOp)
         | _ -> None
         
+    let isNotNull = isNull >> not
     let specs =
         assembly.ExportedTypes
-        |> Seq.where (fun x -> FSharpType.IsModule x)
+        |> Seq.where FSharpType.IsModule
         |> Seq.map (fun x -> x.GetProperty("specs"))
-        |> Seq.where (fun x -> x <> null)
+        |> Seq.where isNotNull
         |> Seq.map (fun x -> x.GetValue(null)) 
         |> Seq.choose toExampleGroup 
-        |> Seq.collect (fun x -> x)
+        |> Seq.collect id
         |> List.ofSeq
     specs
 
