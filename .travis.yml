@@ -1,0 +1,7 @@
+language: csharp
+mono:
+  - latest
+script:
+  - bundle && bundle exec rake ci
+
+
