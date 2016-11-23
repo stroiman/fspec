@@ -7,10 +7,10 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>8272d347-f66a-44f1-b5b1-bc7fe2812f47</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>fspec.selftests</RootNamespace>
-    <AssemblyName>fspec.selftests</AssemblyName>
+    <RootNamespace>FSpec.SelfTests</RootNamespace>
+    <AssemblyName>FSpec.SelfTests</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <Name>fspec.selftests</Name>
+    <Name>FSpec.SelfTests</Name>
     <TargetFSharpCoreVersion>4.3.0.0</TargetFSharpCoreVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -21,7 +21,7 @@
     <OutputPath>..\output</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <DocumentationFile>..\output\fspec.selftests.XML</DocumentationFile>
+    <DocumentationFile>..\output\FSpec.SelfTests.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -30,7 +30,7 @@
     <OutputPath>..\output\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <DocumentationFile>..\output\Release\fspec.selftests.XML</DocumentationFile>
+    <DocumentationFile>..\output\Release\FSpec.SelfTests.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>

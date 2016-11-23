@@ -72,6 +72,7 @@ end
 
 namespace :guard do
   build :build do |b|
+    b.logging = 'detailed'
     b.sln = 'FSpec.sln'
   end
 
@@ -97,7 +98,7 @@ namespace :guard do
   end
 
   build :selftests_build do |b|
-    b.file = 'selftests/fspec.selftests.fsproj'
+    b.file = 'selftests/FSpec.SelfTests.fsproj'
   end
 
   task :core => [:core_build, :test]
