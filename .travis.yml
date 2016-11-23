@@ -1,7 +1,15 @@
 language: csharp
 mono:
   - latest
+env:
+  global:
+    - secure: "W+LPb43a1aR/6sAvwxr0gfNbRNe58YwhjCs7fEosarHqHr7vfc+hTjtWasDW2FQDPZUYqQMdE30hsxb/b/LD4xctK/G5JPJ69ORtbyyjbnvKMKcRGVVzBsJHhZjHKqeoN/RlaeWTy3+zH2C3UzIa+xUQnkHKnjWbv5Obf9dYy38="
 script:
   - bundle && bundle exec rake ci
+deploy:
+  on:
+    provider: script
+    script: bundle exec rake deploy
+    branch: release
 
 
