@@ -7,9 +7,9 @@ env:
 script:
   - bundle && bundle exec rake ci
 deploy:
+  provider: script
+  script: bundle exec rake deploy
   on:
-    provider: script
-    script: bundle exec rake deploy
     branch: release
 
 
