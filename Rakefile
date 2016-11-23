@@ -133,19 +133,30 @@ task :push => [:pack] do
   push_package "FSpec.MbUnitWrapper"
 end
 
-task :increment_patch do
+task :increment_major_semver do
+  v = XSemVer::SemVer.find
+  v.major += 1
+  v.save
+  Rake::Task["versioning"].execute
+end
+
+task :increment_minor_semver do
   v = XSemVer::SemVer.find
   v.minor += 1
   v.save
   Rake::Task["versioning"].execute
 end
 
-task :increment_minor do
+task :increment_patch_semver do
   v = XSemVer::SemVer.find
   v.minor += 1
   v.save
   Rake::Task["versioning"].execute
 end
+
+task :increment_major => [:increment_major_semver, :asmver_files]
+task :increment_minor => [:increment_minor_semver, :asmver_files]
+task :increment_patch => [:increment_patch_semver, :asmver_files]
 
 task :commit do
   tag_name = "v-#{ENV['NUGET_VERSION']}"
