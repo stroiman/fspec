@@ -8,11 +8,11 @@ type MatchType =
     | Should
     | ShouldNot
 
-[<AbstractClass>]
-type Matcher<'TActual,'TSuccess> () =
-    abstract member Run : 'TActual -> MatchResult<'TSuccess>
-    abstract member ExpectationMsgForShould : string
-    abstract member ExpectationMsgForShouldNot : string
+type Matcher<'TActual,'TSuccess> = {
+    Run : 'TActual -> MatchResult<'TSuccess>
+    ExpectationMsgForShould : string
+    ExpectationMsgForShouldNot : string
+}
 
 let runMatcher<'T,'U> (matcher:Matcher<'T,'U>) actual = matcher.Run actual
 let private expectationMsgForShould<'T,'U> (matcher:Matcher<'T,'U>) = matcher.ExpectationMsgForShould
@@ -28,17 +28,13 @@ module Matcher =
         | Should -> expectationMsgForShould matcher
         | ShouldNot -> expectationMsgForShouldNot matcher
 
-(*let applyMatcher<'T,'U> (matcher: Matcher<'T,'U>) f (a : 'T) : 'U =*)
-    (*matcher.ApplyActual f a*)
-
 let createFullMatcher<'T,'U>
         (f : 'T -> MatchResult<'U>)
         (shouldMsg : string)
         (shouldNotMsg : string) =
-    { new Matcher<'T,'U> () with
-        member __.Run actual = f actual
-        member __.ExpectationMsgForShould = shouldMsg
-        member __.ExpectationMsgForShouldNot = shouldNotMsg
+    { Run = f
+      ExpectationMsgForShould = shouldMsg
+      ExpectationMsgForShouldNot = shouldNotMsg
     }
 
 let createMatcher<'T,'U> (f : 'T -> MatchResult<'U>) (shouldMsg : string) =
