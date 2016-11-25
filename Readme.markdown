@@ -39,7 +39,7 @@ I have written a few [blog posts][1] about FSpec
  * FSpec: [![NuGet Status](http://img.shields.io/nuget/v/FSpec.svg)](https://www.nuget.org/packages/FSpec/)
  * FSpec.AutoFoq: [![NuGet Status](http://img.shields.io/nuget/v/FSpec.AutoFoq.svg)](https://www.nuget.org/packages/FSpec.AutoFoq/)
  * FSpec.MbUnitWrapper: [![NuGet Status](http://img.shields.io/nuget/v/FSpec.AutoFoq.svg)](https://www.nuget.org/packages/FSpec.MbUnitWrapper/)
- * {<img src="https://travis-ci.org/PeteProgrammer/fspec.svg?branch=master" alt="travis-ci">}[https://travis-ci.org/PeteProgrammer/fspec]
+ * [![Travis Status](https://travis-ci.org/PeteProgrammer/fspec.svg?branch=master)](https://travis-ci.org/PeteProgrammer/fspec)]
 
 [1]: http://stroiman.com/software/fspec
 
