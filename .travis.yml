@@ -9,7 +9,7 @@ script:
 deploy:
   skip_cleanup: true
   provider: script
-  script: bundle exec rake deploy
+  script: bundle && bundle exec rake deploy
   on:
     branch: release
 
