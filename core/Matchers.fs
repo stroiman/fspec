@@ -47,9 +47,6 @@ let createMatcher<'T,'U> (f : 'T -> MatchResult<'U>) (shouldMsg : string) =
 let createCompoundMatcher matcher f =
     createMatcher (fun a -> a |> f |> Matcher.run matcher)
 
-[<System.Obsolete("Use function createCompoundMatcher instead")>]
-let createCompountMatcher = createCompoundMatcher
-
 let createFullBoolMatcher<'T,'U>
         (f : 'T -> bool)
         (shouldMsg : string)
