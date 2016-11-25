@@ -9,21 +9,10 @@ type MatchType =
     | ShouldNot
 
 [<AbstractClass>]
-type Matcher<'TActual,'TSuccess> () = 
+type Matcher<'TActual,'TSuccess> () =
     abstract member Run : 'TActual -> MatchResult<'TSuccess>
     abstract member ExpectationMsgForShould : string
     abstract member ExpectationMsgForShouldNot : string
-    [<System.Obsolete("Use ExpectationMsgForShould instead")>]
-    member this.FailureMsgForShould = this.ExpectationMsgForShould
-    [<System.Obsolete("Use ExpectationMsgForShouldNot instead")>]
-    member this.FailureMsgForShouldNot = this.ExpectationMsgForShouldNot
-    static member IsMatch (matcher:Matcher<'TActual,'TSuccess>) actual =
-        actual |> matcher.Run |> function | MatchSuccess _ -> true | _ -> false
-    member self.MessageFor = 
-        function
-            | Should -> self.ExpectationMsgForShould
-            | ShouldNot -> self.ExpectationMsgForShouldNot
-
 
 let runMatcher<'T,'U> (matcher:Matcher<'T,'U>) actual = matcher.Run actual
 let private expectationMsgForShould<'T,'U> (matcher:Matcher<'T,'U>) = matcher.ExpectationMsgForShould
@@ -31,15 +20,20 @@ let private expectationMsgForShouldNot<'T,'U> (matcher:Matcher<'T,'U>) = matcher
 
 module Matcher =
     let run<'T,'U> (matcher:Matcher<'T,'U>) actual = matcher.Run actual
+    let matches matcher actual = run matcher actual |> function | MatchSuccess _ -> true | MatchFail _ -> false
     let expectationMsgForShould<'T,'U> (matcher:Matcher<'T,'U>) = matcher.ExpectationMsgForShould
     let expectationMsgForShouldNot<'T,'U> (matcher:Matcher<'T,'U>) = matcher.ExpectationMsgForShouldNot
+    let messageFor matchType matcher =
+        match matchType with
+        | Should -> expectationMsgForShould matcher
+        | ShouldNot -> expectationMsgForShouldNot matcher
 
 (*let applyMatcher<'T,'U> (matcher: Matcher<'T,'U>) f (a : 'T) : 'U =*)
     (*matcher.ApplyActual f a*)
 
-let createFullMatcher<'T,'U> 
-        (f : 'T -> MatchResult<'U>) 
-        (shouldMsg : string) 
+let createFullMatcher<'T,'U>
+        (f : 'T -> MatchResult<'U>)
+        (shouldMsg : string)
         (shouldNotMsg : string) =
     { new Matcher<'T,'U> () with
         member __.Run actual = f actual
@@ -60,11 +54,11 @@ let createCompoundMatcher matcher f =
 [<System.Obsolete("Use function createCompoundMatcher instead")>]
 let createCompountMatcher = createCompoundMatcher
 
-let createFullBoolMatcher<'T,'U> 
-        (f : 'T -> bool) 
-        (shouldMsg : string) 
+let createFullBoolMatcher<'T,'U>
+        (f : 'T -> bool)
+        (shouldMsg : string)
         (shouldNotMsg : string) =
-    let wrapF = fun a -> 
+    let wrapF = fun a ->
         match f a with
         | true -> MatchSuccess (a :> obj)
         | false -> MatchFail (a :> obj)
@@ -102,12 +96,12 @@ module be =
             (sprintf "be greater than %A" expected)
 
     let True =
-        createBoolMatcher 
-            (fun actual -> actual = true) 
+        createBoolMatcher
+            (fun actual -> actual = true)
             (sprintf "be true")
 
     let False =
-        createBoolMatcher 
+        createBoolMatcher
             (fun actual -> actual = false)
             (sprintf "be false")
 
@@ -125,13 +119,13 @@ module be =
 
 module have =
     let atLeastOneElement matcher =
-        let f a = a |> Seq.exists (Matcher.IsMatch matcher)
+        let f a = a |> Seq.exists (Matcher.matches matcher)
         let msg = sprintf "contain at least one element to %s" matcher.ExpectationMsgForShould
         let notMsg = sprintf "contain no elements to %s" matcher.ExpectationMsgForShould
         createFullBoolMatcher f msg notMsg
 
     let element = atLeastOneElement
-    
+
     let length lengthMatcher =
         createCompoundMatcher
             lengthMatcher
@@ -139,9 +133,9 @@ module have =
             (sprintf "have length to %s" (lengthMatcher |> expectationMsgForShould))
 
     let exactly no matcher =
-        let f a = a |> Seq.filter (Matcher.IsMatch matcher) |> Seq.length = no
-        let msg = 
-            sprintf "contain exactly %d element to %s" no 
+        let f a = a |> Seq.filter (Matcher.matches matcher) |> Seq.length = no
+        let msg =
+            sprintf "contain exactly %d element to %s" no
                 matcher.ExpectationMsgForShould
         createBoolMatcher f msg
 
@@ -163,7 +157,7 @@ let succeed =
 
 module throwException =
     let withMessage matcher =
-        let f a = 
+        let f a =
             try
                 a ()
                 MatchFail "No exception thrown"
@@ -171,15 +165,15 @@ module throwException =
             | e -> e.Message |> runMatcher matcher
         createMatcher f
             (sprintf "throw exception with message %s" matcher.ExpectationMsgForShould)
-            
+
     let withMessageContaining msg =
         withMessage (be.string.containing msg)
-    
+
 let performMatch<'T,'U> matchType (matcher:Matcher<'T,'U>) (actual:'T) =
-    let raiseMsg a = 
-            let msg = sprintf "%A was expected to %s but was %A" 
-                        actual (matcher.MessageFor matchType) a
-            raise (AssertionError { Message = msg })
+    let raiseMsg a =
+          let msg = sprintf "%A was expected to %s but was %A"
+                      actual (matcher |> Matcher.messageFor matchType) a
+          raise (AssertionError { Message = msg })
     let continuation result =
         match (matchType, result) with
         | (Should, MatchFail x) -> raiseMsg x
@@ -187,8 +181,8 @@ let performMatch<'T,'U> matchType (matcher:Matcher<'T,'U>) (actual:'T) =
         | _ -> ()
     // matcher.ApplyActual continuation actual
     actual |> matcher.Run |> continuation
-    
-let should<'T,'U> = performMatch<'T,'U> Should 
+
+let should<'T,'U> = performMatch<'T,'U> Should
 let shouldNot<'T,'U> = performMatch<'T,'U> ShouldNot
 
 /// Extension methods for System.Object to aid in assertions
@@ -210,7 +204,7 @@ type Async<'T> with
 
     member self.ShouldNot<'T,'U> (matcher : Matcher<'T,'U>) =
         Async.RunSynchronously(self,5000).ShouldNot matcher
-        
+
 let ( ||| ) (a:Matcher<'a,'U>) (b:Matcher<'a,'U>) =
     let f actual =
         let x = actual |> a.Run
@@ -218,11 +212,11 @@ let ( ||| ) (a:Matcher<'a,'U>) (b:Matcher<'a,'U>) =
         match (x,y) with
         | MatchFail _, MatchFail _ -> MatchFail actual
         | _ -> MatchSuccess actual
-    createMatcher f 
-        (sprintf "%s and %s" 
+    createMatcher f
+        (sprintf "%s and %s"
             a.ExpectationMsgForShould
             b.ExpectationMsgForShould)
-        
+
 let ( &&& ) (a:Matcher<'a,'U>) (b:Matcher<'a,'U>) =
     let f actual =
         let x = actual |> a.Run
@@ -230,8 +224,8 @@ let ( &&& ) (a:Matcher<'a,'U>) (b:Matcher<'a,'U>) =
         match (x,y) with
         | MatchSuccess _, MatchSuccess _ -> MatchSuccess actual
         | _ -> MatchFail actual
-    createMatcher f 
-        (sprintf "%s and %s" 
+    createMatcher f
+        (sprintf "%s and %s"
             a.ExpectationMsgForShould
             b.ExpectationMsgForShould)
 

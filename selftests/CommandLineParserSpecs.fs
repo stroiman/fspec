@@ -8,7 +8,7 @@ module Helpers =
     let join separator (s:string list) = System.String.Join(" ", s |> List.toArray)
 
     let withArguments args specs =
-        ("input", args) **> 
+        ("input", args) **>
         context (sprintf "when called with '%s'" (args |> join " ")) specs
 
     let parse (matcher : Matcher<ParsedArguments,'U>) =
@@ -19,12 +19,12 @@ module Helpers =
         createMatcher f (sprintf "be success %s" matcher.ExpectationMsgForShould)
 
     let withConsoleOutput m =
-      createCompoundMatcher m 
+      createCompoundMatcher m
         (fun x -> x.ConsoleOutput)
         (sprintf "with ConsoleOutput %s" (m |> Matcher.expectationMsgForShould))
 
     let withAssemblies m =
-      createCompoundMatcher m 
+      createCompoundMatcher m
         (fun x -> x.AssemblyFiles)
         (sprintf "with AssemblyFiles %s" (m |> Matcher.expectationMsgForShould))
 
@@ -48,7 +48,7 @@ let mainSpecs =
 
 let specs =
     describe "CommandLineParser" [
-        subject (fun ctx -> 
+        subject (fun ctx ->
             ctx?input
             |> List.toArray
             |> parseArguments)

@@ -19,7 +19,7 @@ type Operation =
         | _ -> failwith "not supported"
     [<System.Obsolete("Use **> instead")>]
     static member ( ==> ) (md, op) = Operation.ApplyMetaData md op
-    static member ( **> ) (md, op) = 
+    static member ( **> ) (md, op) =
         Operation.ApplyMetaData ([md] |> TestDataMap.create) op
     static member ( ~+ ) (op:Operation) =
         Operation.ApplyMetaData ([("focus", true)] |> TestDataMap.create) op
@@ -29,8 +29,8 @@ let slow = AddMetaDataOperation ("slow", true)
 let it name func = AddExampleOperation <| Example.create name func
 
 let exampleFromMatcher<'T,'U> matchType (matcher : Matcher<'T,'U>) =
-    Example.create 
-        (sprintf "should %s" (matcher.MessageFor matchType))
+    Example.create
+        (sprintf "should %s" (matcher |> Matcher.messageFor matchType))
         (fun ctx -> ctx.Subject.Apply (performMatch matchType matcher))
     |> AddExampleOperation
 
@@ -39,21 +39,21 @@ let itShouldNot<'T,'U> = exampleFromMatcher<'T,'U> ShouldNot
 let describe name operations =
     let rec applyOperation (grp,md) op =
         match op with
-        | AddExampleOperation example -> 
+        | AddExampleOperation example ->
             let example = example |> Example.addMetaData (TestDataMap.create md)
             let grp = grp |> ExampleGroup.addExample example
             (grp,[])
-        | AddExampleGroupOperation childGrp -> 
+        | AddExampleGroupOperation childGrp ->
             let cg = childGrp |> ExampleGroup.addMetaData (TestDataMap.create md)
             let grp = grp |> ExampleGroup.addChildGroup cg
             (grp,[])
-        | AddSetupOperation f -> 
+        | AddSetupOperation f ->
             let grp = grp |> ExampleGroup.addSetup f
             (grp,md)
-        | AddTearDownOperation f -> 
+        | AddTearDownOperation f ->
             let grp = grp |> ExampleGroup.addTearDown f
             (grp,md)
-        | MultipleOperations o -> 
+        | MultipleOperations o ->
             o |> List.fold applyOperation (grp,md)
         | AddMetaDataOperation (k,v) -> (grp, (k,v)::md)
 
@@ -61,7 +61,7 @@ let describe name operations =
     operations |> List.fold applyOperation (grp,[])
     |> fun (grp,_) -> grp
     |> AddExampleGroupOperation
-    
+
 let context = describe
 let before f = AddSetupOperation f
 let after f = AddTearDownOperation f
