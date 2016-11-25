@@ -161,7 +161,7 @@ task :increment_patch => [:increment_patch_semver, :asmver_files]
 task :commit do
   tag_name = "v-#{ENV['NUGET_VERSION']}"
   system "git add ."
-  system "git ci -m \"#{tag_name}\""
+  system "git commit -m \"#{tag_name}\""
   system "git tag #{tag_name}"
   system "git push origin head:master"
   system "git push --tags"
