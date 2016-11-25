@@ -35,10 +35,11 @@ The framework is self testing, i.e. the framework is used to test itself.
 
 I have written a few [blog posts][1] about FSpec
 
-#### Status 
+#### Status
  * FSpec: [![NuGet Status](http://img.shields.io/nuget/v/FSpec.svg)](https://www.nuget.org/packages/FSpec/)
  * FSpec.AutoFoq: [![NuGet Status](http://img.shields.io/nuget/v/FSpec.AutoFoq.svg)](https://www.nuget.org/packages/FSpec.AutoFoq/)
  * FSpec.MbUnitWrapper: [![NuGet Status](http://img.shields.io/nuget/v/FSpec.AutoFoq.svg)](https://www.nuget.org/packages/FSpec.MbUnitWrapper/)
+ * {<img src="https://travis-ci.org/PeteProgrammer/fspec.svg?branch=master" alt="travis-ci">}[https://travis-ci.org/PeteProgrammer/fspec]
 
 [1]: http://stroiman.com/software/fspec
 
