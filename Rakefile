@@ -158,6 +158,7 @@ task :bump do
   puts "BUMPING TO #{tag_name}"
   system "git add ."
   system "git commit -m \"Bumped version to #{tag_name}\""
+  system "git push origin head:master"
 end
 
 task :increment_major => [:increment_major_semver, :asmver_files, :bump]
@@ -177,4 +178,4 @@ task :default => ["guard:build", :test]
 task :ci => ["paket:restore", :build, :test, :pack]
 #task :create_minor => [:increment_minor, :ci, :commit]
 task :create_version => [:ci, :commit, :nuget_push]
-task :deploy => [:ci, :commit, :nuget_push]
+task :deploy => [:ci, :commit, :nuget_push, :increment_patch]
