@@ -165,7 +165,7 @@ task :bump do
   puts "BUMPING TO #{tag_name}"
   system "git add ."
   system "git commit -m \"Bumped version to #{tag_name}\""
-  system "git push #{repository} HEAD:master >/dev/null"
+  system "git push #{repository} HEAD:master >/dev/null 2>/dev/null"
 end
 
 task :increment_major => [:increment_major_semver, :asmver_files, :bump]
@@ -176,8 +176,8 @@ task :tag do
   tag_name = "v-#{v.nuget_version}"
   system "git add ."
   system "git tag #{tag_name}"
-  system "git push #{repository} HEAD:master >/dev/null"
-  system "git push #{repository} --tags >/dev/null"
+  system "git push #{repository} HEAD:master >/dev/null 2>/dev/null"
+  system "git push #{repository} --tags >/dev/null 2>/dev/null"
 end
 
 task :default => ["guard:build", :test]
