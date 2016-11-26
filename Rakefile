@@ -5,6 +5,12 @@ require 'bundler/setup'
 require 'albacore'
 require 'albacore/tasks/versionizer'
 
+if ENV['GITHUB_API_KEY'] then
+  repository = "https://PeteProgreammer:$GITHUB_API_KEY@github.com/PeteProgrammer/fspec.git"
+else
+  repository = "origin"
+end
+
 # Avoid that Albacore uses the Jenkins supplied BUILD_NUMBER for PATCH
 ENV['BUILD_NUMBER'] = nil 
 v = XSemVer::SemVer.find
@@ -158,7 +164,7 @@ task :bump do
   puts "BUMPING TO #{tag_name}"
   system "git add ."
   system "git commit -m \"Bumped version to #{tag_name}\""
-  system "git push origin head:master"
+  system "git push #{repository} head:master"
 end
 
 task :increment_major => [:increment_major_semver, :asmver_files, :bump]
@@ -170,7 +176,7 @@ task :commit do
   system "git add ."
   system "git commit -m \"#{tag_name}\""
   system "git tag #{tag_name}"
-  system "git push origin head:master"
+  system "git push #{repository} head:master"
   system "git push --tags"
 end
 
