@@ -39,7 +39,7 @@ I have written a few [blog posts][1] about FSpec
  * FSpec: [![NuGet Status](http://img.shields.io/nuget/v/FSpec.svg)](https://www.nuget.org/packages/FSpec/)
  * FSpec.AutoFoq: [![NuGet Status](http://img.shields.io/nuget/v/FSpec.AutoFoq.svg)](https://www.nuget.org/packages/FSpec.AutoFoq/)
  * FSpec.MbUnitWrapper: [![NuGet Status](http://img.shields.io/nuget/v/FSpec.AutoFoq.svg)](https://www.nuget.org/packages/FSpec.MbUnitWrapper/)
- * [![Travis Status](https://travis-ci.org/PeteProgrammer/fspec.svg?branch=master)](https://travis-ci.org/PeteProgrammer/fspec)]
+ * [![Travis Status](https://travis-ci.org/PeteProgrammer/fspec.svg?branch=master)](https://travis-ci.org/PeteProgrammer/fspec)
 
 [1]: http://stroiman.com/software/fspec
 
@@ -393,7 +393,66 @@ assertions are typed, so the actual value must be of the correct type
 
 ### Writing new matchers ###
 
-Is possible, and soon to be documented.
+A matcher requires a matcher function, a function that takes an actual value as
+input and returns a match result:
+
+```fsharp
+type MatchResult<'TSuccess> =
+    | MatchSuccess of 'TSuccess
+    | MatchFail of obj
+
+type MatcherFunc<'a,'b> = 'a -> MatchResult<'b>
+```
+
+A matcher is a structure that contains a matcher function, and a set of messages
+describing the expected outcome:
+
+```fsharp
+type Matcher<'TActual,'TSuccess> = {
+    Run : MatcherFunc<'TActual,'TSuccess>
+    ExpectationMsgForShould : string
+    ExpectationMsgForShouldNot : string
+}
+```
+
+### Designing matchers for chaining ###
+
+Because a successful match carries the matched value, it is possible to chain
+matchers.
+
+```fsharp
+let haveLength = { Run: fun actual -> actual |> Seq.length |> MatchSuccess
+                   ExpectationMsgForShould = "have length"
+                   ExpectationMsgForShouldNot = "not have length" }
+
+itShould (haveLength >>> equal 42)
+```
+
+Note how that haveLength matcher itself will never fail, it is created for the
+sole purpose of making it easy to read and write verification code.
+
+### Helper functions ###
+
+There are two matcher creation helper functions:
+
+```fsharp
+createMatcher<'a,'b> : MatcherFunc<'a,'b> -> string -> Matcher<'a,'b>
+createBoolMatcher<'a> : ('a -> bool) -> string -> Matcher<'a,'a>
+```
+
+The create matcher takes the matcher function and the expectation string as
+input. The negated expectation string is created by prefixing the expectation
+message with "not ".
+
+The createBoolMatcher simply builds a matcher function from a predicate. Makes
+some matchers easier to create:
+
+```fsharp
+let equals expected = 
+  createBoolMatcher 
+    (fun actual -> actual = expected)
+    (sprintf "equal %A" expected)
+```
 
 ## Extending Test Context ##
 
