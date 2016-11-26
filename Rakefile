@@ -171,10 +171,9 @@ task :increment_major => [:increment_major_semver, :asmver_files, :bump]
 task :increment_minor => [:increment_minor_semver, :asmver_files, :bump]
 task :increment_patch => [:increment_patch_semver, :asmver_files, :bump]
 
-task :commit do
+task :tag do
   tag_name = "v-#{v.nuget_version}"
   system "git add ."
-  system "git commit -m \"#{tag_name}\""
   system "git tag #{tag_name}"
   system "git push #{repository} HEAD:master >/dev/null"
   system "git push #{repository} --tags >/dev/null"
@@ -182,6 +181,6 @@ end
 
 task :default => ["guard:build", :test]
 task :ci => ["paket:restore", :build, :test, :pack]
-#task :create_minor => [:increment_minor, :ci, :commit]
-task :create_version => [:ci, :commit, :nuget_push]
-task :deploy => [:ci, :commit, :nuget_push, :increment_patch]
+#task :create_minor => [:increment_minor, :ci, :tag]
+task :create_version => [:ci, :tag, :nuget_push]
+task :deploy => [:ci, :tag, :nuget_push, :increment_patch]
