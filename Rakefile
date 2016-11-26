@@ -134,14 +134,15 @@ task :pack => ['output/pkg'] do
   system "mono nuget.exe pack FSpec.AutoFoq.nuspec -properties version=#{v.nuget_version}"
 end
 
-def push_package(package_name)
-  system "mono nuget.exe push #{package_name}.#{v.nuget_version}.nupkg #{ENV['MYGET_API_KEY']} -Source https://www.myget.org/F/fspec-prereleases/api/v2/package"
+def push_package(package_name, version)
+  system "mono nuget.exe push #{package_name}.#{version}.nupkg #{ENV['MYGET_API_KEY']} -Source https://www.myget.org/F/fspec-prereleases/api/v2/package"
 end
 
 task :nuget_push => [:pack] do
-  push_package "FSpec"
-  push_package "FSpec.AutoFoq"
-  push_package "FSpec.MbUnitWrapper"
+  version = v.nuget_version
+  push_package "FSpec", version
+  push_package "FSpec.AutoFoq", version
+  push_package "FSpec.MbUnitWrapper", version
 end
 
 task :increment_major_semver do
