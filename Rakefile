@@ -164,7 +164,7 @@ task :bump do
   puts "BUMPING TO #{tag_name}"
   system "git add ."
   system "git commit -m \"Bumped version to #{tag_name}\""
-  system "git push #{repository} head:master"
+  system "git push #{repository} HEAD:master"
 end
 
 task :increment_major => [:increment_major_semver, :asmver_files, :bump]
@@ -176,7 +176,7 @@ task :commit do
   system "git add ."
   system "git commit -m \"#{tag_name}\""
   system "git tag #{tag_name}"
-  system "git push #{repository} head:master"
+  system "git push #{repository} HEAD:master"
   system "git push --tags"
 end
 
