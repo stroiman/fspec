@@ -4,6 +4,7 @@ mono:
 env:
   global:
     - secure: "W+LPb43a1aR/6sAvwxr0gfNbRNe58YwhjCs7fEosarHqHr7vfc+hTjtWasDW2FQDPZUYqQMdE30hsxb/b/LD4xctK/G5JPJ69ORtbyyjbnvKMKcRGVVzBsJHhZjHKqeoN/RlaeWTy3+zH2C3UzIa+xUQnkHKnjWbv5Obf9dYy38="
+    - secure: "aaQBHDIPy2cIJsaGm5vaxKSecxFK2ZF1le4t8xCPW6QrJq27WCLAsgGNKIBMPrjOFQ7H/dKeS6KtUtofffoPZmOxEyWfrrk3ZmUtr5OWoK0oYQ7vbELmMGL9SStNLCXmuq8CUpWTzZiZ7qfuLWcQ9uEDouri45vgLrVAAF4OhVM="
 script:
   - bundle && bundle exec rake ci
 deploy:
