@@ -78,6 +78,3 @@ DEPENDENCIES
   guard
   guard-shell
   rb-readline
-
-BUNDLED WITH
-   1.13.6
