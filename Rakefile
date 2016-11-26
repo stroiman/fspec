@@ -132,7 +132,7 @@ def push_package(package_name)
   system "mono nuget.exe push #{package_name}.#{v.nuget_version}.nupkg #{ENV['MYGET_API_KEY']} -Source https://www.myget.org/F/fspec-prereleases/api/v2/package"
 end
 
-task :push => [:pack] do
+task :nuget_push => [:pack] do
   push_package "FSpec"
   push_package "FSpec.AutoFoq"
   push_package "FSpec.MbUnitWrapper"
@@ -176,5 +176,5 @@ end
 task :default => ["guard:build", :test]
 task :ci => ["paket:restore", :build, :test, :pack]
 #task :create_minor => [:increment_minor, :ci, :commit]
-task :create_version => [:ci, :commit, :push]
-task :deploy => [:ci, :commit, :push]
+task :create_version => [:ci, :commit, :nuget_push]
+task :deploy => [:ci, :commit, :nuget_push]
