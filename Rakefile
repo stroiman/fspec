@@ -177,7 +177,7 @@ task :commit do
   system "git commit -m \"#{tag_name}\""
   system "git tag #{tag_name}"
   system "git push #{repository} HEAD:master"
-  system "git push --tags"
+  system "git push #{repository} --tags"
 end
 
 task :default => ["guard:build", :test]
