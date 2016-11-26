@@ -9,13 +9,13 @@ type MatchOf<'T,'U> =
         let actual = ctx.MetaData.Get<'T> "actual"
         let matcher:Matcher<'T,'U> = ctx?matcher
         fun () -> actual |> f matcher
- 
+
     static member ShouldPass =
         examples [
             it "succeeds when used with 'should'" (fun ctx ->
                 let test = MatchOf<'T,'U>.CreateMatcherTest ctx should
                 test.Should succeed)
-            
+
             it "fails when used with 'shouldNot'" (fun ctx ->
                 let test = MatchOf<'T,'U>.CreateMatcherTest ctx shouldNot
                 test.Should fail)
@@ -36,7 +36,7 @@ type MatchOf<'T,'U> =
         it (sprintf "fails with message '%s' when used with 'should'" message) (fun ctx ->
             let test = MatchOf<'T,'U>.CreateMatcherTest ctx should
             test.Should (failWithAssertionError message))
-type MatchOf<'T> = MatchOf<'T,obj>
+type MatchOf<'T> = MatchOf<'T,'T>
 
 let specs = [
     describe "System.Object extesions" [
@@ -59,7 +59,7 @@ let specs = [
             let shouldPass test =
                 test ()
 
-            let shouldFail test = 
+            let shouldFail test =
                 try
                     test ()
                     failwith "Error expected"
@@ -110,7 +110,7 @@ let specs = [
             context "when actual is less than expected" [
                 MatchOf<int>.ShouldPass
             ]
-            
+
             ("actual", 42) **>
             context "when actual is equal to expected" [
                 MatchOf<int>.ShouldFail
@@ -126,15 +126,15 @@ let specs = [
         describe "be.lessThan 50 &&& be.greaterThan 40" [
             ("actual", 39) **>
             context "when actual is 40" [
-                MatchOf<int,int>.ShouldPass
+                MatchOf<int>.ShouldPass
             ]
             ("actual", 45) **>
             context "when actual is 45" [
-                MatchOf<int,int>.ShouldFail
+                MatchOf<int>.ShouldFail
             ]
             ("actual", 51) **>
             context "when actual is 50" [
-                MatchOf<int,int>.ShouldPass
+                MatchOf<int>.ShouldPass
             ]
         ]
 
@@ -142,15 +142,15 @@ let specs = [
         describe "be.lessThan 50 &&& be.greaterThan 40" [
             ("actual", 40) **>
             context "when actual is 40" [
-                MatchOf<int,int>.ShouldFail
+                MatchOf<int>.ShouldFail
             ]
             ("actual", 45) **>
             context "when actual is 45" [
-                MatchOf<int,int>.ShouldPass
+                MatchOf<int>.ShouldPass
             ]
             ("actual", 50) **>
             context "when actual is 50" [
-                MatchOf<int,int>.ShouldFail
+                MatchOf<int>.ShouldFail
             ]
         ]
 
@@ -160,7 +160,7 @@ let specs = [
             context "when actual is less than expected" [
                 MatchOf<int>.ShouldFail
             ]
-            
+
             ("actual", 42) **>
             context "when actual is equal to expected" [
                 MatchOf<int>.ShouldFail
@@ -200,7 +200,7 @@ let specs = [
                     test.Should succeed
             ]
         ]
-        
+
         describe "Collection matchers" [
             describe "should have.length" [
                 it "succeeds when length is expected" <| fun _ ->
@@ -284,17 +284,17 @@ let specs = [
         describe "Matcher combinators" [
             ("actual", 42) **>
             context "when value matches both matchers" [
-                MatchOf<obj>.ShouldPass
+                MatchOf<obj,int>.ShouldPass
             ]
 
             ("actual", 43) **>
             context "when value matches first, but fails last matcher" [
-                MatchOf<obj>.ShouldFail
+                MatchOf<obj,int>.ShouldFail
             ]
 
             ("actual", "foo") **>
             context "when value fails first matcher" [
-                MatchOf<obj>.ShouldFail
+                MatchOf<obj,int>.ShouldFail
             ]
         ]
     ]

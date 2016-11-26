@@ -4,15 +4,17 @@ type MatchResult<'TSuccess> =
     | MatchSuccess of 'TSuccess
     | MatchFail of obj
 
-type MatchType =
-    | Should
-    | ShouldNot
+type MatcherFunc<'a,'b> = 'a -> MatchResult<'b>
 
 type Matcher<'TActual,'TSuccess> = {
-    Run : 'TActual -> MatchResult<'TSuccess>
+    Run : MatcherFunc<'TActual,'TSuccess>
     ExpectationMsgForShould : string
     ExpectationMsgForShouldNot : string
 }
+
+type MatchType =
+    | Should
+    | ShouldNot
 
 let runMatcher<'T,'U> (matcher:Matcher<'T,'U>) actual = matcher.Run actual
 let private expectationMsgForShould<'T,'U> (matcher:Matcher<'T,'U>) = matcher.ExpectationMsgForShould
@@ -37,7 +39,7 @@ let createFullMatcher<'T,'U>
       ExpectationMsgForShouldNot = shouldNotMsg
     }
 
-let createMatcher<'T,'U> (f : 'T -> MatchResult<'U>) (shouldMsg : string) =
+let createMatcher<'T,'U> (f : MatcherFunc<'T,'U>) (shouldMsg : string) =
     createFullMatcher f shouldMsg (sprintf "not %s" shouldMsg)
 
 /// Helps create a matcher, that uses a child matcher for some verification.
@@ -53,7 +55,7 @@ let createFullBoolMatcher<'T,'U>
         (shouldNotMsg : string) =
     let wrapF = fun a ->
         match f a with
-        | true -> MatchSuccess (a :> obj)
+        | true -> MatchSuccess a
         | false -> MatchFail (a :> obj)
     createFullMatcher wrapF shouldMsg shouldNotMsg
 
